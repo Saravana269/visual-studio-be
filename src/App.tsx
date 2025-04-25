@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./components/auth/AuthCallback";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import ElementsManager from "./pages/ElementsManager";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/elements" element={<ElementsManager />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
