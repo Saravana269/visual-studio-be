@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,6 @@ interface ElementSidebarProps {
 }
 
 export function ElementSidebar({ element, open, onClose, onEdit }: ElementSidebarProps) {
-  // Fetch COE data to display names instead of IDs
   const { data: coes, isLoading: isLoadingCoes } = useQuery({
     queryKey: ["coes", element.coe_ids],
     queryFn: async () => {
@@ -35,7 +33,6 @@ export function ElementSidebar({ element, open, onClose, onEdit }: ElementSideba
     enabled: !!element.coe_ids && element.coe_ids.length > 0,
   });
 
-  // Count how many other elements are in the same COEs
   const { data: usageCount } = useQuery({
     queryKey: ["element-usage", element.id],
     queryFn: async () => {
@@ -53,7 +50,6 @@ export function ElementSidebar({ element, open, onClose, onEdit }: ElementSideba
       const counts: Record<string, number> = {};
       let totalCount = 0;
       
-      // Count elements by COE
       element.coe_ids.forEach(coeId => {
         const elementsInThisCoe = data.filter(e => 
           e.coe_ids && e.coe_ids.includes(coeId)

@@ -20,6 +20,7 @@ export type Element = {
   tags: string[] | null;
   created_at: string | null;
   updated_at: string | null;
+  properties: any | null; // Add the properties field to match our form and sidebar usage
 };
 
 export type COE = {
