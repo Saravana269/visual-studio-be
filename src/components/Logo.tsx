@@ -4,7 +4,7 @@ import React from 'react';
 export const Logo = ({ className = '' }) => {
   return (
     <img 
-      src="/lovable-uploads/65aed5f5-71ec-45f1-9ac9-13ce05b39c46.png" 
+      src="/lovable-uploads/b4f8b596-1ad4-4b81-a8d6-4623e1718688.png" 
       alt="Company Logo" 
       className={`h-10 w-10 ${className}`}
     />
