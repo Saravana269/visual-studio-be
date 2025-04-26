@@ -1,17 +1,18 @@
 
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -57,7 +58,10 @@ export function AppHeader() {
 
   return (
     <header className="app-header h-16 flex items-center justify-between px-6 text-white fixed top-0 left-0 right-0 ml-[60px] z-30">
-      <div className="text-xl font-medium">{getPageTitle()}</div>
+      <div className="flex items-center space-x-4">
+        <Logo className="mr-4" />
+        <div className="text-xl font-medium">{getPageTitle()}</div>
+      </div>
       
       <div className="flex items-center space-x-4">
         <DropdownMenu>
