@@ -1,44 +1,38 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Auth from "./pages/Auth";
-import AuthCallback from "./components/auth/AuthCallback";
-import { AppLayout } from "./components/layout/AppLayout";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+// Import your pages
 import ElementsManager from "./pages/ElementsManager";
 import COEManager from "./pages/COEManager";
 import CoreSetManager from "./pages/CoreSetManager";
 import WidgetManager from "./pages/WidgetManager";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+function handleSignOut() {
+  // Implement your sign out logic here
+  window.location.href = "/auth";
+}
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/elements" replace />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          
-          {/* Protected routes with sidebar layout */}
-          <Route path="/elements" element={<AppLayout><ElementsManager /></AppLayout>} />
-          <Route path="/coes" element={<AppLayout><COEManager /></AppLayout>} />
-          <Route path="/core-sets" element={<AppLayout><CoreSetManager /></AppLayout>} />
-          <Route path="/widgets" element={<AppLayout><WidgetManager /></AppLayout>} />
-          <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+export default function App() {
+  return (
+    <Router>
+      <div className="flex h-screen">
+        <Sidebar onSignOut={handleSignOut} />
+        <main className="flex-1 ml-16 bg-gray-950 p-6 overflow-y-auto">
+          <Routes>
+            <Route path="/" element={<Navigate to="/elements" replace />} />
+            <Route path="/elements" element={<ElementsManager />} />
+            <Route path="/coe" element={<COEManager />} />
+            <Route path="/core-set" element={<CoreSetManager />} />
+            <Route path="/widgets" element={<WidgetManager />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
+}
