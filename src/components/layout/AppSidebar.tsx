@@ -39,24 +39,22 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="bg-[#0D1117] text-white min-h-screen flex flex-col">
-      <SidebarContent>
-        <div className="flex flex-col gap-4 mt-6">
-          {navigationItems.map((item) => (
-            <SidebarMenuItem key={item.path} className="flex justify-center">
-              <SidebarMenuButton
-                tooltip={item.title}
-                data-active={isActive(item.path)}
-                onClick={() => navigate(item.path)}
-                className="p-3 rounded-md hover:bg-[#161B22] flex items-center justify-center transition-all duration-200
-                  data-[active=true]:bg-[#161B22] 
-                  data-[active=true]:text-[#1ABC9C]"
-              >
-                <item.icon size={24} />
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </div>
+    <Sidebar className="bg-[#0D1117] text-white w-[70px] min-h-screen flex flex-col items-center">
+      <SidebarContent className="flex flex-col gap-4 mt-6">
+        {navigationItems.map((item) => (
+          <SidebarMenuItem key={item.path}>
+            <SidebarMenuButton
+              tooltip={item.title}
+              data-active={isActive(item.path)}
+              onClick={() => navigate(item.path)}
+              className="p-3 rounded-md hover:bg-[#161B22] flex items-center justify-center transition-all duration-200
+                data-[active=true]:bg-[#161B22]
+                data-[active=true]:text-[#1ABC9C]"
+            >
+              <item.icon size={24} />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="mt-auto mb-4">
