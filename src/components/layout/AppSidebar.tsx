@@ -2,7 +2,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Sidebar, 
-  SidebarContent, 
+  SidebarContent,
   SidebarFooter,
   SidebarMenu,
   SidebarMenuItem,
@@ -53,7 +53,7 @@ export function AppSidebar() {
   };
   
   return (
-    <Sidebar>
+    <Sidebar className="bg-[#1A1F2C] text-white">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="px-2 py-4 text-lg font-semibold">
@@ -67,6 +67,7 @@ export function AppSidebar() {
                     data-active={isActive(item.path)} 
                     onClick={() => navigate(item.path)}
                     tooltip={item.title}
+                    className="hover:bg-[#2A2F3C] data-[active=true]:bg-[#2A2F3C] data-[active=true]:text-[#0FA0CE]"
                   >
                     <item.icon />
                     <span>{item.title}</span>
@@ -83,7 +84,7 @@ export function AppSidebar() {
         <div className="p-2">
           <Button 
             variant="outline" 
-            className="w-full flex items-center gap-2" 
+            className="w-full flex items-center gap-2 text-white hover:bg-[#2A2F3C] hover:text-white" 
             onClick={handleSignOut}
           >
             <LogOut size={16} />
