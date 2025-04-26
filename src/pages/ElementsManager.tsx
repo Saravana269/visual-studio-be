@@ -1,3 +1,27 @@
+
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, Plus, Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ElementList } from "@/components/elements/ElementList";
+import { ElementFormDialog } from "@/components/elements/ElementFormDialog";
+import { ElementSidebar } from "@/components/elements/ElementSidebar";
+
+// Define Element type
+export interface Element {
+  id: string;
+  name: string;
+  description?: string;
+  image_url?: string;
+  properties?: any;
+  tags?: string[];
+  coe_ids?: string[];
+}
+
 const ElementsManager = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<Element | null>(null);
