@@ -1,16 +1,35 @@
+
 body {
-  background: #10141a;
+  background: #000000;
 }
 .sidebar {
-  background: #181c24;
+  background: #000000;
+  transition: width 0.3s ease;
+  width: 60px;
+}
+.sidebar:hover {
+  width: 200px;
 }
 .sidebar .active {
-  color: #22d3ee;
-  background: #23272f;
+  color: #00FF00;
+  background: #121212;
 }
 .sidebar button:hover,
 .sidebar .menu-item:hover {
-  background: #23272f;
-  color: #fff;
-  transition: background 0.2s, color 0.2s;
+  background: #121212;
+  color: #00FF00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.app-header {
+  background: #121212;
+  border-bottom: 1px solid #222222;
+}
+.menu-text {
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.sidebar:hover .menu-text {
+  opacity: 1;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Search, X } from "lucide-react";
@@ -105,13 +104,10 @@ const ElementsManager = () => {
 
   return (
     <div className="flex">
-      {/* Sidebar already handled separately in AppSidebar */}
-
-      {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Element Manager</h1>
-          <Button onClick={() => handleOpenForm()} className="flex items-center gap-2">
+          <Button onClick={() => handleOpenForm()} className="flex items-center gap-2 bg-[#00B86B] hover:bg-[#00A25F]">
             <Plus size={16} /> Add Element
           </Button>
         </div>
@@ -171,7 +167,7 @@ const ElementsManager = () => {
 
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#00B86B]" />
           </div>
         ) : (
           <ElementList
