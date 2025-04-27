@@ -13,6 +13,7 @@ export function JsonEditor({ value, onChange }: JsonEditorProps) {
   const editorInstanceRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isValidJson, setIsValidJson] = useState(true);
 
   useEffect(() => {
     let monaco: typeof import("monaco-editor") | null = null;
@@ -48,9 +49,10 @@ export function JsonEditor({ value, onChange }: JsonEditorProps) {
               const parsedValue = JSON.parse(editorValue);
               onChange(parsedValue);
               setError(null);
-            } catch (err: any) {
-              // Don't update value if JSON is invalid
-              setError("Invalid JSON format");
+              setIsValidJson(true);
+            } catch (err) {
+              setError("Invalid JSON format. Please correct it before proceeding.");
+              setIsValidJson(false);
             }
           });
         }
@@ -100,7 +102,7 @@ export function JsonEditor({ value, onChange }: JsonEditorProps) {
       
       <div 
         ref={editorContainerRef} 
-        className="min-h-[200px] w-full"
+        className={`min-h-[200px] w-full ${!isValidJson ? 'border-destructive' : ''}`}
         aria-label="JSON editor"
       />
     </div>

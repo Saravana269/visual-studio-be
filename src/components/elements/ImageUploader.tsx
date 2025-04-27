@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, X } from "lucide-react";
@@ -14,11 +14,42 @@ interface ImageUploaderProps {
 export function ImageUploader({ value, onChange }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(value || null);
+  const [bucketExists, setBucketExists] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    checkBucketExists();
+  }, []);
+
+  const checkBucketExists = async () => {
+    try {
+      const { data, error } = await supabase.storage.getBucket("elements");
+      if (error || !data) {
+        setBucketExists(false);
+        toast({
+          title: "Storage Setup Required",
+          description: "Storage bucket not found. Please contact the administrator to set it up.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      setBucketExists(false);
+      console.error("Error checking bucket:", error);
+    }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!bucketExists) {
+      toast({
+        title: "Upload Failed",
+        description: "Storage bucket not found. Please contact the administrator to set it up.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Basic validation
     if (!file.type.includes("image/")) {
@@ -81,6 +112,14 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
     onChange(url);
   };
 
+  if (!bucketExists) {
+    return (
+      <div className="border-2 border-dashed border-destructive/25 rounded-md p-6 text-center text-destructive">
+        Storage bucket not found. Please contact the administrator to set it up.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {imagePreview ? (
@@ -90,7 +129,6 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
             alt="Preview" 
             className="w-full h-48 object-cover rounded-md"
             onError={() => {
-              // Handle image load error
               if (imagePreview !== value) {
                 setImagePreview(null);
                 onChange("");
