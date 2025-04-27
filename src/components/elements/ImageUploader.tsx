@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,6 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
       return;
     }
 
-    // Basic validation
     if (!file.type.includes("image/")) {
       toast({
         title: "Invalid file type",
@@ -64,19 +62,16 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
     setIsUploading(true);
 
     try {
-      // Generate a unique file name
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `element-images/${fileName}`;
 
-      // Upload the file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("elements")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data } = supabase.storage
         .from("elements")
         .getPublicUrl(filePath);
@@ -96,7 +91,6 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
       });
     } finally {
       setIsUploading(false);
-      // Reset the input
       e.target.value = "";
     }
   };

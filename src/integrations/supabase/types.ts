@@ -108,6 +108,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          properties: Json | null
           tags: string[] | null
           updated_at: string | null
         }
@@ -118,6 +119,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          properties?: Json | null
           tags?: string[] | null
           updated_at?: string | null
         }
@@ -128,6 +130,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          properties?: Json | null
           tags?: string[] | null
           updated_at?: string | null
         }
