@@ -1,11 +1,10 @@
+
 import { useState } from "react";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import COEModal from "@/components/coe/COEModal";
-import COETable from "@/components/coe/COETable";
 import COESidebar from "@/components/coe/COESidebar";
 import COEEmptyState from "@/components/coe/COEEmptyState";
 import COEList from "@/components/coe/COEList";
@@ -15,14 +14,13 @@ import type { COE } from "@/hooks/useCOEData";
 
 const COEManager = () => {
   const { toast } = useToast();
-  useAuth(); // Check authentication
+  useAuth();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCOE, setSelectedCOE] = useState<COE | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
 
   const { data: coes = [], isLoading, error, refetch } = useCOEData();
 
@@ -84,11 +82,7 @@ const COEManager = () => {
 
   return (
     <div className="space-y-6">
-      <COEHeader 
-        onCreateCOE={handleCreateCOE}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-      />
+      <COEHeader onCreateCOE={handleCreateCOE} />
       
       <COESearch
         searchQuery={searchQuery}
@@ -105,19 +99,11 @@ const COEManager = () => {
       ) : Array.isArray(coes) && coes.length === 0 ? (
         <COEEmptyState onCreateFirst={handleCreateCOE} />
       ) : (
-        viewMode === 'grid' ? (
-          <COEList
-            coes={filteredCOEs}
-            onEdit={handleEditCOE}
-            onView={handleViewCOE}
-          />
-        ) : (
-          <COETable
-            coes={filteredCOEs}
-            onEdit={handleEditCOE}
-            onView={handleViewCOE}
-          />
-        )
+        <COEList
+          coes={filteredCOEs}
+          onEdit={handleEditCOE}
+          onView={handleViewCOE}
+        />
       )}
       
       {isCreateModalOpen && (
@@ -162,10 +148,10 @@ const COEManager = () => {
               }
               
               handleCloseModal(true);
-            } catch (error: any) {
+            } catch (error) {
               toast({
                 title: "Error",
-                description: error.message,
+                description: error instanceof Error ? error.message : "An unknown error occurred",
                 variant: "destructive",
               });
             }
@@ -180,34 +166,6 @@ const COEManager = () => {
           onClose={handleCloseSidebar}
           coe={selectedCOE}
           onUpdate={refetch}
-          onSave={async (updatedCOE) => {
-            try {
-              const { error } = await supabase
-                .from("class_of_elements")
-                .update({
-                  name: updatedCOE.name,
-                  description: updatedCOE.description,
-                  tags: updatedCOE.tags,
-                  image_url: updatedCOE.image_url,
-                })
-                .eq("id", selectedCOE.id);
-              
-              if (error) throw error;
-              
-              toast({
-                title: "COE updated",
-                description: `${updatedCOE.name} has been updated successfully.`,
-              });
-              
-              refetch();
-            } catch (error: any) {
-              toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-              });
-            }
-          }}
         />
       )}
     </div>
