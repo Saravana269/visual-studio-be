@@ -74,6 +74,10 @@ const COEManager = () => {
         return [];
       }
       
+      if (!coesData) {
+        return [];
+      }
+      
       // Then for each COE, count associated elements
       const coesWithCounts = await Promise.all(
         coesData.map(async (coe) => {
@@ -93,8 +97,8 @@ const COEManager = () => {
     }
   });
   
-  // Filter COEs based on search query and selected tags
-  const filteredCOEs = coes.filter(coe => {
+  // Ensure coes is always an array before filtering
+  const filteredCOEs = Array.isArray(coes) ? coes.filter(coe => {
     // Filter by search query
     const matchesQuery = searchQuery === "" ||
       coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,10 +106,10 @@ const COEManager = () => {
       
     // Filter by selected tags
     const matchesTags = selectedTags.length === 0 ||
-      selectedTags.every(tag => coe.tags && coe.tags.includes(tag));
+      (coe.tags && selectedTags.every(tag => coe.tags.includes(tag)));
       
     return matchesQuery && matchesTags;
-  });
+  }) : [];
   
   // Handle opening the modal for creating/editing
   const handleOpenModal = (coe?: COE) => {
@@ -254,7 +258,7 @@ const COEManager = () => {
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
       ) : filteredCOEs.length === 0 ? (
-        coes.length === 0 ? (
+        Array.isArray(coes) && coes.length === 0 ? (
           <COEEmptyState onCreateFirst={() => handleOpenModal()} />
         ) : (
           <div className="py-12 text-center">
@@ -350,8 +354,10 @@ const COEManager = () => {
           }
         }}
         onSave={(updatedCOE) => {
-          handleSaveCOE(updatedCOE);
-          setIsSidebarOpen(false);
+          if (updatedCOE) {
+            handleSaveCOE(updatedCOE);
+            setIsSidebarOpen(false);
+          }
         }}
       />
     </div>
