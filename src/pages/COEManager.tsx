@@ -4,6 +4,7 @@ import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button"; // Added Button import
 import COEModal from "@/components/coe/COEModal";
 import COESidebar from "@/components/coe/COESidebar";
 import COEEmptyState from "@/components/coe/COEEmptyState";
@@ -11,6 +12,7 @@ import COEList from "@/components/coe/COEList";
 import COEHeader from "@/components/coe/COEHeader";
 import COESearch from "@/components/coe/COESearch";
 import type { COE } from "@/hooks/useCOEData";
+import type { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 
 const COEManager = () => {
   const { toast } = useToast();
@@ -79,6 +81,36 @@ const COEManager = () => {
       </div>
     );
   }
+
+  // Handle the COE update from the sidebar
+  const handleUpdateCOE = async (updatedCOE: COE) => {
+    try {
+      const { error } = await supabase
+        .from("class_of_elements")
+        .update({
+          name: updatedCOE.name,
+          description: updatedCOE.description,
+          tags: updatedCOE.tags,
+          image_url: updatedCOE.image_url,
+        })
+        .eq("id", updatedCOE.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "COE updated",
+        description: `${updatedCOE.name} has been updated successfully.`,
+      });
+      
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -166,6 +198,7 @@ const COEManager = () => {
           onClose={handleCloseSidebar}
           coe={selectedCOE}
           onUpdate={refetch}
+          onSave={handleUpdateCOE} // Added onSave prop
         />
       )}
     </div>
