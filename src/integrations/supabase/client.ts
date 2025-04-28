@@ -16,10 +16,10 @@ export const supabase = createClient(
       timeout: 10000,  // Increased timeout for better reliability
     },
     global: {
-      fetch: (...args) => {
+      fetch: (input, init) => {
         // Add performance tracking to fetch requests
         const startTime = performance.now();
-        return fetch(...args).then(response => {
+        return fetch(input, init).then(response => {
           const endTime = performance.now();
           const timeElapsed = endTime - startTime;
           if (timeElapsed > 1000) {
