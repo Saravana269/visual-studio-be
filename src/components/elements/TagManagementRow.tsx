@@ -116,8 +116,10 @@ export function TagManagementRow({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      {/* Main row with search, buttons and tags all in a single horizontal line */}
+      <div className="flex items-center gap-3 w-full">
+        {/* Search input - fixed width but will shrink if needed */}
+        <div className="relative min-w-[180px] max-w-[240px] flex-shrink">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search tags..."
@@ -130,10 +132,12 @@ export function TagManagementRow({
           />
         </div>
         
-        <div className="flex items-center gap-2">
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Button 
             onClick={() => setIsCreateTagDialogOpen(true)}
-            className="flex items-center gap-2 bg-[#8B4A2B] hover:bg-[#6D3A22] border-[#F97316] text-white"
+            className="flex items-center gap-2 bg-[#8B4A2B] hover:bg-[#6D3A22] border-[#F97316] text-white whitespace-nowrap"
+            size="sm"
           >
             <Plus size={16} />
             Tag
@@ -143,46 +147,47 @@ export function TagManagementRow({
             variant="outline"
             size="icon"
             onClick={onManageTagsClick}
-            className="flex items-center justify-center w-9 h-9"
+            className="flex items-center justify-center w-9 h-9 flex-shrink-0"
           >
             <Settings size={18} />
           </Button>
         </div>
-      </div>
 
-      {/* Horizontal scrollable tag list */}
-      <div className="relative">
-        <ScrollArea className="w-full whitespace-nowrap pb-2">
-          <div className="flex items-center gap-2 py-2">
-            {isLoadingTags ? (
-              <div className="text-sm text-muted-foreground px-2">Loading tags...</div>
-            ) : filteredTags.length > 0 ? (
-              <>
-                <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
-                <div className="flex gap-2">
-                  {filteredTags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1"
-                      onClick={() => handleTagClick(tag)}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
+        {/* Tag list with horizontal scrolling - takes remaining space */}
+        <div className="flex-grow overflow-hidden">
+          <ScrollArea className="w-full">
+            <div className="flex items-center gap-2 py-1">
+              {isLoadingTags ? (
+                <div className="text-sm text-muted-foreground px-2">Loading tags...</div>
+              ) : filteredTags.length > 0 ? (
+                <>
+                  <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
+                  <div className="flex gap-2 flex-nowrap">
+                    {filteredTags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1 whitespace-nowrap"
+                        onClick={() => handleTagClick(tag)}
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              ) : tagSearchQuery ? (
+                <div className="text-sm text-muted-foreground px-2">No matching tags found</div>
+              ) : (
+                <div className="text-sm text-muted-foreground px-2 flex items-center gap-1">
+                  <Tag size={16} /> Available tags will appear here
                 </div>
-              </>
-            ) : tagSearchQuery ? (
-              <div className="text-sm text-muted-foreground px-2">No matching tags found</div>
-            ) : (
-              <div className="text-sm text-muted-foreground px-2 flex items-center gap-1">
-                <Tag size={16} /> Available tags will appear here
-              </div>
-            )}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
       </div>
 
+      {/* Selected tags section - kept separate for clarity */}
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selectedTags.map((tag) => (
