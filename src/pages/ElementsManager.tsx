@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ElementList } from "@/components/elements/ElementList";
 import { ElementFormDialog } from "@/components/elements/ElementFormDialog";
 import { ElementSidebar } from "@/components/elements/ElementSidebar";
+import { useNavigate } from "react-router-dom";
 
 // Define Element type
 export interface Element {
@@ -22,6 +23,7 @@ export interface Element {
 }
 
 const ElementsManager = () => {
+  const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<Element | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -29,12 +31,33 @@ const ElementsManager = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { toast } = useToast();
 
-  // Fetch elements data
-  const { data: elements, isLoading, refetch } = useQuery({
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to access this page",
+          variant: "destructive",
+        });
+        navigate("/auth");
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
+
+  // Fetch elements data with error handling
+  const { data: elements = [], isLoading, error, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("elements").select("*");
+      const { data, error } = await supabase
+        .from("elements")
+        .select("*");
+
       if (error) {
+        console.error("Error fetching elements:", error);
         toast({
           title: "Error fetching elements",
           description: error.message,
@@ -42,6 +65,7 @@ const ElementsManager = () => {
         });
         return [];
       }
+
       return data as Element[];
     },
   });
