@@ -1,8 +1,9 @@
 
-import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { X, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,8 @@ import { CreateTagDialog } from "./CreateTagDialog";
 import { useAuth } from "@/hooks/useAuth";
 
 interface TagSelectorProps {
-  value: string[];
-  onChange: (value: string[]) => void;
+  value: string | null;
+  onChange: (value: string | null) => void;
 }
 
 export function TagSelector({ value, onChange }: TagSelectorProps) {
@@ -20,42 +21,26 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
   const { session } = useAuth();
   const userId = session?.user?.id;
 
-  // Fetch all existing tags for autocomplete, combining both sources
-  const { data: existingTags, refetch } = useQuery({
+  // Fetch all existing tags for selection
+  const { data: availableTags = [], refetch } = useQuery({
     queryKey: ["all-element-tags", userId],
     queryFn: async () => {
       try {
         // Only run query if user is authenticated
         if (!userId) return [];
         
-        // Fetch tags from elements table arrays
-        const { data: elementsData, error: elementsError } = await supabase
-          .from("elements")
-          .select("tags");
+        // Fetch tags from the tags table
+        const { data: tagsData, error: tagsError } = await supabase
+          .from("tags")
+          .select("id, label")
+          .eq("entity_type", "Element");
         
-        if (elementsError) {
-          console.error("Error fetching element tags:", elementsError);
+        if (tagsError) {
+          console.error("Error fetching tags:", tagsError);
           return [];
         }
         
-        // Fetch tags from dedicated tags table - only those created by current user
-        const { data: tagsData, error: tagsError } = await supabase
-          .from("tags")
-          .select("label")
-          .eq("entity_type", "Element")
-          .eq("created_by", userId);
-        
-        if (tagsError) {
-          console.error("Error fetching tags from tags table:", tagsError);
-          // Continue with element tags if dedicated tags query fails
-        }
-        
-        // Extract all tags and remove duplicates
-        const elementTags = elementsData?.flatMap(item => item.tags || []) || [];
-        const dedicatedTags = tagsData?.map(tag => tag.label) || [];
-        
-        const allTags = [...elementTags, ...dedicatedTags];
-        return [...new Set(allTags)].filter(tag => tag && tag.trim() !== "");
+        return tagsData || [];
       } catch (error) {
         console.error("Error in tag fetching:", error);
         return [];
@@ -65,91 +50,55 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
   });
 
   // Filter suggestions based on input
-  const suggestions = existingTags?.filter(
-    tag => tag.toLowerCase().includes(inputValue.toLowerCase()) && !value.includes(tag)
-  ).slice(0, 5);
-
-  const handleAddTag = (tag: string) => {
-    if (tag.trim() && !value.includes(tag.trim())) {
-      onChange([...value, tag.trim()]);
-    }
-    setInputValue("");
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && inputValue.trim()) {
-      e.preventDefault();
-      handleAddTag(inputValue);
-    } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
-      // Remove the last tag when pressing Backspace with empty input
-      onChange(value.slice(0, -1));
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    onChange(value.filter(tag => tag !== tagToRemove));
-  };
+  const filteredTags = inputValue
+    ? availableTags.filter(tag => 
+        tag.label.toLowerCase().includes(inputValue.toLowerCase()))
+    : availableTags;
 
   const handleTagCreated = (newTag: string) => {
-    // Add the newly created tag to the selected tags
-    if (!value.includes(newTag)) {
-      onChange([...value, newTag]);
-    }
     // Refresh the tag list
     refetch();
+    // Close the dialog
+    setIsCreateTagDialogOpen(false);
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2 min-h-[36px]">
-        {value.map(tag => (
-          <Badge 
-            key={tag} 
-            variant="secondary"
-            className="flex items-center gap-1 px-2 py-1 text-xs"
-          >
-            {tag}
-            <X 
-              size={14} 
-              className="cursor-pointer" 
-              onClick={() => handleRemoveTag(tag)} 
-            />
-          </Badge>
-        ))}
-        <div className="flex gap-2 flex-1">
-          <Input 
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 min-w-[120px] h-8 px-2 py-1 text-sm"
-            placeholder="Add tag..."
-          />
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-8 px-2"
-            onClick={() => setIsCreateTagDialogOpen(true)}
-          >
-            <Plus size={16} />
-          </Button>
-        </div>
+      <div className="flex gap-2 mb-4">
+        <Input 
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="flex-1"
+          placeholder="Filter tags..."
+        />
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          onClick={() => setIsCreateTagDialogOpen(true)}
+        >
+          <Plus size={16} />
+        </Button>
       </div>
 
-      {suggestions && suggestions.length > 0 && inputValue && (
-        <div className="p-1 border rounded-md bg-background">
-          {suggestions.map(tag => (
-            <div 
-              key={tag}
-              className="px-2 py-1 text-sm cursor-pointer hover:bg-accent rounded"
-              onClick={() => handleAddTag(tag)}
-            >
-              {tag}
-            </div>
-          ))}
+      <RadioGroup 
+        value={value || ""} 
+        onValueChange={(val) => onChange(val === "" ? null : val)}
+        className="space-y-2"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem id="no-tag" value="" />
+          <Label htmlFor="no-tag">No tag</Label>
         </div>
-      )}
+        
+        {filteredTags.map(tag => (
+          <div key={tag.id} className="flex items-center space-x-2">
+            <RadioGroupItem id={`tag-${tag.id}`} value={tag.id} />
+            <Label htmlFor={`tag-${tag.id}`}>{tag.label}</Label>
+          </div>
+        ))}
+      </RadioGroup>
 
       <CreateTagDialog
         open={isCreateTagDialogOpen}

@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical } from "lucide-react";
@@ -12,16 +13,18 @@ import { Button } from "@/components/ui/button";
 
 interface ElementListProps {
   elements: Element[];
+  tagDetails: Record<string, string>;
   onEdit: (element: Element) => void;
   onViewDetails: (element: Element) => void;
-  onManageTags: (element: Element, action: 'add' | 'remove') => void;
+  onAssignTag: (element: Element) => void;
 }
 
 export function ElementList({
   elements,
+  tagDetails,
   onEdit,
   onViewDetails,
-  onManageTags
+  onAssignTag
 }: ElementListProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -40,7 +43,7 @@ export function ElementList({
           <div className="absolute top-2 right-2 z-10">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="action-menu-button">
+                <Button variant="ghost" size="sm" className="element-card-menu">
                   <MoreVertical className="h-4 w-4" />
                   <span className="sr-only">Open menu</span>
                 </Button>
@@ -55,21 +58,12 @@ export function ElementList({
                   onViewDetails(element);
                 }}>View Details</DropdownMenuItem>
                 
-                {(!element.tags || element.tags.length === 0) ? (
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    onManageTags(element, 'add');
-                  }}>
-                    Add Tags
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    onManageTags(element, 'remove');
-                  }}>
-                    Remove Tags
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onAssignTag(element);
+                }}>
+                  {element.primary_tag_id ? "Change Tag" : "Add Tag"}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -96,14 +90,10 @@ export function ElementList({
           </CardHeader>
           
           <CardContent className="pb-2 p-3 flex-1">
-            {element.tags && element.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {element.tags.map(tag => (
-                  <Badge key={tag} variant="secondary" className="tag-badge">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
+            {element.primary_tag_id && (
+              <Badge variant="outline" className="tag-badge bg-[#FFA13010] text-[#FFA130] border-[#FFA130]">
+                {tagDetails[element.primary_tag_id] || 'Unknown Tag'}
+              </Badge>
             )}
           </CardContent>
         </Card>

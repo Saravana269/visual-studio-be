@@ -294,7 +294,6 @@ export type Database = {
           image_url: string | null
           name: string
           primary_tag_id: string | null
-          tags: string[] | null
           updated_at: string | null
         }
         Insert: {
@@ -305,7 +304,6 @@ export type Database = {
           image_url?: string | null
           name: string
           primary_tag_id?: string | null
-          tags?: string[] | null
           updated_at?: string | null
         }
         Update: {
@@ -316,7 +314,6 @@ export type Database = {
           image_url?: string | null
           name?: string
           primary_tag_id?: string | null
-          tags?: string[] | null
           updated_at?: string | null
         }
         Relationships: [

@@ -21,7 +21,8 @@ import {
   DialogFooter,
   DialogDescription
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { CreateTagDialog } from "@/components/elements/CreateTagDialog";
 
 export interface Element {
@@ -30,8 +31,14 @@ export interface Element {
   description?: string;
   image_url?: string;
   properties?: Record<string, unknown>;
-  tags?: string[];
+  primary_tag_id?: string;
   coe_ids?: string[];
+}
+
+interface Tag {
+  id: string;
+  label: string;
+  entity_type: string;
 }
 
 const ITEMS_PER_PAGE = 4;
@@ -47,13 +54,14 @@ const ElementsManager = () => {
   const [selectedElement, setSelectedElement] = useState<Element | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
-  const [tagDialogMode, setTagDialogMode] = useState<'add' | 'remove'>('add');
-  const [tagSelections, setTagSelections] = useState<Record<string, boolean>>({});
+  const [selectedTagInDialog, setSelectedTagInDialog] = useState<string | null>(null);
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
+  const [isSubmittingTag, setIsSubmittingTag] = useState(false);
   
+  // Fetch elements with their associated tags
   const { data: elements = [], isLoading, error, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
@@ -80,59 +88,69 @@ const ElementsManager = () => {
     },
   });
 
+  // Fetch all available tags
   const { data: availableTags = [], refetch: refetchTags } = useQuery({
     queryKey: ["element-tags", userId],
     queryFn: async () => {
       try {
-        // 1. Fetch tags from elements table arrays
-        const { data: elementsData, error: elementsError } = await supabase
-          .from("elements")
-          .select("tags");
+        const { data, error } = await supabase
+          .from("tags")
+          .select("*")
+          .eq("entity_type", "Element");
           
-        if (elementsError) {
+        if (error) {
           toast({
-            title: "Error fetching element tags",
-            description: elementsError.message,
+            title: "Error fetching tags",
+            description: error.message,
             variant: "destructive",
           });
           return [];
         }
         
-        // 2. Fetch tags from the dedicated tags table - only those created by current user
-        const { data: tagsData, error: tagsError } = await supabase
-          .from("tags")
-          .select("label")
-          .eq("entity_type", "Element");
-        
-        if (tagsError && userId) {
-          toast({
-            title: "Error fetching tags",
-            description: tagsError.message,
-            variant: "destructive",
-          });
-        }
-        
-        // Extract all unique tags
-        const elementTags = elementsData?.flatMap((item) => item.tags || []) || [];
-        const dedicatedTags = tagsData?.map(tag => tag.label) || [];
-        
-        // Combine both sources and remove duplicates
-        const allTags = [...elementTags, ...dedicatedTags];
-        return [...new Set(allTags)].filter(tag => tag && tag.trim() !== "");
+        return data as Tag[];
       } catch (error: any) {
-        console.error("Error fetching element tags:", error);
+        console.error("Error fetching tags:", error);
         return [];
       }
     },
     enabled: !isChecking // Only run once we've checked authentication
   });
 
+  // Fetch tag details for element filtering
+  const { data: tagDetails = {} } = useQuery({
+    queryKey: ["tag-details"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("tags")
+          .select("id, label");
+          
+        if (error) {
+          console.error("Error fetching tag details:", error);
+          return {};
+        }
+        
+        // Convert to a map of id -> label for easier lookup
+        return data.reduce((acc: Record<string, string>, tag) => {
+          acc[tag.id] = tag.label;
+          return acc;
+        }, {});
+      } catch (error) {
+        console.error("Error fetching tag details:", error);
+        return {};
+      }
+    }
+  });
+
+  // Filter elements based on search query and selected tag
   const filteredElements = elements?.filter((element) => {
-    const matchesSearch = element.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTags =
-      selectedTags.length === 0 ||
-      (element.tags && selectedTags.every((tag) => element.tags?.includes(tag)));
-    return matchesSearch && matchesTags;
+    const matchesSearch = element.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (element.description && element.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // If a tag is selected, filter by that tag
+    const matchesTag = !selectedTagId || element.primary_tag_id === selectedTagId;
+    
+    return matchesSearch && matchesTag;
   });
 
   const totalPages = Math.ceil((filteredElements?.length || 0) / ITEMS_PER_PAGE);
@@ -164,18 +182,13 @@ const ElementsManager = () => {
     setSelectedElement(null);
   };
 
-  const handleTagSelect = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+  const handleTagSelect = (tagId: string) => {
+    setSelectedTagId(selectedTagId === tagId ? null : tagId);
+    setCurrentPage(1); // Reset to first page when changing filters
   };
 
-  const handleClearTag = (tag: string) => {
-    setSelectedTags((prev) => prev.filter((t) => t !== tag));
-  };
-
-  const handleClearAllTags = () => {
-    setSelectedTags([]);
+  const handleClearTagFilter = () => {
+    setSelectedTagId(null);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -188,70 +201,42 @@ const ElementsManager = () => {
     setSearchQuery(query);
   };
 
-  const handleManageTags = (element: Element, action: 'add' | 'remove') => {
+  const handleAssignTag = (element: Element) => {
     setSelectedElement(element);
-    setTagDialogMode(action);
-    
-    const selections: Record<string, boolean> = {};
-    
-    if (action === 'add') {
-      (availableTags || []).forEach(tag => {
-        selections[tag] = false;
-      });
-    } else {
-      (element.tags || []).forEach(tag => {
-        selections[tag] = false;
-      });
-    }
-    
-    setTagSelections(selections);
+    setSelectedTagInDialog(element.primary_tag_id || null);
     setIsTagDialogOpen(true);
   };
 
-  const handleTagSelectionChange = (tag: string, checked: boolean) => {
-    setTagSelections(prev => ({
-      ...prev,
-      [tag]: checked
-    }));
-  };
-
-  const handleSaveTags = async () => {
+  const handleSaveTag = async () => {
     if (!selectedElement) return;
+    setIsSubmittingTag(true);
     
     try {
-      const selectedTagsList = Object.entries(tagSelections)
-        .filter(([_, selected]) => selected)
-        .map(([tag]) => tag);
-      
-      let updatedTags: string[] = [...(selectedElement.tags || [])];
-      
-      if (tagDialogMode === 'add') {
-        updatedTags = [...new Set([...updatedTags, ...selectedTagsList])];
-      } else {
-        updatedTags = updatedTags.filter(tag => !selectedTagsList.includes(tag));
-      }
-      
       const { error } = await supabase
         .from("elements")
-        .update({ tags: updatedTags })
+        .update({ primary_tag_id: selectedTagInDialog })
         .eq("id", selectedElement.id);
         
       if (error) throw error;
       
       toast({
-        title: "Tags updated",
-        description: tagDialogMode === 'add' ? "Tags have been added." : "Tags have been removed.",
+        title: "Tag updated",
+        description: selectedTagInDialog 
+          ? "Tag has been assigned to the element." 
+          : "Tag has been removed from the element."
       });
       
       refetch();
       setIsTagDialogOpen(false);
     } catch (error: any) {
-      console.error("Error updating tags:", error);
+      console.error("Error updating tag:", error);
       toast({
-        title: "Error updating tags",
+        title: "Error updating tag",
         description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmittingTag(false);
     }
   };
 
@@ -266,6 +251,9 @@ const ElementsManager = () => {
       description: `Tag "${newTag}" has been created successfully.`,
     });
   };
+  
+  // Get the label for the currently selected tag
+  const selectedTagLabel = selectedTagId ? tagDetails[selectedTagId] : null;
 
   return (
     <div className="flex">
@@ -287,11 +275,12 @@ const ElementsManager = () => {
 
         <div className="mb-6">
           <TagManagementRow
-            selectedTags={selectedTags}
+            selectedTag={selectedTagId}
+            tagDetails={tagDetails}
+            onTagSelect={handleTagSelect}
+            onTagClear={handleClearTagFilter}
             onTagSearch={handleTagSearch}
-            onTagRemove={handleClearTag}
-            onAddTagClick={() => setIsCreateTagDialogOpen(true)}
-            onManageTagsClick={() => {/* Implement tag management */}}
+            onAddTagClick={handleAddTag}
           />
         </div>
 
@@ -303,9 +292,10 @@ const ElementsManager = () => {
           <>
             <ElementList
               elements={paginatedElements || []}
+              tagDetails={tagDetails}
               onEdit={handleOpenForm}
               onViewDetails={handleViewDetails}
-              onManageTags={handleManageTags}
+              onAssignTag={handleAssignTag}
             />
             
             {totalPages > 1 && (
@@ -355,62 +345,60 @@ const ElementsManager = () => {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
-                {tagDialogMode === 'add' ? 'Add Tags to' : 'Remove Tags from'} {selectedElement?.name || ''}
+                Assign Tag to {selectedElement?.name || ''}
               </DialogTitle>
               <DialogDescription>
-                Please select the tags you would like to {tagDialogMode === 'add' ? 'add' : 'remove'}
+                Select a tag to assign to this element. Only one tag can be assigned at a time.
               </DialogDescription>
             </DialogHeader>
             
             <div className="py-4">
               <Input
-                placeholder="Search available tags..."
+                placeholder="Filter tags..."
                 className="mb-4"
                 onChange={(e) => {
-                  // Implement tag search within modal
+                  // Filter tags in the dialog (can be implemented if needed)
                 }}
               />
               
-              <div className="space-y-4 max-h-[300px] overflow-y-auto">
-                {Object.entries(tagSelections).map(([tag, isSelected]) => (
-                  <div key={tag} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={`tag-${tag}`} 
-                      checked={isSelected}
-                      onCheckedChange={(checked) => 
-                        handleTagSelectionChange(tag, checked === true)
-                      } 
-                    />
-                    <label 
-                      htmlFor={`tag-${tag}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {tag}
-                    </label>
+              <RadioGroup
+                value={selectedTagInDialog || ''}
+                onValueChange={setSelectedTagInDialog}
+                className="space-y-3 max-h-[300px] overflow-y-auto"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem id="tag-none" value="" />
+                  <Label htmlFor="tag-none">No tag (clear assignment)</Label>
+                </div>
+                
+                {availableTags.map((tag) => (
+                  <div key={tag.id} className="flex items-center space-x-2">
+                    <RadioGroupItem id={`tag-${tag.id}`} value={tag.id} />
+                    <Label htmlFor={`tag-${tag.id}`}>{tag.label}</Label>
                   </div>
                 ))}
-              </div>
+              </RadioGroup>
             </div>
             
             <DialogFooter>
               <Button 
                 variant="outline" 
                 onClick={() => setIsTagDialogOpen(false)}
+                disabled={isSubmittingTag}
               >
                 Cancel
               </Button>
               <Button 
-                onClick={handleSaveTags}
+                onClick={handleSaveTag}
                 className="bg-[#00B86B] hover:bg-[#00A25F]"
-                disabled={Object.values(tagSelections).every(v => !v)}
+                disabled={isSubmittingTag}
               >
-                {tagDialogMode === 'add' ? 'Add' : 'Remove'} Selected Tags
+                {isSubmittingTag ? "Saving..." : "Assign Tag"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
         
-        {/* Add CreateTagDialog component */}
         <CreateTagDialog
           open={isCreateTagDialogOpen}
           onClose={() => setIsCreateTagDialogOpen(false)}
