@@ -1,25 +1,45 @@
 
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Pencil } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { type Element } from "@/pages/ElementsManager";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface ElementListProps {
   elements: Element[];
   onEdit: (element: Element) => void;
   onViewDetails: (element: Element) => void;
+  onManageTags: (element: Element, action: 'add' | 'remove') => void;
 }
 
 export function ElementList({
   elements,
   onEdit,
-  onViewDetails
+  onViewDetails,
+  onManageTags
 }: ElementListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {elements.map(element => (
-        <Card key={element.id} className="overflow-hidden flex flex-col">
+        <Card 
+          key={element.id} 
+          className="element-card relative flex flex-col overflow-hidden cursor-pointer"
+          onClick={(e) => {
+            // Prevent card click when clicking on menu
+            if ((e.target as HTMLElement).closest('.element-card-menu')) {
+              e.stopPropagation();
+              return;
+            }
+            onViewDetails(element);
+          }}
+        >
           <div className="h-48 bg-muted flex items-center justify-center overflow-hidden">
             {element.image_url ? (
               <img 
@@ -51,16 +71,31 @@ export function ElementList({
             )}
           </CardContent>
           
-          <CardFooter className="pt-2 flex justify-between">
-            <Button variant="outline" size="sm" onClick={() => onViewDetails(element)} className="gap-1">
-              <FileText size={16} />
-              View Details
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => onEdit(element)} className="gap-1">
-              <Pencil size={16} />
-              Edit
-            </Button>
-          </CardFooter>
+          {/* Menu button - three dots */}
+          <div className="element-card-menu">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <DropdownMenuItem onClick={() => onEdit(element)}>Edit</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewDetails(element)}>View Details</DropdownMenuItem>
+                
+                {(!element.tags || element.tags.length === 0) ? (
+                  <DropdownMenuItem onClick={() => onManageTags(element, 'add')}>
+                    Add Tags
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => onManageTags(element, 'remove')}>
+                    Remove Tags
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </Card>
       ))}
       

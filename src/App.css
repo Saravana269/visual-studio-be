@@ -30,3 +30,43 @@ body {
   background: #121212;
   border-bottom: 1px solid #222222;
 }
+
+/* Enhanced hover states for menu items */
+.sidebar button,
+.sidebar .menu-item {
+  transition: all 0.2s ease;
+}
+
+.sidebar button:hover,
+.sidebar .menu-item:hover {
+  background: #1a1a1a;
+  color: #00FF00;
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+}
+
+/* Element card styles */
+.element-card {
+  transition: all 0.2s ease;
+  resize: both;
+  overflow: hidden;
+  min-height: 250px;
+  min-width: 250px;
+}
+
+.element-card:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
+}
+
+/* Element card menu button */
+.element-card-menu {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.element-card-menu:hover {
+  opacity: 1;
+}

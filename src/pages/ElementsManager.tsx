@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Plus, Search, X } from "lucide-react";
+import { Loader2, Plus, Search, X, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,14 @@ import { ElementList } from "@/components/elements/ElementList";
 import { ElementFormDialog } from "@/components/elements/ElementFormDialog";
 import { ElementSidebar } from "@/components/elements/ElementSidebar";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogHeader,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Define Element type
 export interface Element {
@@ -22,6 +31,8 @@ export interface Element {
   coe_ids?: string[];
 }
 
+const ITEMS_PER_PAGE = 4;
+
 const ElementsManager = () => {
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -29,6 +40,10 @@ const ElementsManager = () => {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
+  const [tagDialogMode, setTagDialogMode] = useState<'add' | 'remove'>('add');
+  const [tagSelections, setTagSelections] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   // Check authentication status
@@ -89,6 +104,13 @@ const ElementsManager = () => {
     return matchesSearch && matchesTags;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil((filteredElements?.length || 0) / ITEMS_PER_PAGE);
+  const paginatedElements = filteredElements?.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const handleOpenForm = (element?: Element) => {
     setSelectedElement(element || null);
     setIsFormOpen(true);
@@ -124,6 +146,84 @@ const ElementsManager = () => {
 
   const handleClearAllTags = () => {
     setSelectedTags([]);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleManageTags = (element: Element, action: 'add' | 'remove') => {
+    setSelectedElement(element);
+    setTagDialogMode(action);
+    
+    // Initialize tag selections
+    const selections: Record<string, boolean> = {};
+    
+    if (action === 'add') {
+      // For adding, show all available tags not currently on the element
+      (availableTags || []).forEach(tag => {
+        selections[tag] = false;
+      });
+    } else {
+      // For removing, show only the element's current tags
+      (element.tags || []).forEach(tag => {
+        selections[tag] = false;
+      });
+    }
+    
+    setTagSelections(selections);
+    setIsTagDialogOpen(true);
+  };
+
+  const handleTagSelectionChange = (tag: string, checked: boolean) => {
+    setTagSelections(prev => ({
+      ...prev,
+      [tag]: checked
+    }));
+  };
+
+  const handleSaveTags = async () => {
+    if (!selectedElement) return;
+    
+    try {
+      const selectedTagsList = Object.entries(tagSelections)
+        .filter(([_, selected]) => selected)
+        .map(([tag]) => tag);
+      
+      let updatedTags: string[] = [...(selectedElement.tags || [])];
+      
+      if (tagDialogMode === 'add') {
+        // Add new tags
+        updatedTags = [...new Set([...updatedTags, ...selectedTagsList])];
+      } else {
+        // Remove selected tags
+        updatedTags = updatedTags.filter(tag => !selectedTagsList.includes(tag));
+      }
+      
+      const { error } = await supabase
+        .from("elements")
+        .update({ tags: updatedTags })
+        .eq("id", selectedElement.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Tags updated",
+        description: tagDialogMode === 'add' ? "Tags have been added." : "Tags have been removed.",
+      });
+      
+      refetch();
+      setIsTagDialogOpen(false);
+    } catch (error) {
+      console.error("Error updating tags:", error);
+      toast({
+        title: "Error updating tags",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -194,11 +294,39 @@ const ElementsManager = () => {
             <Loader2 className="h-8 w-8 animate-spin text-[#00B86B]" />
           </div>
         ) : (
-          <ElementList
-            elements={filteredElements || []}
-            onEdit={handleOpenForm}
-            onViewDetails={handleViewDetails}
-          />
+          <>
+            <ElementList
+              elements={paginatedElements || []}
+              onEdit={handleOpenForm}
+              onViewDetails={handleViewDetails}
+              onManageTags={handleManageTags}
+            />
+            
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={16} />
+                </Button>
+                <span className="text-sm">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight size={16} />
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         {isFormOpen && (
@@ -217,6 +345,58 @@ const ElementsManager = () => {
             onEdit={() => handleOpenForm(selectedElement)}
           />
         )}
+        
+        {/* Tags Management Dialog */}
+        <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {tagDialogMode === 'add' ? 'Add Tags' : 'Remove Tags'}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4 max-h-[300px] overflow-y-auto">
+              {Object.keys(tagSelections).length === 0 ? (
+                <div className="text-center text-muted-foreground">
+                  {tagDialogMode === 'add' ? 'No tags available to add.' : 'No tags to remove.'}
+                </div>
+              ) : (
+                Object.entries(tagSelections).map(([tag, isSelected]) => (
+                  <div key={tag} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`tag-${tag}`} 
+                      checked={isSelected}
+                      onCheckedChange={(checked) => 
+                        handleTagSelectionChange(tag, checked === true)
+                      } 
+                    />
+                    <label 
+                      htmlFor={`tag-${tag}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {tag}
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsTagDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSaveTags}
+                disabled={Object.values(tagSelections).every(v => !v)}
+              >
+                {tagDialogMode === 'add' ? 'Add' : 'Remove'} Selected
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
