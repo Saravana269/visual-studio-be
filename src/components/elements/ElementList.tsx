@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical } from "lucide-react";
@@ -25,13 +24,12 @@ export function ElementList({
   onManageTags
 }: ElementListProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {elements.map(element => (
         <Card 
           key={element.id} 
           className="element-card relative flex flex-col overflow-hidden cursor-pointer"
           onClick={(e) => {
-            // Prevent card click when clicking on menu
             if ((e.target as HTMLElement).closest('.element-card-menu')) {
               e.stopPropagation();
               return;
@@ -39,7 +37,7 @@ export function ElementList({
             onViewDetails(element);
           }}
         >
-          <div className="h-48 bg-muted flex items-center justify-center overflow-hidden">
+          <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
             {element.image_url ? (
               <img 
                 src={element.image_url} 
@@ -51,26 +49,25 @@ export function ElementList({
             )}
           </div>
           
-          <CardHeader className="pb-2">
-            <h3 className="font-semibold text-lg">{element.name}</h3>
+          <CardHeader className="pb-2 p-3">
+            <h3 className="font-semibold text-base">{element.name}</h3>
             {element.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <p className="text-xs text-muted-foreground line-clamp-2">
                 {element.description}
               </p>
             )}
           </CardHeader>
           
-          <CardContent className="pb-2 flex-1">
+          <CardContent className="pb-2 p-3 flex-1">
             {element.tags && element.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 {element.tags.map(tag => (
-                  <Badge key={tag} variant="secondary">{tag}</Badge>
+                  <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                 ))}
               </div>
             )}
           </CardContent>
           
-          {/* Menu button - three dots */}
           <div className="element-card-menu absolute top-2 right-2 z-10">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
