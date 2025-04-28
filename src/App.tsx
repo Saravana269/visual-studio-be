@@ -48,7 +48,7 @@ function App() {
     );
   }
 
-  // If authenticated, show full app with sidebar
+  // If authenticated, show full app with sidebar and redirect to elements page
   return (
     <Router>
       <TooltipProvider>
