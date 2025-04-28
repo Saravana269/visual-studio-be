@@ -1,12 +1,11 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import COEModal from "@/components/coe/COEModal";
-import COESidebar from "@/components/coe/COESidebar";
 import COEEmptyState from "@/components/coe/COEEmptyState";
 import COEList from "@/components/coe/COEList";
 import COEHeader from "@/components/coe/COEHeader";
@@ -19,11 +18,11 @@ import { Input } from "@/components/ui/input";
 
 const COEManager = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   useAuth();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCOE, setSelectedCOE] = useState<COE | null>(null);
-  const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
@@ -53,24 +52,6 @@ const COEManager = () => {
   const handleEditCOE = (coe: COE) => {
     setSelectedCOE(coe);
     setIsCreateModalOpen(true);
-  };
-
-  const handleViewCOE = (coe: COE) => {
-    setSelectedCOE(coe);
-    setSidePanelOpen(true);
-  };
-
-  const handleCloseSidebar = () => {
-    setSidePanelOpen(false);
-    setSelectedCOE(null);
-  };
-
-  const handleCloseModal = (shouldRefresh: boolean = false) => {
-    setIsCreateModalOpen(false);
-    setSelectedCOE(null);
-    if (shouldRefresh) {
-      refetch();
-    }
   };
 
   const handleTagSelect = (tag: string) => {
@@ -194,7 +175,6 @@ const COEManager = () => {
         <COEList
           coes={filteredCOEs}
           onEdit={handleEditCOE}
-          onView={handleViewCOE}
         />
       )}
       
@@ -241,43 +221,6 @@ const COEManager = () => {
               }
               
               handleCloseModal(true);
-            } catch (error) {
-              toast({
-                title: "Error",
-                description: error instanceof Error ? error.message : "An unknown error occurred",
-                variant: "destructive",
-              });
-            }
-          }}
-        />
-      )}
-      
-      {selectedCOE && (
-        <COESidebar
-          isOpen={sidePanelOpen}
-          onClose={handleCloseSidebar}
-          coe={selectedCOE}
-          onUpdate={refetch}
-          onSave={async (updatedCOE) => {
-            try {
-              const { error } = await supabase
-                .from("class_of_elements")
-                .update({
-                  name: updatedCOE.name,
-                  description: updatedCOE.description,
-                  tags: updatedCOE.tags,
-                  image_url: updatedCOE.image_url,
-                })
-                .eq("id", updatedCOE.id);
-              
-              if (error) throw error;
-              
-              toast({
-                title: "COE updated",
-                description: `${updatedCOE.name} has been updated successfully.`,
-              });
-              
-              refetch();
             } catch (error) {
               toast({
                 title: "Error",

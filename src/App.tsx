@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -92,6 +91,7 @@ function App() {
                 {/* Main application routes */}
                 <Route path="/elements" element={<ElementsManager />} />
                 <Route path="/coe" element={<COEManager />} />
+                <Route path="/coe/:id" element={<COEDetailView />} />
                 <Route path="/core-set" element={<CoreSetManager />} />
                 <Route path="/widgets" element={<WidgetManager />} />
                 <Route path="/settings" element={<Settings />} />

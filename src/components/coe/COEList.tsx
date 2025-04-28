@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+
 interface COE {
   id: string;
   name: string;
@@ -11,18 +13,23 @@ interface COE {
   tags: string[] | null;
   element_count?: number;
 }
+
 interface COEListProps {
   coes: COE[];
   onEdit: (coe: COE) => void;
-  onView: (coe: COE) => void;
 }
-const COEList = ({
-  coes,
-  onEdit,
-  onView
-}: COEListProps) => {
-  return <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-      {coes.map(coe => <Card key={coe.id} className="element-card relative flex flex-col overflow-hidden cursor-pointer cyberpunk-card" onClick={() => onView(coe)}>
+
+const COEList = ({ coes, onEdit }: COEListProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      {coes.map(coe => (
+        <Card 
+          key={coe.id} 
+          className="element-card relative flex flex-col overflow-hidden cursor-pointer cyberpunk-card"
+          onClick={() => navigate(`/coe/${coe.id}`)}
+        >
           <div className="absolute top-2 left-2 z-10">
             <Badge variant="secondary" className="element-count-badge rounded-sm bg-orange-400">
               {coe.element_count || 0} Elements
@@ -39,15 +46,15 @@ const COEList = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[160px]">
                 <DropdownMenuItem onClick={e => {
-              e.stopPropagation();
-              onEdit(coe);
-            }}>
+                  e.stopPropagation();
+                  onEdit(coe);
+                }}>
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={e => {
-              e.stopPropagation();
-              onView(coe);
-            }}>
+                  e.stopPropagation();
+                  navigate(`/coe/${coe.id}`);
+                }}>
                   View Details
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -72,11 +79,16 @@ const COEList = ({
                   </Badge>)}
               </div>}
           </CardContent>
-        </Card>)}
+        </Card>
+      ))}
       
-      {coes.length === 0 && <div className="col-span-full flex justify-center items-center py-12 text-muted-foreground">
+      {coes.length === 0 && (
+        <div className="col-span-full flex justify-center items-center py-12 text-muted-foreground">
           No COEs found
-        </div>}
-    </div>;
+        </div>
+      )}
+    </div>
+  );
 };
+
 export default COEList;
