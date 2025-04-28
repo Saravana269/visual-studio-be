@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Search, LayoutGrid, List } from "lucide-react";
@@ -101,18 +102,19 @@ const COEManager = () => {
     },
   });
 
-  // Filter COEs based on search query and selected tags
-  const filteredCOEs = coes.filter((coe) => {
+  // Ensure coes is always an array before filtering
+  const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
     const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesTags =
       selectedTags.length === 0 ||
       (coe.tags && selectedTags.every((tag) => coe.tags.includes(tag)));
     return matchesSearch && matchesTags;
-  });
+  }) : [];
 
   // Get unique tags from all COEs
-  const allTags = Array.from(new Set(coes.flatMap((coe) => coe.tags || [])));
+  const allTags = Array.isArray(coes) ? 
+    Array.from(new Set(coes.flatMap((coe) => coe.tags || []))) : [];
 
   const handleCreateCOE = () => {
     setSelectedCOE(null);
@@ -147,6 +149,17 @@ const COEManager = () => {
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
+
+  // If there's an error, show a message
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-bold text-red-500 mb-4">Error Loading Data</h2>
+        <p className="mb-4">There was a problem loading the COE data.</p>
+        <Button onClick={() => refetch()}>Try Again</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -210,7 +223,7 @@ const COEManager = () => {
         <div className="flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00B86B]" />
         </div>
-      ) : coes.length === 0 ? (
+      ) : Array.isArray(coes) && coes.length === 0 ? (
         <COEEmptyState onCreateFirst={handleCreateCOE} />
       ) : (
         <COETable
