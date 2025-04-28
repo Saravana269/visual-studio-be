@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 
 interface CoreSetListProps {
@@ -15,9 +14,6 @@ interface CoreSetListProps {
 }
 
 const CoreSetList = ({ coreSets, onEdit }: CoreSetListProps) => {
-  const navigate = useNavigate();
-
-  // Safe string rendering helper
   const safeRenderString = (value: any): string => {
     if (value === null || value === undefined) return '';
     if (typeof value === 'string') return value;
@@ -30,7 +26,6 @@ const CoreSetList = ({ coreSets, onEdit }: CoreSetListProps) => {
         <Card 
           key={safeRenderString(coreSet.id)} 
           className="element-card relative flex flex-col overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => navigate(`/core-set/${coreSet.id}/assignment`)}
         >
           <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
             <DropdownMenu>
