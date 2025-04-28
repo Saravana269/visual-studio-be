@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface CreateTagDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
   const [label, setLabel] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { session } = useAuth(); // Get the current session to access user ID
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,11 +27,27 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
 
     setIsLoading(true);
     try {
+      // Get the user ID from the session
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        console.error("User not authenticated");
+        toast({
+          title: "Authentication required",
+          description: "You need to be logged in to create tags.",
+          variant: "destructive",
+        });
+        onClose();
+        return;
+      }
+
       const { data, error } = await supabase
         .from("tags")
         .insert({
           label: label.trim(),
-          entity_type: "elements"
+          entity_type: "elements",
+          created_by: userId, // Add the user ID as created_by
+          entity_id: "00000000-0000-0000-0000-000000000000" // Placeholder value as required
         })
         .select()
         .single();
