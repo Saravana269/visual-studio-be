@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Separator } from "@/components/ui/separator";
 
 interface TagManagementRowProps {
   selectedTags: string[];
@@ -132,8 +133,8 @@ export function TagManagementRow({
           />
         </div>
         
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Action buttons container with background and border */}
+        <div className="flex items-center bg-[#9affa130] border border-[#FFA130] rounded-md px-3 py-1 flex-shrink-0">
           <Button 
             onClick={() => setIsCreateTagDialogOpen(true)}
             className="flex items-center gap-2 bg-[#8B4A2B] hover:bg-[#6D3A22] border-[#F97316] text-white whitespace-nowrap"
@@ -142,6 +143,9 @@ export function TagManagementRow({
             <Plus size={16} />
             Tag
           </Button>
+          
+          {/* Divider between buttons */}
+          <Separator className="mx-2 h-6 bg-[#333]" orientation="vertical" />
           
           <Button
             variant="outline"
