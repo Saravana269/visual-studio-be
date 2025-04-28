@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 
 interface AuthFormProps {
   isLoading: boolean;
@@ -19,14 +20,20 @@ export const AuthForm = ({ isLoading, setIsLoading, onSuccess }: AuthFormProps) 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [authProgress, setAuthProgress] = useState(0);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setAuthProgress(10);
 
     try {
+      // Small delay for UI feedback
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setAuthProgress(30);
+
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({
           email,
@@ -38,11 +45,13 @@ export const AuthForm = ({ isLoading, setIsLoading, onSuccess }: AuthFormProps) 
         
         if (error) throw error;
         
+        setAuthProgress(100);
         toast({
           title: "Account created",
           description: "Please check your email to verify your account",
         });
       } else {
+        setAuthProgress(50);
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -50,6 +59,7 @@ export const AuthForm = ({ isLoading, setIsLoading, onSuccess }: AuthFormProps) 
         
         if (error) throw error;
         
+        setAuthProgress(100);
         toast({
           title: "Sign in successful",
           description: "Welcome back!",
@@ -57,7 +67,7 @@ export const AuthForm = ({ isLoading, setIsLoading, onSuccess }: AuthFormProps) 
         onSuccess();
       }
     } catch (error: any) {
-      console.error("Authentication error:", error);
+      setAuthProgress(0);
       setError(error.message);
       toast({
         title: "Error",
@@ -87,6 +97,8 @@ export const AuthForm = ({ isLoading, setIsLoading, onSuccess }: AuthFormProps) 
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
           required
+          className="bg-background"
+          autoComplete="email"
         />
       </div>
       
@@ -100,8 +112,12 @@ export const AuthForm = ({ isLoading, setIsLoading, onSuccess }: AuthFormProps) 
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
           required
+          className="bg-background"
+          autoComplete={isSignUp ? "new-password" : "current-password"}
         />
       </div>
+      
+      {isLoading && <Progress value={authProgress} className="h-2" />}
       
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? (

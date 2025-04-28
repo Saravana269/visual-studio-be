@@ -11,6 +11,29 @@ export const supabase = createClient(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-    }
+    },
+    realtime: {
+      timeout: 10000,  // Increased timeout for better reliability
+    },
+    global: {
+      fetch: (...args) => {
+        // Add performance tracking to fetch requests
+        const startTime = performance.now();
+        return fetch(...args).then(response => {
+          const endTime = performance.now();
+          const timeElapsed = endTime - startTime;
+          if (timeElapsed > 1000) {
+            console.warn(`Supabase request took ${timeElapsed.toFixed(2)}ms to complete`);
+          }
+          return response;
+        });
+      },
+    },
   }
 );
+
+// Preemptively check for an existing session on client load
+// to make subsequent auth checks faster
+supabase.auth.getSession().catch(error => {
+  console.error("Error checking initial session:", error);
+});
