@@ -162,7 +162,11 @@ const COEManager = () => {
 
   return (
     <div className="space-y-6">
-      <COEHeader onCreateCOE={() => setIsCreateModalOpen(true)} />
+      <COEHeader 
+        onCreateCOE={() => setIsCreateModalOpen(true)} 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
       
       <div className="mb-6">
         <TagManagementRow
@@ -175,8 +179,6 @@ const COEManager = () => {
       </div>
 
       <COETagSearch
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
         selectedTags={selectedTags}
         allTags={allTags}
         onTagSelect={handleTagSelect}
