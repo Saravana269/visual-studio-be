@@ -64,8 +64,13 @@ const CoreSetManager = () => {
       
       <div className="mb-6">
         <TagManagementRow
-          description="Manage and filter Core Sets by tags"
-          className="mb-4"
+          selectedTags={selectedTags}
+          onTagSearch={(query: string) => setSearchQuery(query)}
+          onTagRemove={(tag: string) => {
+            setSelectedTags((prev) => prev.filter((t) => t !== tag));
+          }}
+          onAddTagClick={() => {}}
+          onManageTagsClick={() => {}}
         />
         
         <COETagSearch

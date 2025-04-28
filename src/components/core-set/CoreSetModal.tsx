@@ -192,7 +192,7 @@ export function CoreSetModal({ coreSet, open, onClose }: CoreSetModalProps) {
                   <FormControl>
                     <CoeSelector
                       value={field.value || ""}
-                      onChange={field.onChange}
+                      onChange={(value) => field.onChange(value)}
                     />
                   </FormControl>
                   <FormMessage />
