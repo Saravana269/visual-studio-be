@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// Define Element type
 export interface Element {
   id: string;
   name: string;
@@ -39,7 +38,6 @@ const ElementsManager = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Use the authentication hook
   useAuth();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -52,7 +50,6 @@ const ElementsManager = () => {
   const [tagDialogMode, setTagDialogMode] = useState<'add' | 'remove'>('add');
   const [tagSelections, setTagSelections] = useState<Record<string, boolean>>({});
   
-  // Fetch elements data with error handling
   const { data: elements = [], isLoading, error, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
@@ -79,7 +76,6 @@ const ElementsManager = () => {
     },
   });
 
-  // Fetch tags
   const { data: availableTags = [] } = useQuery({
     queryKey: ["element-tags"],
     queryFn: async () => {
@@ -95,7 +91,6 @@ const ElementsManager = () => {
     },
   });
 
-  // Filter elements based on search query and selected tags
   const filteredElements = elements?.filter((element) => {
     const matchesSearch = element.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTags =
@@ -104,7 +99,6 @@ const ElementsManager = () => {
     return matchesSearch && matchesTags;
   });
 
-  // Pagination logic
   const totalPages = Math.ceil((filteredElements?.length || 0) / ITEMS_PER_PAGE);
   const paginatedElements = filteredElements?.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -196,10 +190,8 @@ const ElementsManager = () => {
       let updatedTags: string[] = [...(selectedElement.tags || [])];
       
       if (tagDialogMode === 'add') {
-        // Add new tags
         updatedTags = [...new Set([...updatedTags, ...selectedTagsList])];
       } else {
-        // Remove selected tags
         updatedTags = updatedTags.filter(tag => !selectedTagsList.includes(tag));
       }
       
@@ -227,10 +219,13 @@ const ElementsManager = () => {
     }
   };
 
+  const handleAddTag = () => {
+    refetch();
+  };
+
   return (
     <div className="flex">
       <div className="flex-1">
-        {/* Header Row */}
         <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -246,18 +241,16 @@ const ElementsManager = () => {
           </Button>
         </div>
 
-        {/* Tag Management Row */}
         <div className="mb-6">
           <TagManagementRow
             selectedTags={selectedTags}
             onTagSearch={handleTagSearch}
             onTagRemove={handleClearTag}
-            onAddTagClick={() => selectedElement && handleManageTags(selectedElement, 'add')}
+            onAddTagClick={handleAddTag}
             onManageTagsClick={() => {/* Implement tag management */}}
           />
         </div>
 
-        {/* Element List */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-[#00B86B]" />
@@ -271,7 +264,6 @@ const ElementsManager = () => {
               onManageTags={handleManageTags}
             />
             
-            {/* Pagination controls */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-6">
                 <Button
@@ -298,7 +290,6 @@ const ElementsManager = () => {
           </>
         )}
 
-        {/* Dialogs */}
         {isFormOpen && (
           <ElementFormDialog
             element={selectedElement}
@@ -316,7 +307,6 @@ const ElementsManager = () => {
           />
         )}
         
-        {/* Tag Management Dialog */}
         <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>

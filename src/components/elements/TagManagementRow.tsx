@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useState } from "react";
+import { CreateTagDialog } from "./CreateTagDialog";
 
 interface TagManagementRowProps {
   selectedTags: string[];
@@ -20,6 +22,13 @@ export function TagManagementRow({
   onAddTagClick,
   onManageTagsClick,
 }: TagManagementRowProps) {
+  const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
+
+  const handleTagCreated = (newTag: string) => {
+    // The parent component will handle refreshing the tags list
+    onAddTagClick();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
@@ -34,7 +43,7 @@ export function TagManagementRow({
         
         <div className="flex items-center gap-2">
           <Button 
-            onClick={onAddTagClick}
+            onClick={() => setIsCreateTagDialogOpen(true)}
             className="flex items-center gap-2 bg-[#8B4A2B] hover:bg-[#6D3A22] border-[#F97316] text-white"
           >
             <Plus size={16} />
@@ -70,6 +79,12 @@ export function TagManagementRow({
           ))}
         </div>
       )}
+
+      <CreateTagDialog
+        open={isCreateTagDialogOpen}
+        onClose={() => setIsCreateTagDialogOpen(false)}
+        onTagCreated={handleTagCreated}
+      />
     </div>
   );
 }
