@@ -10,6 +10,7 @@ export interface COE {
   image_url?: string | null;
   tags: string[] | null;
   element_count?: number;
+  coreSet_id?: string[] | null;
 }
 
 export const useCOEData = () => {
