@@ -209,8 +209,14 @@ body {
 
 .tag-badge {
   background: #FEC6A1;
-  border: 1px solid #E5946C;
+  border: 1px solid #F97316;
   color: #8B4A2B;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.tag-badge button:hover {
+  background: #E5946C;
 }
 
 @keyframes scan-line {
