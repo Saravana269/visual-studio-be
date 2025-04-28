@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical, Map } from "lucide-react";
@@ -12,21 +11,16 @@ interface CoreSetListProps {
   coreSets: CoreSet[];
   onEdit: (coreSet: CoreSet) => void;
   onView: (coreSet: CoreSet) => void;
+  onMapping: (coreSet: CoreSet) => void;
 }
 
-const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
+const CoreSetList = ({ coreSets, onEdit, onView, onMapping }: CoreSetListProps) => {
   const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const handleViewDetails = (coreSet: CoreSet) => {
     setSelectedCoreSet(coreSet);
     setIsDetailsOpen(true);
-  };
-
-  const handleMapping = (e: React.MouseEvent, coreSet: CoreSet) => {
-    e.stopPropagation(); // Prevent triggering the card click
-    // Handle mapping logic here - for now just log
-    console.log("Mapping clicked for core set:", coreSet.name);
   };
 
   // Safe string rendering helper
@@ -63,7 +57,10 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
                   <DropdownMenuItem onClick={() => handleViewDetails(coreSet)}>
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => handleMapping(e, coreSet)}>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onMapping(coreSet);
+                  }}>
                     <Map className="h-4 w-4 mr-2" />
                     Mapping
                   </DropdownMenuItem>

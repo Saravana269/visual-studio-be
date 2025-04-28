@@ -15,6 +15,7 @@ const CoreSetManager = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isMappingOpen, setIsMappingOpen] = useState(false);
   
   const { data: coreSets = [], isLoading } = useCoreSetData();
   
@@ -40,14 +41,24 @@ const CoreSetManager = () => {
     setSelectedCoreSet(coreSet);
     setIsDetailsOpen(true);
   };
+
+  const handleMapping = (coreSet: CoreSet) => {
+    setSelectedCoreSet(coreSet);
+    setIsMappingOpen(true);
+  };
   
-  const handleCloseModal = (refreshList?: boolean) => {
+  const handleCloseModal = () => {
     setIsCreateModalOpen(false);
     setSelectedCoreSet(null);
   };
   
   const handleCloseDetails = () => {
     setIsDetailsOpen(false);
+    setSelectedCoreSet(null);
+  };
+
+  const handleCloseMapping = () => {
+    setIsMappingOpen(false);
     setSelectedCoreSet(null);
   };
   
@@ -96,6 +107,7 @@ const CoreSetManager = () => {
         coreSets={filteredCoreSets}
         onEdit={handleEdit}
         onView={handleView}
+        onMapping={handleMapping}
       />
       
       <CoreSetModal
@@ -105,8 +117,8 @@ const CoreSetManager = () => {
       />
       
       <CoreSetCOEAssignment
-        open={isDetailsOpen}
-        onClose={handleCloseDetails}
+        open={isMappingOpen}
+        onClose={handleCloseMapping}
         coreSet={selectedCoreSet}
       />
     </div>
