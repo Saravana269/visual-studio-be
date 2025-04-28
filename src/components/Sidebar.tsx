@@ -8,6 +8,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 import { Logo } from "./Logo";
 
 const menuItems = [
@@ -23,47 +24,60 @@ export default function Sidebar({ onSignOut }: { onSignOut: () => void }) {
 
   return (
     <TooltipProvider>
-      <aside className="sidebar flex flex-col h-screen bg-black text-gray-400 fixed left-0 top-0 z-50">
-        <div className="flex items-center justify-center h-16 text-white">
+      <aside className="fixed left-0 top-0 z-50 flex h-screen w-16 flex-col bg-black text-gray-400">
+        {/* Logo Section */}
+        <div className="flex h-16 items-center justify-center">
           <Logo />
         </div>
         
-        <nav className="flex-1 flex flex-col gap-2 mt-6">
+        {/* Navigation Menu */}
+        <nav className="flex-1 space-y-2 py-4">
           {menuItems.map(item => (
             <Tooltip key={item.name} delayDuration={300}>
               <TooltipTrigger asChild>
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
-                    `menu-item group flex items-center p-3 mx-2 rounded-md transition-all duration-300
-                    ${isActive ? "active" : ""}`
+                    `group relative flex items-center justify-center p-3 transition-all duration-300
+                    hover:text-[#00FF00] hover:bg-[#121212]
+                    ${isActive ? "text-[#00FF00] bg-[#121212]" : ""}`
                   }
                 >
-                  <div className="flex items-center justify-center w-full">
+                  <div className="flex items-center justify-center">
                     {item.icon}
                   </div>
                 </NavLink>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-gray-800 text-white border-gray-700">
+              <TooltipContent 
+                side="right" 
+                className="bg-[#121212] text-white border-[#222222]"
+              >
                 {item.name}
               </TooltipContent>
             </Tooltip>
           ))}
         </nav>
         
-        <Tooltip delayDuration={300}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={onSignOut}
-              className="menu-item flex items-center justify-center p-3 mx-2 mb-6 rounded-md text-red-400 hover:text-red-300"
+        {/* Bottom Section with Separator */}
+        <div className="pb-4">
+          <Separator className="my-4 bg-[#222222]" />
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onSignOut}
+                className="w-full flex items-center justify-center p-3 text-red-400 hover:text-red-300 hover:bg-[#121212] transition-colors duration-300"
+              >
+                <LogOut size={24} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent 
+              side="right" 
+              className="bg-[#121212] text-white border-[#222222]"
             >
-              <LogOut size={24} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right" className="bg-gray-800 text-white border-gray-700">
-            Sign Out
-          </TooltipContent>
-        </Tooltip>
+              Sign Out
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </aside>
     </TooltipProvider>
   );

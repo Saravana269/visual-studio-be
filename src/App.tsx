@@ -53,7 +53,7 @@ function App() {
         <div className="flex h-screen bg-black text-white">
           <Sidebar onSignOut={() => supabase.auth.signOut()} />
           
-          <div className="flex-1 flex flex-col ml-[60px]">
+          <div className="flex-1 flex flex-col ml-16">
             <AppHeader />
             
             <main className="flex-1 p-6 mt-16 overflow-y-auto">
