@@ -1,6 +1,6 @@
 
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ const COEDetailView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: coe, isLoading } = useQuery({
     queryKey: ["coe", id],
@@ -56,6 +57,12 @@ const COEDetailView = () => {
     },
     enabled: !!id
   });
+
+  // Add this function to handle assignment changes
+  const handleAssignmentChange = () => {
+    // Refetch elements data when assignments change
+    queryClient.invalidateQueries({ queryKey: ["coe-elements", id] });
+  };
 
   if (isLoading) {
     return (
@@ -122,7 +129,7 @@ const COEDetailView = () => {
         {/* Elements Assignment Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Element Assignment</h3>
-          <ElementsAssignment coeId={coe.id} />
+          <ElementsAssignment coeId={coe.id} onAssignmentChange={handleAssignmentChange} />
         </div>
 
         {/* Assigned Elements Section */}

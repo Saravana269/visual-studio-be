@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCOEData } from "@/hooks/useCOEData";
@@ -31,6 +32,15 @@ const COEManager = () => {
   const [tagSearchQuery, setTagSearchQuery] = useState("");
 
   const { data: coes = [], isLoading, error, refetch } = useCOEData();
+
+  // Add the missing handleCloseModal function
+  const handleCloseModal = (shouldRefetch = false) => {
+    setIsCreateModalOpen(false);
+    setSelectedCOE(null);
+    if (shouldRefetch) {
+      refetch();
+    }
+  };
 
   const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
     const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
