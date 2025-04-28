@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import CoreSetHeader from "@/components/core-set/CoreSetHeader";
 import CoreSetList from "@/components/core-set/CoreSetList";
@@ -11,7 +10,6 @@ import { CoreSetCOEAssignment } from "@/components/core-set/CoreSetCOEAssignment
 import { useAuth } from "@/hooks/useAuth";
 
 const CoreSetManager = () => {
-  // Add authentication check
   useAuth();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,11 +17,9 @@ const CoreSetManager = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isMappingOpen, setIsMappingOpen] = useState(false);
   
   const { data: coreSets = [], isLoading } = useCoreSetData();
   
-  // Get unique tags from all core sets
   const allTags = Array.from(
     new Set(coreSets.flatMap(coreSet => coreSet.tags || []))
   ).sort();
@@ -45,11 +41,6 @@ const CoreSetManager = () => {
     setSelectedCoreSet(coreSet);
     setIsDetailsOpen(true);
   };
-
-  const handleMapping = (coreSet: CoreSet) => {
-    setSelectedCoreSet(coreSet);
-    setIsMappingOpen(true);
-  };
   
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
@@ -60,13 +51,7 @@ const CoreSetManager = () => {
     setIsDetailsOpen(false);
     setSelectedCoreSet(null);
   };
-
-  const handleCloseMapping = () => {
-    setIsMappingOpen(false);
-    setSelectedCoreSet(null);
-  };
   
-  // Filter core sets based on search and tags
   const filteredCoreSets = coreSets.filter(coreSet => {
     const matchesSearch = coreSet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (coreSet.description || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -111,7 +96,7 @@ const CoreSetManager = () => {
         coreSets={filteredCoreSets}
         onEdit={handleEdit}
         onView={handleView}
-        onMapping={handleMapping}
+        onMapping={() => {}}
       />
       
       <CoreSetModal
@@ -119,15 +104,6 @@ const CoreSetManager = () => {
         onClose={handleCloseModal}
         coreSet={selectedCoreSet}
       />
-      
-      {/* Only render CoreSetCOEAssignment if there's a selected core set */}
-      {selectedCoreSet && (
-        <CoreSetCOEAssignment
-          open={isMappingOpen}
-          onClose={handleCloseMapping}
-          coreSet={selectedCoreSet}
-        />
-      )}
     </div>
   );
 };

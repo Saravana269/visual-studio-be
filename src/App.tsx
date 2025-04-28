@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -10,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Import pages
 import ElementsManager from "./pages/ElementsManager";
 import COEManager from "./pages/COEManager";
-import COEDetailView from "./components/coe/COEDetailView"; // Add this import
+import COEDetailView from "./components/coe/COEDetailView";
 import CoreSetManager from "./pages/CoreSetManager";
 import WidgetManager from "./pages/WidgetManager";
 import Settings from "./pages/Settings";
@@ -104,6 +103,9 @@ function App() {
                 
                 {/* Catch all for unknown routes */}
                 <Route path="*" element={<Navigate to="/elements" replace />} />
+                
+                {/* Core Set Assignment Route */}
+                <Route path="/core-set/:id/assignment" element={<CoreSetAssignment />} />
               </Routes>
             </main>
           </div>

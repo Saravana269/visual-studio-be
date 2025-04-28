@@ -1,11 +1,11 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MoreVertical, Map } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CoreSetDetailsDialog from "./CoreSetDetailsDialog";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 
 interface CoreSetListProps {
@@ -15,9 +15,10 @@ interface CoreSetListProps {
   onMapping: (coreSet: CoreSet) => void;
 }
 
-const CoreSetList = ({ coreSets, onEdit, onView, onMapping }: CoreSetListProps) => {
+const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
   const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleViewDetails = (coreSet: CoreSet) => {
     setSelectedCoreSet(coreSet);
@@ -37,33 +38,23 @@ const CoreSetList = ({ coreSets, onEdit, onView, onMapping }: CoreSetListProps) 
         {coreSets.map(coreSet => (
           <Card 
             key={safeRenderString(coreSet.id)} 
-            className="element-card relative flex flex-col overflow-hidden cursor-pointer"
-            onClick={() => handleViewDetails(coreSet)}
+            className="element-card relative flex flex-col overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate(`/core-set/${coreSet.id}/assignment`)}
           >
-            <div className="absolute top-2 right-2 z-10">
+            <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="action-menu-button" onClick={e => e.stopPropagation()}>
+                  <Button variant="ghost" size="sm" className="action-menu-button">
                     <MoreVertical className="h-4 w-4" />
                     <span className="sr-only">Open menu</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[160px]">
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(coreSet);
-                  }}>
+                  <DropdownMenuItem onClick={() => onEdit(coreSet)}>
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleViewDetails(coreSet)}>
                     View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    onMapping(coreSet);
-                  }}>
-                    <Map className="h-4 w-4 mr-2" />
-                    Mapping
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
