@@ -1,104 +1,30 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, LayoutGrid, List } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+
+import { useState } from "react";
+import { useCOEData } from "@/hooks/useCOEData";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import COEModal from "@/components/coe/COEModal";
 import COETable from "@/components/coe/COETable";
 import COESidebar from "@/components/coe/COESidebar";
 import COEEmptyState from "@/components/coe/COEEmptyState";
 import COEList from "@/components/coe/COEList";
-
-interface COE {
-  id: string;
-  name: string;
-  description: string | null;
-  image_url?: string | null;
-  tags: string[] | null;
-  element_count?: number;
-}
+import COEHeader from "@/components/coe/COEHeader";
+import COESearch from "@/components/coe/COESearch";
+import type { COE } from "@/hooks/useCOEData";
 
 const COEManager = () => {
-  const navigate = useNavigate();
+  const { toast } = useToast();
+  useAuth(); // Check authentication
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCOE, setSelectedCOE] = useState<COE | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
-  const { toast } = useToast();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to access this page",
-          variant: "destructive",
-        });
-        navigate("/auth");
-      }
-    };
-    
-    checkAuth();
-  }, [navigate, toast]);
-  
-  const { data: coes = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["coes"],
-    queryFn: async () => {
-      try {
-        const { data: coesData, error: coesError } = await supabase
-          .from("class_of_elements")
-          .select("*");
-        
-        if (coesError) {
-          toast({
-            title: "Error fetching COEs",
-            description: coesError.message,
-            variant: "destructive",
-          });
-          return [];
-        }
-        
-        if (!coesData || !Array.isArray(coesData)) {
-          console.error("COEs data is not an array:", coesData);
-          return [];
-        }
-        
-        const coesWithCounts = await Promise.all(
-          coesData.map(async (coe) => {
-            try {
-              const { count } = await supabase
-                .from("elements")
-                .select("*", { count: 'exact' })
-                .contains('coe_ids', [coe.id]);
-              
-              return {
-                ...coe,
-                element_count: count || 0
-              };
-            } catch (error) {
-              console.error(`Error getting element count for COE ${coe.id}:`, error);
-              return {
-                ...coe,
-                element_count: 0
-              };
-            }
-          })
-        );
-        
-        return coesWithCounts;
-      } catch (error) {
-        console.error("Unexpected error in COE query:", error);
-        return [];
-      }
-    },
-  });
+  const { data: coes = [], isLoading, error, refetch } = useCOEData();
 
   const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
     const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -158,61 +84,19 @@ const COEManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">COE Manager</h1>
-        <div className="flex items-center gap-4">
-          <div className="flex border rounded-lg overflow-hidden">
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => setViewMode('grid')}
-              className="rounded-none border-0"
-            >
-              <LayoutGrid size={18} />
-            </Button>
-            <Button
-              variant={viewMode === 'table' ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => setViewMode('table')}
-              className="rounded-none border-0"
-            >
-              <List size={18} />
-            </Button>
-          </div>
-          <Button onClick={handleCreateCOE} className="flex items-center gap-2 bg-[#00B86B] hover:bg-[#00A25F]">
-            <Plus size={16} /> Create COE
-          </Button>
-        </div>
-      </div>
+      <COEHeader 
+        onCreateCOE={handleCreateCOE}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+      />
       
-      <div className="space-y-4">
-        <div className="flex gap-4 items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search COEs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </div>
-        
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {allTags.map((tag) => (
-              <Badge
-                key={tag}
-                variant={selectedTags.includes(tag) ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => handleTagSelect(tag)}
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
+      <COESearch
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedTags={selectedTags}
+        allTags={allTags}
+        onTagSelect={handleTagSelect}
+      />
       
       {isLoading ? (
         <div className="flex justify-center">
