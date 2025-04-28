@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
-// Define the COE interface directly in this file instead of importing it
 interface COE {
   id: string;
   name: string;
