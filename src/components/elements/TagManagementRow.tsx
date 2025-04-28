@@ -14,20 +14,24 @@ import { useAuth } from "@/hooks/useAuth";
 import { Separator } from "@/components/ui/separator";
 
 interface TagManagementRowProps {
-  selectedTag: string | null;
-  tagDetails: Record<string, string>;
+  selectedTag?: string | null;
+  selectedTags?: string[];
+  tagDetails?: Record<string, string>;
   onTagSearch: (query: string) => void;
-  onTagSelect: (tagId: string) => void;
-  onTagClear: () => void;
+  onTagSelect?: (tagId: string) => void;
+  onTagRemove?: (tag: string) => void;
+  onTagClear?: () => void;
   onAddTagClick: () => void;
   onManageTagsClick?: () => void;
 }
 
 export function TagManagementRow({
   selectedTag,
-  tagDetails,
+  selectedTags,
+  tagDetails = {},
   onTagSearch,
   onTagSelect,
+  onTagRemove,
   onTagClear,
   onAddTagClick,
   onManageTagsClick
@@ -37,6 +41,9 @@ export function TagManagementRow({
   const { toast } = useToast();
   const { session } = useAuth();
   const userId = session?.user?.id;
+
+  // Determine if we're in single or multiple tag mode
+  const isSingleMode = selectedTag !== undefined;
 
   // Fetch all available tags
   const {
@@ -77,15 +84,29 @@ export function TagManagementRow({
   });
 
   // Filter tags based on search query
-  const filteredTags = tagSearchQuery
+  let filteredTags = tagSearchQuery
     ? availableTags.filter(tag => 
-        tag.label.toLowerCase().includes(tagSearchQuery.toLowerCase()) && 
-        (!selectedTag || tag.id !== selectedTag)
-      )
-    : availableTags.filter(tag => !selectedTag || tag.id !== selectedTag);
+        tag.label.toLowerCase().includes(tagSearchQuery.toLowerCase()))
+    : availableTags;
+
+  // Further filter to remove already selected tags
+  if (isSingleMode && selectedTag) {
+    filteredTags = filteredTags.filter(tag => tag.id !== selectedTag);
+  } else if (!isSingleMode && selectedTags && selectedTags.length > 0) {
+    filteredTags = filteredTags.filter(tag => !selectedTags.includes(tag.id));
+  }
 
   const handleTagClick = (tagId: string) => {
-    onTagSelect(tagId);
+    if (isSingleMode && onTagSelect) {
+      onTagSelect(tagId);
+    } else if (!isSingleMode && onTagRemove && onTagSelect) {
+      // For multiple mode, toggle the tag
+      if (selectedTags?.includes(tagId)) {
+        onTagRemove(tagId);
+      } else {
+        onTagSelect(tagId);
+      }
+    }
     setTagSearchQuery(""); // Clear search after selection
   };
 
@@ -101,7 +122,7 @@ export function TagManagementRow({
   };
 
   // Get the selected tag label
-  const selectedTagLabel = selectedTag && tagDetails[selectedTag];
+  const selectedTagLabel = isSingleMode && selectedTag && tagDetails[selectedTag];
 
   return (
     <div className="space-y-4">
@@ -180,16 +201,40 @@ export function TagManagementRow({
         </div>
       </div>
 
-      {/* Selected tag section */}
-      {selectedTag && (
+      {/* Selected tag section - single mode */}
+      {isSingleMode && selectedTag && (
         <div className="flex items-center gap-2">
           <Badge className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1">
             {selectedTagLabel || 'Unknown Tag'}
-            <button onClick={onTagClear} className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5">
-              <X className="h-3 w-3" />
-            </button>
+            {onTagClear && (
+              <button onClick={onTagClear} className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5">
+                <X className="h-3 w-3" />
+              </button>
+            )}
           </Badge>
           <span className="text-sm text-muted-foreground">Showing elements with this tag only</span>
+        </div>
+      )}
+
+      {/* Selected tags section - multiple mode */}
+      {!isSingleMode && selectedTags && selectedTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedTags.map(tagId => (
+            <Badge 
+              key={tagId} 
+              className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1"
+            >
+              {tagDetails[tagId] || 'Unknown Tag'}
+              {onTagRemove && (
+                <button 
+                  onClick={() => onTagRemove(tagId)}
+                  className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </Badge>
+          ))}
         </div>
       )}
 

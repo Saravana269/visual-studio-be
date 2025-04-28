@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +68,25 @@ export function ElementSidebar({ element, open, onClose, onEdit }: ElementSideba
     enabled: !!element.coe_ids && element.coe_ids.length > 0,
   });
 
+  // Fetch tag details if primary_tag_id exists
+  const { data: tagDetail } = useQuery({
+    queryKey: ["tag-detail", element.primary_tag_id],
+    queryFn: async () => {
+      if (!element.primary_tag_id) return null;
+      
+      const { data, error } = await supabase
+        .from("tags")
+        .select("id, label")
+        .eq("id", element.primary_tag_id)
+        .single();
+      
+      if (error || !data) return null;
+      
+      return data;
+    },
+    enabled: !!element.primary_tag_id,
+  });
+
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-md overflow-y-auto">
@@ -96,13 +116,11 @@ export function ElementSidebar({ element, open, onClose, onEdit }: ElementSideba
           </div>
         )}
         
-        {element.tags && element.tags.length > 0 && (
+        {element.primary_tag_id && tagDetail && (
           <div className="mb-6">
-            <h3 className="text-sm font-medium mb-2">Tags</h3>
+            <h3 className="text-sm font-medium mb-2">Tag</h3>
             <div className="flex flex-wrap gap-2">
-              {element.tags.map(tag => (
-                <Badge key={tag} variant="secondary">{tag}</Badge>
-              ))}
+              <Badge variant="secondary">{tagDetail.label}</Badge>
             </div>
           </div>
         )}

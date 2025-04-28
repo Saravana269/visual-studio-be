@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -11,8 +10,8 @@ import { CreateTagDialog } from "./CreateTagDialog";
 import { useAuth } from "@/hooks/useAuth";
 
 interface TagSelectorProps {
-  value: string | null;
-  onChange: (value: string | null) => void;
+  value: string | string[] | null;
+  onChange: (value: any) => void;
 }
 
 export function TagSelector({ value, onChange }: TagSelectorProps) {
@@ -21,15 +20,15 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
   const { session } = useAuth();
   const userId = session?.user?.id;
 
-  // Fetch all existing tags for selection
+  const isMultipleMode = Array.isArray(value);
+  const singleValue = isMultipleMode ? (value.length > 0 ? value[0] : "") : value || "";
+
   const { data: availableTags = [], refetch } = useQuery({
     queryKey: ["all-element-tags", userId],
     queryFn: async () => {
       try {
-        // Only run query if user is authenticated
         if (!userId) return [];
         
-        // Fetch tags from the tags table
         const { data: tagsData, error: tagsError } = await supabase
           .from("tags")
           .select("id, label")
@@ -46,20 +45,25 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
         return [];
       }
     },
-    enabled: !!userId // Only run the query if the user is authenticated
+    enabled: !!userId
   });
 
-  // Filter suggestions based on input
   const filteredTags = inputValue
     ? availableTags.filter(tag => 
         tag.label.toLowerCase().includes(inputValue.toLowerCase()))
     : availableTags;
 
   const handleTagCreated = (newTag: string) => {
-    // Refresh the tag list
     refetch();
-    // Close the dialog
     setIsCreateTagDialogOpen(false);
+  };
+
+  const handleValueChange = (newValue: string) => {
+    if (isMultipleMode) {
+      onChange(newValue === "" ? [] : [newValue]);
+    } else {
+      onChange(newValue === "" ? null : newValue);
+    }
   };
 
   return (
@@ -83,8 +87,8 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
       </div>
 
       <RadioGroup 
-        value={value || ""} 
-        onValueChange={(val) => onChange(val === "" ? null : val)}
+        value={singleValue} 
+        onValueChange={handleValueChange}
         className="space-y-2"
       >
         <div className="flex items-center space-x-2">

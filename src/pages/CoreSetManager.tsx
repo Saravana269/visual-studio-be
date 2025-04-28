@@ -66,7 +66,12 @@ const CoreSetManager = () => {
       <div className="mb-6">
         <TagManagementRow
           selectedTags={selectedTags}
+          tagDetails={allTags.reduce((acc: Record<string, string>, tag) => {
+            acc[tag] = tag; // Using the tag itself as both key and label
+            return acc;
+          }, {})}
           onTagSearch={(query: string) => setSearchQuery(query)}
+          onTagSelect={handleTagSelect}
           onTagRemove={(tag: string) => {
             setSelectedTags((prev) => prev.filter((t) => t !== tag));
           }}

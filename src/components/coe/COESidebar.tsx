@@ -28,7 +28,7 @@ interface Element {
   description: string | null;
   image_url: string | null;
   coe_ids: string[] | null;
-  tags: string[] | null;
+  primary_tag_id?: string | null;
 }
 
 interface COESidebarProps {
@@ -191,7 +191,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
             <h3 className="text-sm font-medium">Tags</h3>
             {editMode ? (
               <TagSelector
-                value={formData.tags || []}
+                value={formData.tags}
                 onChange={(tags) => setFormData({ ...formData, tags })}
               />
             ) : (
@@ -238,13 +238,13 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
                           {element.description || "No description"}
                         </CardDescription>
                         
-                        <div className="flex mt-1 gap-1">
-                          {element.tags && element.tags.slice(0, 2).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
+                        {element.primary_tag_id && (
+                          <div className="mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              Has tag
                             </Badge>
-                          ))}
-                        </div>
+                          </div>
+                        )}
                       </div>
                       <CardFooter className="p-2">
                         <Button 

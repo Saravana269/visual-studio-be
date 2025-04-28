@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCOEData } from "@/hooks/useCOEData";
@@ -33,7 +32,6 @@ const COEManager = () => {
 
   const { data: coes = [], isLoading, error, refetch } = useCOEData();
 
-  // Add the missing handleCloseModal function
   const handleCloseModal = (shouldRefetch = false) => {
     setIsCreateModalOpen(false);
     setSelectedCOE(null);
@@ -162,7 +160,12 @@ const COEManager = () => {
       <div className="mb-6">
         <TagManagementRow
           selectedTags={selectedTags}
+          tagDetails={allTags.reduce((acc: Record<string, string>, tag) => {
+            acc[tag] = tag;
+            return acc;
+          }, {})}
           onTagSearch={setTagSearchQuery}
+          onTagSelect={handleTagSelect}
           onTagRemove={handleClearTag}
           onAddTagClick={() => selectedCOE && handleManageTags(selectedCOE, 'add')}
           onManageTagsClick={() => {/* Implement tag management */}}
