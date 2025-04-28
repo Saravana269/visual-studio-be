@@ -2,7 +2,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical } from "lucide-react";
-import { type COE } from "@/pages/COEManager";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -10,6 +9,15 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+
+// Define the COE interface directly in this file instead of importing it
+interface COE {
+  id: string;
+  name: string;
+  description: string | null;
+  tags: string[] | null;
+  element_count?: number;
+}
 
 interface COEListProps {
   coes: COE[];
