@@ -1,4 +1,3 @@
-
 import { DraggableCard } from "./DraggableCard";
 import { DropZone } from "./DropZone";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +5,7 @@ import type { COE } from "@/hooks/useCOEData";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MoveHorizontal } from "lucide-react";
 
 interface COEDropZoneListProps {
   zone: "unassign" | "assign";
@@ -67,21 +67,24 @@ export const COEDropZoneList = ({
 
   return (
     <DropZone
+      zone={zone}
       isOver={isOver}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className={zone === "assign" ? "border-dashed border-primary/50" : ""}
+      className={zone === "assign" ? "border-primary/30" : ""}
     >
-      <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card z-10">
-        {title}
-        {selectedCOEs.size > 0 && zone === "assign" && (
-          <Badge className="ml-2 bg-primary">
-            Drag {selectedCOEs.size} COEs here
-          </Badge>
-        )}
+      <div className="text-xs font-medium text-muted-foreground mb-2 p-2 sticky top-0 bg-card z-10 flex items-center justify-between border-b border-border/50">
+        <div className="flex items-center gap-2">
+          {title}
+          {selectedCOEs.size > 0 && zone === "assign" && (
+            <Badge className="ml-2 bg-primary">
+              {selectedCOEs.size}
+            </Badge>
+          )}
+        </div>
       </div>
       
-      <div className="space-y-2">
+      <div className="space-y-2 p-1">
         {coes.map((coe) => (
           <DraggableCard
             key={coe.id}
@@ -98,7 +101,16 @@ export const COEDropZoneList = ({
           <div className={`text-center p-4 text-sm text-muted-foreground ${
             zone === "assign" ? "flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted rounded-lg" : ""
           }`}>
-            {zone === "assign" ? "Drop COEs here to assign them" : "No COEs available"}
+            {zone === "assign" ? (
+              <>
+                <div className="mb-2 p-2 rounded-full bg-muted/30">
+                  <MoveHorizontal className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <p>Drop COEs here to assign them</p>
+              </>
+            ) : (
+              "No COEs available"
+            )}
           </div>
         )}
       </div>

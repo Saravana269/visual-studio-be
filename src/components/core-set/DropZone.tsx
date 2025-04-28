@@ -1,6 +1,7 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
+import { MoveHorizontal } from "lucide-react";
 
 interface DropZoneProps {
   children: React.ReactNode;
@@ -8,6 +9,7 @@ interface DropZoneProps {
   className?: string;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
+  zone: "assign" | "unassign";
 }
 
 export const DropZone = ({
@@ -16,18 +18,50 @@ export const DropZone = ({
   className,
   onDragOver,
   onDrop,
+  zone,
 }: DropZoneProps) => {
+  const [isDragEnter, setIsDragEnter] = useState(false);
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragEnter(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only trigger when actually leaving the dropzone, not entering a child
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragEnter(false);
+  };
+
   return (
     <div
       className={cn(
-        "border rounded-md p-2 min-h-[200px] max-h-[400px] overflow-y-auto transition-all duration-300",
-        isOver && "border-primary/50 bg-primary/5 scale-[1.02] shadow-lg border-dashed",
+        "relative border rounded-md p-2 min-h-[200px] max-h-[400px] overflow-y-auto transition-all duration-300",
+        isOver && "border-primary shadow-lg border-dashed",
+        isDragEnter && zone === "assign" && "bg-primary/10 scale-[1.02] border-primary",
+        isDragEnter && zone === "unassign" && "bg-muted/50 scale-[1.02] border-muted-foreground",
+        zone === "assign" && !isDragEnter && "hover:border-primary/50 hover:shadow-sm",
         "animate-in fade-in-0 zoom-in-95",
         className
       )}
       onDragOver={onDragOver}
-      onDrop={onDrop}
+      onDrop={(e) => {
+        setIsDragEnter(false);
+        onDrop(e);
+      }}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
     >
+      {isOver && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm rounded-md">
+          <div className="bg-primary/20 p-3 rounded-lg flex items-center border border-primary animate-pulse">
+            <MoveHorizontal className="mr-2 h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">
+              {zone === "assign" ? "Release to assign" : "Release to remove"}
+            </span>
+          </div>
+        </div>
+      )}
       {children}
     </div>
   );

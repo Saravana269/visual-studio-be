@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,22 +52,24 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
       )
     : unassignedCOEs;
 
-  const handleDragStart = (coe: COE) => {
+  const handleDragStart = useCallback((coe: COE) => {
     setDraggedCOE(coe);
     setIsDragging(true);
-  };
+  }, []);
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setDraggedCOE(null);
     setIsDragging(false);
     setDragOverZone(null);
-  };
+  }, []);
 
-  const handleDragOver = (zone: "assign" | "unassign") => {
+  const handleDragOver = useCallback((zone: "assign" | "unassign") => (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
     setDragOverZone(zone);
-  };
+  }, []);
 
-  const handleDrop = async (targetType: "assign" | "unassign") => {
+  const handleDrop = useCallback(async (targetType: "assign" | "unassign") => {
     if (!coreSet) return;
     
     const coesToUpdate: COE[] = [];
@@ -123,27 +125,31 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
         variant: "destructive"
       });
     }
-  };
+  }, [coreSet, draggedCOE, selectedCOEs, coes, refetch, toast]);
 
-  const toggleCOESelection = (coeId: string) => {
-    const newSelected = new Set(selectedCOEs);
-    if (newSelected.has(coeId)) {
-      newSelected.delete(coeId);
-    } else {
-      newSelected.add(coeId);
-    }
-    setSelectedCOEs(newSelected);
-  };
+  const toggleCOESelection = useCallback((coeId: string) => {
+    setSelectedCOEs(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(coeId)) {
+        newSelected.delete(coeId);
+      } else {
+        newSelected.add(coeId);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const selectAllVisible = () => {
-    const newSelected = new Set(selectedCOEs);
-    filteredUnassigned.forEach(coe => newSelected.add(coe.id));
-    setSelectedCOEs(newSelected);
-  };
+  const selectAllVisible = useCallback(() => {
+    setSelectedCOEs(prev => {
+      const newSelected = new Set(prev);
+      filteredUnassigned.forEach(coe => newSelected.add(coe.id));
+      return newSelected;
+    });
+  }, [filteredUnassigned]);
 
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     setSelectedCOEs(new Set());
-  };
+  }, []);
 
   return {
     searchQuery,

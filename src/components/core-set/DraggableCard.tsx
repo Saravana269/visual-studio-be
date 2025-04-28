@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ export interface DraggableCardProps {
   coe: COE;
   isSelected?: boolean;
   isDragging?: boolean;
-  onRemove?: () => void;
+  onRemove?: () => Promise<void> | void;
   onClick?: () => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
@@ -26,27 +26,54 @@ export const DraggableCard = ({
   onDragStart,
   onDragEnd,
 }: DraggableCardProps) => {
+  const [isBeingDragged, setIsBeingDragged] = useState(false);
+  
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    // Set a better drag image
+    if (coe.image_url) {
+      const img = new Image();
+      img.src = coe.image_url;
+      e.dataTransfer.setDragImage(img, 20, 20);
+    }
+
+    // Set data transfer for proper drag identification
+    e.dataTransfer.setData("text/plain", coe.id);
+    e.dataTransfer.effectAllowed = "move";
+    
+    setIsBeingDragged(true);
+    if (onDragStart) onDragStart();
+  };
+  
+  const handleDragEnd = () => {
+    setIsBeingDragged(false);
+    if (onDragEnd) onDragEnd();
+  };
+
   return (
     <Card
       className={cn(
-        "cursor-move transition-all duration-200 group p-2",
-        isSelected && "border-primary bg-primary/5",
-        isDragging && "opacity-50 scale-95",
-        "hover:shadow-md hover:-translate-y-0.5",
+        "relative cursor-move transition-all duration-200 group p-2",
+        isSelected && "border-primary bg-primary/10",
+        isBeingDragged && "opacity-40 scale-95",
+        !isBeingDragged && "hover:shadow-md hover:-translate-y-0.5 hover:border-primary/50",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
         "animate-in fade-in-0 zoom-in-95"
       )}
       onClick={onClick}
       draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <div className="flex items-center gap-2">
-        <div className="text-muted-foreground">
+        <div className={cn(
+          "text-muted-foreground p-1 rounded-md",
+          "group-hover:bg-primary/10 group-hover:text-primary"
+        )}>
           <GripVertical className="h-4 w-4" />
         </div>
+        
         {coe.image_url && (
-          <div className="w-8 h-8 bg-muted flex-shrink-0">
+          <div className="w-10 h-10 bg-muted rounded-md flex-shrink-0 overflow-hidden">
             <img 
               src={coe.image_url} 
               alt={coe.name}
@@ -54,6 +81,7 @@ export const DraggableCard = ({
             />
           </div>
         )}
+        
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{coe.name}</p>
           {coe.tags && coe.tags.length > 0 && (
@@ -66,11 +94,12 @@ export const DraggableCard = ({
             </div>
           )}
         </div>
+        
         {onRemove && (
           <Button 
             variant="ghost" 
             size="sm" 
-            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0" 
+            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0 transition-opacity" 
             onClick={(e) => {
               e.stopPropagation();
               onRemove();

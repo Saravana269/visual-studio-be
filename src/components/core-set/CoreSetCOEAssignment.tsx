@@ -42,7 +42,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
       clearSelection();
       setSearchQuery("");
     }
-  }, [open, coreSet?.id]);
+  }, [open, coreSet?.id, clearSelection, setSearchQuery]);
   
   if (!coreSet) {
     return null;
@@ -77,9 +77,9 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
           />
           
           {isDragging && (
-            <div className="flex items-center justify-center p-2 mb-2 bg-primary/10 rounded-md animate-pulse">
-              <MoveHorizontal className="mr-2 h-4 w-4" />
-              <span className="text-sm font-medium">Drag to assign/unassign</span>
+            <div className="flex items-center justify-center p-3 mb-2 bg-primary/10 rounded-md animate-pulse border border-primary/30">
+              <MoveHorizontal className="mr-2 h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Drag to {dragOverZone || ""}</span>
             </div>
           )}
           
@@ -107,7 +107,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
                   selectedCOEs={selectedCOEs}
                   onDragOver={(e) => {
                     e.preventDefault();
-                    handleDragOver("unassign");
+                    handleDragOver("unassign")(e);
                   }}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -127,7 +127,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
                   selectedCOEs={selectedCOEs}
                   onDragOver={(e) => {
                     e.preventDefault();
-                    handleDragOver("assign");
+                    handleDragOver("assign")(e);
                   }}
                   onDrop={(e) => {
                     e.preventDefault();
