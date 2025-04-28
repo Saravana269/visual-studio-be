@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,12 +27,13 @@ interface ElementsAssignmentProps {
 
 export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssignmentProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [draggedElement, setDraggedElement] = useState<Element | null>(null);
   const [selectedElements, setSelectedElements] = useState<Set<string>>(new Set());
   
   // Fetch all elements
-  const { data: elements = [], isLoading } = useQuery({
+  const { data: elements = [], isLoading, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -47,23 +49,34 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     },
   });
   
-  // Filter elements into assigned and unassigned based on coe_ids
-  const assignedElements = elements.filter(
-    (element) => element.coe_ids && element.coe_ids.includes(coeId)
-  );
+  // Store elements locally for immediate UI updates
+  const [localAssignedElements, setLocalAssignedElements] = useState<Element[]>([]);
+  const [localUnassignedElements, setLocalUnassignedElements] = useState<Element[]>([]);
   
-  const unassignedElements = elements.filter(
-    (element) => !element.coe_ids || !element.coe_ids.includes(coeId)
-  );
+  // Sync local state when data changes
+  useEffect(() => {
+    if (elements && elements.length > 0) {
+      const assigned = elements.filter(
+        (element) => element.coe_ids && element.coe_ids.includes(coeId)
+      );
+      
+      const unassigned = elements.filter(
+        (element) => !element.coe_ids || !element.coe_ids.includes(coeId)
+      );
+      
+      setLocalAssignedElements(assigned);
+      setLocalUnassignedElements(unassigned);
+    }
+  }, [elements, coeId]);
   
   // Filter elements based on search query
   const filteredUnassigned = searchQuery
-    ? unassignedElements.filter(element => 
+    ? localUnassignedElements.filter(element => 
         element.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (element.description && element.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (element.tags && element.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
       )
-    : unassignedElements;
+    : localUnassignedElements;
   
   // Handle drag events
   const handleDragStart = (element: Element) => {
@@ -99,7 +112,9 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     if (elementsToUpdate.length === 0) return;
     
     try {
-      // Update each element's coe_ids
+      // Update each element's coe_ids and update local state immediately
+      const updatedElements: Element[] = [];
+      
       for (const element of elementsToUpdate) {
         let updatedCoeIds: string[] = element.coe_ids || [];
         
@@ -113,11 +128,54 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
           .from("elements")
           .update({ coe_ids: updatedCoeIds })
           .eq("id", element.id);
+        
+        // Store updated element for local state update
+        updatedElements.push({
+          ...element,
+          coe_ids: updatedCoeIds
+        });
       }
+      
+      // Immediately update local state for UI refresh
+      setLocalAssignedElements(prev => {
+        // Remove elements that were unassigned
+        const remaining = prev.filter(element => 
+          !updatedElements.some(updated => 
+            updated.id === element.id && targetType === "unassign"
+          )
+        );
+        
+        // Add newly assigned elements
+        const newlyAssigned = updatedElements.filter(element => 
+          targetType === "assign" && element.coe_ids?.includes(coeId)
+        );
+        
+        return [...remaining, ...newlyAssigned];
+      });
+      
+      setLocalUnassignedElements(prev => {
+        // Remove elements that were assigned
+        const remaining = prev.filter(element => 
+          !updatedElements.some(updated => 
+            updated.id === element.id && targetType === "assign"
+          )
+        );
+        
+        // Add newly unassigned elements
+        const newlyUnassigned = updatedElements.filter(element => 
+          targetType === "unassign" && (!element.coe_ids || !element.coe_ids.includes(coeId))
+        );
+        
+        return [...remaining, ...newlyUnassigned];
+      });
       
       // Clear selection and dragged element
       setSelectedElements(new Set());
       setDraggedElement(null);
+      
+      // Invalidate queries to ensure data consistency across components
+      queryClient.invalidateQueries({ queryKey: ["elements"] });
+      queryClient.invalidateQueries({ queryKey: ["coe-elements", coeId] });
       
       // Notify parent of change
       onAssignmentChange();
@@ -162,6 +220,67 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
 
   const handleDragEnd = () => {
     setDraggedElement(null);
+  };
+  
+  // Handle assigning selected elements via button
+  const handleAssignSelected = async () => {
+    try {
+      const elementsToAssign = elements.filter(element => selectedElements.has(element.id));
+      const updatedElements: Element[] = [];
+      
+      // Update each element's coe_ids
+      for (const element of elementsToAssign) {
+        const updatedCoeIds = [...(element.coe_ids || []), coeId];
+        await supabase
+          .from("elements")
+          .update({ coe_ids: updatedCoeIds })
+          .eq("id", element.id);
+        
+        // Store updated element
+        updatedElements.push({
+          ...element,
+          coe_ids: updatedCoeIds
+        });
+      }
+      
+      // Immediately update local state for UI refresh
+      setLocalAssignedElements(prev => {
+        const newAssigned = [...prev];
+        updatedElements.forEach(element => {
+          if (!newAssigned.some(e => e.id === element.id)) {
+            newAssigned.push(element);
+          }
+        });
+        return newAssigned;
+      });
+      
+      setLocalUnassignedElements(prev => 
+        prev.filter(element => !selectedElements.has(element.id))
+      );
+      
+      // Clear selection
+      setSelectedElements(new Set());
+      
+      // Invalidate queries to ensure data consistency
+      queryClient.invalidateQueries({ queryKey: ["elements"] });
+      queryClient.invalidateQueries({ queryKey: ["coe-elements", coeId] });
+      
+      // Notify parent of change
+      onAssignmentChange();
+      
+      // Show success toast
+      toast({
+        title: `${selectedElements.size} elements assigned`,
+        description: "Successfully added to this COE"
+      });
+    } catch (error) {
+      console.error("Error assigning elements:", error);
+      toast({
+        title: "Error",
+        description: "Failed to assign elements. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   if (isLoading) {
@@ -237,15 +356,15 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
           className="bg-background border-primary/20 hover:border-primary/40 transition-colors"
         >
           <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card">
-            Assigned to COE ({assignedElements.length})
+            Assigned to COE ({localAssignedElements.length})
             {selectedElements.size > 0 && (
               <Badge className="ml-2 bg-primary">Drag {selectedElements.size} elements here</Badge>
             )}
           </div>
           
-          {assignedElements.length > 0 ? (
+          {localAssignedElements.length > 0 ? (
             <div className="space-y-2">
-              {assignedElements.map((element) => (
+              {localAssignedElements.map((element) => (
                 <DraggableCard
                   key={element.id}
                   coe={element}
@@ -269,40 +388,7 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
         <div className="flex justify-end">
           <Button 
             size="sm"
-            onClick={async () => {
-              try {
-                // Update all selected elements
-                for (const elementId of selectedElements) {
-                  const element = elements.find(e => e.id === elementId);
-                  if (element) {
-                    const updatedCoeIds = [...(element.coe_ids || []), coeId];
-                    await supabase
-                      .from("elements")
-                      .update({ coe_ids: updatedCoeIds })
-                      .eq("id", elementId);
-                  }
-                }
-                
-                // Clear selection
-                setSelectedElements(new Set());
-                
-                // Notify parent of change
-                onAssignmentChange();
-                
-                // Show success toast
-                toast({
-                  title: `${selectedElements.size} elements assigned`,
-                  description: "Successfully added to this COE"
-                });
-              } catch (error) {
-                console.error("Error assigning elements:", error);
-                toast({
-                  title: "Error",
-                  description: "Failed to assign elements. Please try again.",
-                  variant: "destructive"
-                });
-              }
-            }}
+            onClick={handleAssignSelected}
           >
             Assign {selectedElements.size} Selected
           </Button>
