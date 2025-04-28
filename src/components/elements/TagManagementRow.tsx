@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface TagManagementRowProps {
   selectedTags: string[];
@@ -29,10 +30,12 @@ export function TagManagementRow({
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const { toast } = useToast();
+  const { session } = useAuth();
+  const userId = session?.user?.id;
 
   // Fetch tags from both elements arrays and the tags table
-  const { data: availableTags = [], isLoading: isLoadingTags } = useQuery({
-    queryKey: ["available-tags"],
+  const { data: availableTags = [], isLoading: isLoadingTags, refetch } = useQuery({
+    queryKey: ["available-tags", userId],
     queryFn: async () => {
       try {
         // 1. Fetch tags from elements table arrays
@@ -49,11 +52,11 @@ export function TagManagementRow({
           return [];
         }
         
-        // 2. Fetch tags from the dedicated tags table
+        // 2. Fetch tags from the dedicated tags table - only those created by current user
         const { data: tagsData, error: tagsError } = await supabase
           .from("tags")
           .select("label")
-          .eq("entity_type", "elements");
+          .eq("entity_type", "Element");
         
         if (tagsError) {
           toast({
@@ -83,6 +86,7 @@ export function TagManagementRow({
         return [];
       }
     },
+    enabled: !!userId // Only run the query if the user is authenticated
   });
 
   // Filter tags based on search query
@@ -100,8 +104,14 @@ export function TagManagementRow({
   };
 
   const handleTagCreated = (newTag: string) => {
-    // The parent component will handle refreshing the tags list
+    // Refresh the tags list
+    refetch();
+    // Notify parent that a tag was added
     onAddTagClick();
+    toast({
+      title: "Tag created",
+      description: `Tag "${newTag}" has been created successfully`,
+    });
   };
 
   return (

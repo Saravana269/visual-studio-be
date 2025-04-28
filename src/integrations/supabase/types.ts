@@ -754,6 +754,12 @@ export type Database = {
         Args: { component_name: string }
         Returns: string
       }
+      get_entity_type_values: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          value: string
+        }[]
+      }
     }
     Enums: {
       entity_type: "element" | "coe" | "screen" | "core_set" | "widget"

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Search, X, ChevronRight, ChevronLeft } from "lucide-react";
@@ -21,6 +22,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CreateTagDialog } from "@/components/elements/CreateTagDialog";
 
 export interface Element {
   id: string;
@@ -38,7 +40,8 @@ const ElementsManager = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  useAuth();
+  const { session, isChecking } = useAuth();
+  const userId = session?.user?.id;
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<Element | null>(null);
@@ -49,6 +52,7 @@ const ElementsManager = () => {
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
   const [tagDialogMode, setTagDialogMode] = useState<'add' | 'remove'>('add');
   const [tagSelections, setTagSelections] = useState<Record<string, boolean>>({});
+  const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
   
   const { data: elements = [], isLoading, error, refetch } = useQuery({
     queryKey: ["elements"],
@@ -76,19 +80,51 @@ const ElementsManager = () => {
     },
   });
 
-  const { data: availableTags = [] } = useQuery({
-    queryKey: ["element-tags"],
+  const { data: availableTags = [], refetch: refetchTags } = useQuery({
+    queryKey: ["element-tags", userId],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.from("elements").select("tags");
-        if (error || !data) return [];
-        const allTags = data.flatMap((item) => item.tags || []);
-        return [...new Set(allTags)];
-      } catch (error) {
-        console.error("Error fetching tags:", error);
+        // 1. Fetch tags from elements table arrays
+        const { data: elementsData, error: elementsError } = await supabase
+          .from("elements")
+          .select("tags");
+          
+        if (elementsError) {
+          toast({
+            title: "Error fetching element tags",
+            description: elementsError.message,
+            variant: "destructive",
+          });
+          return [];
+        }
+        
+        // 2. Fetch tags from the dedicated tags table - only those created by current user
+        const { data: tagsData, error: tagsError } = await supabase
+          .from("tags")
+          .select("label")
+          .eq("entity_type", "Element");
+        
+        if (tagsError && userId) {
+          toast({
+            title: "Error fetching tags",
+            description: tagsError.message,
+            variant: "destructive",
+          });
+        }
+        
+        // Extract all unique tags
+        const elementTags = elementsData?.flatMap((item) => item.tags || []) || [];
+        const dedicatedTags = tagsData?.map(tag => tag.label) || [];
+        
+        // Combine both sources and remove duplicates
+        const allTags = [...elementTags, ...dedicatedTags];
+        return [...new Set(allTags)].filter(tag => tag && tag.trim() !== "");
+      } catch (error: any) {
+        console.error("Error fetching element tags:", error);
         return [];
       }
     },
+    enabled: !isChecking // Only run once we've checked authentication
   });
 
   const filteredElements = elements?.filter((element) => {
@@ -220,7 +256,15 @@ const ElementsManager = () => {
   };
 
   const handleAddTag = () => {
-    refetch();
+    setIsCreateTagDialogOpen(true);
+  };
+
+  const handleTagCreated = (newTag: string) => {
+    refetchTags();
+    toast({
+      title: "Tag created",
+      description: `Tag "${newTag}" has been created successfully.`,
+    });
   };
 
   return (
@@ -246,7 +290,7 @@ const ElementsManager = () => {
             selectedTags={selectedTags}
             onTagSearch={handleTagSearch}
             onTagRemove={handleClearTag}
-            onAddTagClick={handleAddTag}
+            onAddTagClick={() => setIsCreateTagDialogOpen(true)}
             onManageTagsClick={() => {/* Implement tag management */}}
           />
         </div>
@@ -365,6 +409,13 @@ const ElementsManager = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        {/* Add CreateTagDialog component */}
+        <CreateTagDialog
+          open={isCreateTagDialogOpen}
+          onClose={() => setIsCreateTagDialogOpen(false)}
+          onTagCreated={handleTagCreated}
+        />
       </div>
     </div>
   );
