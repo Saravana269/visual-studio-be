@@ -117,7 +117,7 @@ export function TagManagementRow({
 
   return (
     <div className="space-y-4">
-      {/* Main row with search, buttons and tags all in a single horizontal line */}
+      {/* Main row with search on left, tags in middle, buttons on right */}
       <div className="flex items-center gap-3 w-full">
         {/* Search input - fixed width but will shrink if needed */}
         <div className="relative min-w-[180px] max-w-[240px] flex-shrink">
@@ -133,30 +133,6 @@ export function TagManagementRow({
           />
         </div>
         
-        {/* Action buttons container with background and border */}
-        <div className="flex items-center bg-[#9affa130] border border-[#FFA130] rounded-md px-3 py-1 flex-shrink-0">
-          <Button 
-            onClick={() => setIsCreateTagDialogOpen(true)}
-            className="flex items-center gap-2 bg-[#8B4A2B] hover:bg-[#6D3A22] border-[#F97316] text-white whitespace-nowrap"
-            size="sm"
-          >
-            <Plus size={16} />
-            Tag
-          </Button>
-          
-          {/* Divider between buttons */}
-          <Separator className="mx-2 h-6 bg-[#333]" orientation="vertical" />
-          
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onManageTagsClick}
-            className="flex items-center justify-center w-9 h-9 flex-shrink-0"
-          >
-            <Settings size={18} />
-          </Button>
-        </div>
-
         {/* Tag list with horizontal scrolling - takes remaining space */}
         <div className="flex-grow overflow-hidden">
           <ScrollArea className="w-full">
@@ -188,6 +164,31 @@ export function TagManagementRow({
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
+        </div>
+        
+        {/* Action buttons container with background and border - at the right end */}
+        <div className="flex items-center bg-[#9affa130] border border-[#FFA130] rounded-md px-3 py-1 flex-shrink-0">
+          <Button 
+            onClick={() => setIsCreateTagDialogOpen(true)}
+            className="flex items-center gap-2 bg-transparent hover:bg-[#FFA13033] text-[#8B4A2B] whitespace-nowrap"
+            size="sm"
+            variant="ghost"
+          >
+            <Plus size={16} />
+            Tag
+          </Button>
+          
+          {/* Divider between buttons */}
+          <Separator className="mx-2 h-6 bg-[#333]" orientation="vertical" />
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onManageTagsClick}
+            className="flex items-center justify-center w-9 h-9 flex-shrink-0 text-[#8B4A2B] hover:bg-[#FFA13033] bg-transparent"
+          >
+            <Settings size={18} />
+          </Button>
         </div>
       </div>
 
