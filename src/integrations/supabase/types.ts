@@ -11,7 +11,6 @@ export type Database = {
     Tables: {
       class_of_elements: {
         Row: {
-          coreSet_id: string[] | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -22,7 +21,6 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          coreSet_id?: string[] | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -33,7 +31,6 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          coreSet_id?: string[] | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -49,7 +46,6 @@ export type Database = {
         Row: {
           code: string
           created_at: string | null
-          description: string | null
           id: string
           image_url: string | null
           name: string
@@ -58,7 +54,6 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string | null
-          description?: string | null
           id?: string
           image_url?: string | null
           name: string
@@ -67,7 +62,6 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string | null
-          description?: string | null
           id?: string
           image_url?: string | null
           name?: string

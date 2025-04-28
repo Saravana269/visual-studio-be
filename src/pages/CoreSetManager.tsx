@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import CoreSetHeader from "@/components/core-set/CoreSetHeader";
 import CoreSetList from "@/components/core-set/CoreSetList";
 import { CoreSetModal } from "@/components/core-set/CoreSetModal";
@@ -15,7 +14,6 @@ const CoreSetManager = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
   
-  const queryClient = useQueryClient();
   const { data: coreSets = [], isLoading } = useCoreSetData();
   
   // Get unique tags from all core sets
@@ -39,19 +37,12 @@ const CoreSetManager = () => {
   const handleCloseModal = (refreshList?: boolean) => {
     setIsCreateModalOpen(false);
     setSelectedCoreSet(null);
-    if (refreshList) {
-      queryClient.invalidateQueries({ queryKey: ["core-sets"] });
-    }
-  };
-  
-  const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["core-sets"] });
   };
   
   // Filter core sets based on search and tags
   const filteredCoreSets = coreSets.filter(coreSet => {
     const matchesSearch = coreSet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (coreSet.description?.toLowerCase() || "").includes(searchQuery.toLowerCase());
+                         coreSet.description?.toLowerCase().includes(searchQuery.toLowerCase());
                          
     const matchesTags = selectedTags.length === 0 ||
                        selectedTags.every(tag => coreSet.tags?.includes(tag));
@@ -92,7 +83,7 @@ const CoreSetManager = () => {
       <CoreSetList
         coreSets={filteredCoreSets}
         onEdit={handleEdit}
-        onView={handleRefresh}
+        onView={handleEdit}
       />
       
       <CoreSetModal
