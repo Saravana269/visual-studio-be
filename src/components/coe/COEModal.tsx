@@ -18,7 +18,7 @@ interface COE {
 interface COEModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (coe: Omit<COE, "id">) => void;
+  onSave: (coe: COE) => void;
   coe: COE | null;
 }
 

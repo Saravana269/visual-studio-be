@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ interface COESidebarProps {
   onClose: () => void;
   coe: COE | null;
   onUpdate: () => void;
-  onSave: (updatedCOE: Omit<COE, "id" | "element_count">) => void;
+  onSave: (updatedCOE: COE) => void;
 }
 
 const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps) => {
@@ -44,26 +45,25 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
     name: string;
     description: string | null;
     tags: string[] | null;
-    image_url?: string | null;
   }>({
     name: "",
     description: "",
     tags: [],
-    image_url: null
   });
   
+  // Reset form and edit mode when sidebar opens/closes
   useEffect(() => {
     if (isOpen && coe) {
       setFormData({
         name: coe.name,
         description: coe.description,
         tags: coe.tags,
-        image_url: coe.image_url
       });
     }
     setEditMode(false);
   }, [isOpen, coe]);
   
+  // Fetch elements assigned to this COE
   const { data: assignedElements = [], refetch: refetchElements } = useQuery({
     queryKey: ["coe-elements", coe?.id],
     queryFn: async () => {
@@ -87,10 +87,10 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
   const handleSave = () => {
     if (coe && formData.name.trim()) {
       onSave({
+        ...coe,
         name: formData.name,
         description: formData.description,
         tags: formData.tags,
-        image_url: formData.image_url
       });
       setEditMode(false);
     }
@@ -100,6 +100,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
     if (!coe?.id) return;
     
     try {
+      // Get current element data
       const { data: elementData, error: getError } = await supabase
         .from("elements")
         .select("coe_ids")
@@ -111,8 +112,10 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
         return;
       }
       
+      // Remove current COE id from the list
       const updatedCoeIds = (elementData.coe_ids || []).filter(id => id !== coe.id);
       
+      // Update the element
       const { error: updateError } = await supabase
         .from("elements")
         .update({ coe_ids: updatedCoeIds })
@@ -123,6 +126,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
         return;
       }
       
+      // Refetch assigned elements
       refetchElements();
     } catch (error) {
       console.error("Error removing element:", error);
@@ -165,6 +169,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
         </SheetHeader>
         
         <div className="py-6 space-y-6">
+          {/* Description */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Description</h3>
             {editMode ? (
@@ -181,6 +186,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
             )}
           </div>
           
+          {/* Tags */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Tags</h3>
             {editMode ? (
@@ -203,8 +209,10 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
             )}
           </div>
           
+          {/* Elements Assignment */}
           <ElementsAssignment coeId={coe.id} onAssignmentChange={refetchElements} />
           
+          {/* Assigned Elements */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium">Assigned Elements ({assignedElements.length})</h3>

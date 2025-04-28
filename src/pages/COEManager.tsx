@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +21,7 @@ interface COE {
   name: string;
   description: string | null;
   tags: string[] | null;
-  image_url?: string | null;
+  image_url: string | null;
   element_count?: number;
 }
 
@@ -73,10 +74,6 @@ const COEManager = () => {
         return [];
       }
       
-      if (!coesData) {
-        return [];
-      }
-      
       // Then for each COE, count associated elements
       const coesWithCounts = await Promise.all(
         coesData.map(async (coe) => {
@@ -96,8 +93,8 @@ const COEManager = () => {
     }
   });
   
-  // Ensure coes is always an array before filtering
-  const filteredCOEs = Array.isArray(coes) ? coes.filter(coe => {
+  // Filter COEs based on search query and selected tags
+  const filteredCOEs = coes.filter(coe => {
     // Filter by search query
     const matchesQuery = searchQuery === "" ||
       coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,10 +102,10 @@ const COEManager = () => {
       
     // Filter by selected tags
     const matchesTags = selectedTags.length === 0 ||
-      (coe.tags && selectedTags.every(tag => coe.tags.includes(tag)));
+      selectedTags.every(tag => coe.tags && coe.tags.includes(tag));
       
     return matchesQuery && matchesTags;
-  }) : [];
+  });
   
   // Handle opening the modal for creating/editing
   const handleOpenModal = (coe?: COE) => {
@@ -257,7 +254,7 @@ const COEManager = () => {
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
       ) : filteredCOEs.length === 0 ? (
-        Array.isArray(coes) && coes.length === 0 ? (
+        coes.length === 0 ? (
           <COEEmptyState onCreateFirst={() => handleOpenModal()} />
         ) : (
           <div className="py-12 text-center">
@@ -353,10 +350,8 @@ const COEManager = () => {
           }
         }}
         onSave={(updatedCOE) => {
-          if (updatedCOE) {
-            handleSaveCOE(updatedCOE);
-            setIsSidebarOpen(false);
-          }
+          handleSaveCOE(updatedCOE);
+          setIsSidebarOpen(false);
         }}
       />
     </div>
