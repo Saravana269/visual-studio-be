@@ -35,27 +35,20 @@ const COEList = ({ coes, onEdit, onView }: COEListProps) => {
           className="element-card relative flex flex-col overflow-hidden cursor-pointer cyberpunk-card"
           onClick={() => onView(coe)}
         >
-          {coe.image_url ? (
-            <div className="cyberpunk-image-container">
-              <AspectRatio ratio={16/9} className="w-full">
-                <img 
-                  src={coe.image_url} 
-                  alt={coe.name}
-                  className="w-full h-full object-cover cyberpunk-image"
-                  onError={(e) => {
-                    // Fallback on error
-                    const target = e.target as HTMLImageElement;
-                    target.src = "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b";
-                  }}
-                />
-                <div className="cyberpunk-image-overlay"></div>
-              </AspectRatio>
-            </div>
-          ) : (
-            <div className="cyberpunk-placeholder h-[120px] w-full flex items-center justify-center">
-              <div className="text-xs text-center text-muted-foreground">No image</div>
-            </div>
-          )}
+          <div className="cyberpunk-image-container">
+            <AspectRatio ratio={16/9} className="w-full">
+              <img 
+                src={coe.image_url || "https://images.unsplash.com/photo-1518770660439-4636190af475"} 
+                alt={coe.name}
+                className="w-full h-full object-cover cyberpunk-image"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "https://images.unsplash.com/photo-1518770660439-4636190af475";
+                }}
+              />
+              <div className="cyberpunk-image-overlay"></div>
+            </AspectRatio>
+          </div>
           
           <CardHeader className="pb-2 p-3">
             <h3 className="font-semibold text-base cyberpunk-text">{coe.name}</h3>
