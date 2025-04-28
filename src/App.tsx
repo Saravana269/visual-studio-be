@@ -63,7 +63,7 @@ function App() {
     );
   }
 
-  // If authenticated, show Elements Manager as landing page
+  // If authenticated, show main application with proper layout
   return (
     <Router>
       <TooltipProvider>
@@ -75,14 +75,21 @@ function App() {
             
             <main className="flex-1 p-6 mt-16 overflow-y-auto">
               <Routes>
+                {/* Redirect root path to elements */}
                 <Route path="/" element={<Navigate to="/elements" replace />} />
+                
+                {/* Main application routes */}
                 <Route path="/elements" element={<ElementsManager />} />
                 <Route path="/coe" element={<COEManager />} />
                 <Route path="/core-set" element={<CoreSetManager />} />
                 <Route path="/widgets" element={<WidgetManager />} />
                 <Route path="/settings" element={<Settings />} />
+                
+                {/* Auth routes redirect to elements if already authenticated */}
                 <Route path="/auth" element={<Navigate to="/elements" replace />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                
+                {/* Catch all for unknown routes */}
                 <Route path="*" element={<Navigate to="/elements" replace />} />
               </Routes>
             </main>

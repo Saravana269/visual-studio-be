@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { Logo } from "./Logo";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
   { name: "Element Manager", path: "/elements", icon: <Tag size={24} /> },
@@ -21,6 +23,21 @@ const menuItems = [
 
 export default function Sidebar({ onSignOut }: { onSignOut: () => void }) {
   const location = useLocation();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await onSignOut();
+      console.log("User signed out successfully");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: "An error occurred while signing out",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <TooltipProvider>
@@ -37,6 +54,7 @@ export default function Sidebar({ onSignOut }: { onSignOut: () => void }) {
               <TooltipTrigger asChild>
                 <NavLink
                   to={item.path}
+                  end
                   className={({ isActive }) =>
                     `group relative flex items-center justify-center p-3 transition-all duration-300
                     hover:text-[#00FF00] hover:bg-[#121212]
@@ -64,7 +82,7 @@ export default function Sidebar({ onSignOut }: { onSignOut: () => void }) {
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <button
-                onClick={onSignOut}
+                onClick={handleSignOut}
                 className="w-full flex items-center justify-center p-3 text-red-400 hover:text-red-300 hover:bg-[#121212] transition-colors duration-300"
               >
                 <LogOut size={24} />

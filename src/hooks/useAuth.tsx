@@ -1,12 +1,13 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
 
 export const useAuth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isChecking, setIsChecking] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
@@ -21,15 +22,20 @@ export const useAuth = () => {
         
         setSession(currentSession);
         
+        // Only redirect if not authenticated and not already on auth-related pages
         if (!currentSession && mounted) {
-          // Only show toast if we're not on the auth page already
-          if (!window.location.pathname.includes('/auth')) {
+          const isAuthRoute = 
+            location.pathname.includes('/auth') || 
+            location.pathname === '/';
+          
+          if (!isAuthRoute) {
+            console.log("Auth state change: redirecting to auth page");
             toast({
               title: "Authentication required",
               description: "Please sign in to access this page",
               variant: "destructive",
             });
-            navigate("/auth");
+            navigate("/auth", { replace: true });
           }
         }
         
@@ -41,9 +47,17 @@ export const useAuth = () => {
     // Quick check for existing session with a timeout
     const sessionTimeout = setTimeout(() => {
       if (mounted && isChecking) {
+        console.log("Session check timed out: forcing completion");
         // If we're still checking after 2s, force complete to avoid UI freeze
         setIsChecking(false);
-        navigate("/auth");
+        
+        const isAuthRoute = 
+          location.pathname.includes('/auth') || 
+          location.pathname === '/';
+          
+        if (!isAuthRoute) {
+          navigate("/auth", { replace: true });
+        }
       }
     }, 2000);
     
@@ -55,9 +69,13 @@ export const useAuth = () => {
         if (error) throw error;
         
         if (!existingSession && mounted) {
-          // Only redirect if we're not already on the auth page
-          if (!window.location.pathname.includes('/auth')) {
-            navigate("/auth");
+          const isAuthRoute = 
+            location.pathname.includes('/auth') || 
+            location.pathname === '/';
+            
+          if (!isAuthRoute) {
+            console.log("No existing session: redirecting to auth");
+            navigate("/auth", { replace: true });
           }
         }
         
@@ -66,9 +84,10 @@ export const useAuth = () => {
           setIsChecking(false);
         }
       } catch (error) {
+        console.error("Error checking auth:", error);
         if (mounted) {
           setIsChecking(false);
-          navigate("/auth");
+          navigate("/auth", { replace: true });
         }
       }
     };
@@ -80,7 +99,7 @@ export const useAuth = () => {
       clearTimeout(sessionTimeout);
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, location.pathname]);
 
   return { isChecking, session };
 };
