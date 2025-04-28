@@ -71,7 +71,7 @@ export function ElementList({
           </CardContent>
           
           {/* Menu button - three dots */}
-          <div className="element-card-menu absolute top-2 right-2">
+          <div className="element-card-menu absolute top-2 right-2 z-10">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -79,7 +79,7 @@ export function ElementList({
                   <span className="sr-only">Open menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[160px]">
+              <DropdownMenuContent align="end" className="w-[160px] bg-popover">
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
                   onEdit(element);
