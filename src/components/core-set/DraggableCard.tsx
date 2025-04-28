@@ -1,10 +1,10 @@
-
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { X, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { COE } from "@/hooks/useCOEData";
 
 export interface DraggableCardProps {
@@ -15,6 +15,8 @@ export interface DraggableCardProps {
   onClick?: () => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
+  onSelect?: (checked: boolean) => void;
+  draggable?: boolean;
 }
 
 export const DraggableCard = ({
@@ -25,15 +27,53 @@ export const DraggableCard = ({
   onClick,
   onDragStart,
   onDragEnd,
+  onSelect,
+  draggable = true,
 }: DraggableCardProps) => {
   const [isBeingDragged, setIsBeingDragged] = useState(false);
+  const [isDraggable, setIsDraggable] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout>();
+  const touchStartPosition = useRef<{ x: number; y: number } | null>(null);
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartPosition.current = { x: touch.clientX, y: touch.clientY };
+    
+    longPressTimer.current = setTimeout(() => {
+      setIsDraggable(true);
+    }, 500); // 500ms for long press
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartPosition.current) return;
+    
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartPosition.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartPosition.current.y);
+    
+    // If moved more than 10px, cancel long press
+    if (deltaX > 10 || deltaY > 10) {
+      clearTimeout(longPressTimer.current);
+      touchStartPosition.current = null;
+    }
+  };
+  
+  const handleTouchEnd = () => {
+    clearTimeout(longPressTimer.current);
+    touchStartPosition.current = null;
+    // Keep draggable state for a short while to allow for the drag to start
+    setTimeout(() => setIsDraggable(false), 100);
+  };
   
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    // Set drag data
+    if (!draggable || !isDraggable) {
+      e.preventDefault();
+      return;
+    }
+    
     e.dataTransfer.setData("text/plain", coe.id);
     e.dataTransfer.effectAllowed = "move";
     
-    // Set custom drag image if available
     if (coe.image_url) {
       const img = new Image();
       img.src = coe.image_url;
@@ -46,30 +86,44 @@ export const DraggableCard = ({
   
   const handleDragEnd = () => {
     setIsBeingDragged(false);
+    setIsDraggable(false);
     if (onDragEnd) onDragEnd();
   };
 
   return (
     <Card
       className={cn(
-        "relative cursor-move transition-all duration-200 group p-2",
+        "relative transition-all duration-200 group p-2",
+        isDraggable && "cursor-move",
+        !isDraggable && "cursor-default",
         isSelected && "border-primary bg-primary/10",
         isBeingDragged && "opacity-40 scale-95",
         !isBeingDragged && "hover:shadow-md hover:-translate-y-0.5 hover:border-primary/50",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
         "animate-in fade-in-0 zoom-in-95"
       )}
-      onClick={onClick}
-      draggable
+      draggable={isDraggable}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <div className="flex items-center gap-2">
-        <div className={cn(
-          "text-muted-foreground p-1 rounded-md",
-          "group-hover:bg-primary/10 group-hover:text-primary"
-        )}>
-          <GripVertical className="h-4 w-4" />
+        <div className="flex items-center gap-2">
+          <Checkbox 
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelect?.(checked === true)}
+            onClick={(e) => e.stopPropagation()}
+            className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          />
+          
+          <div className={cn(
+            "text-muted-foreground p-1 rounded-md",
+            isDraggable ? "bg-primary/10 text-primary" : "group-hover:bg-primary/10 group-hover:text-primary"
+          )}>
+            <GripVertical className="h-4 w-4" />
+          </div>
         </div>
         
         {coe.image_url && (

@@ -1,3 +1,4 @@
+
 import { DraggableCard } from "./DraggableCard";
 import { DropZone } from "./DropZone";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import type { CoreSet } from "@/hooks/useCoreSetData";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MoveHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface COEDropZoneListProps {
   zone: "unassign" | "assign";
@@ -77,8 +79,8 @@ export const COEDropZoneList = ({
         <div className="flex items-center gap-2">
           {title}
           {selectedCOEs.size > 0 && zone === "assign" && (
-            <Badge className="ml-2 bg-primary">
-              {selectedCOEs.size}
+            <Badge variant="secondary" className="ml-2">
+              {selectedCOEs.size} selected
             </Badge>
           )}
         </div>
@@ -90,7 +92,7 @@ export const COEDropZoneList = ({
             key={coe.id}
             coe={coe}
             isSelected={selectedCOEs.has(coe.id)}
-            onClick={() => onSelect?.(coe.id)}
+            onSelect={(checked) => onSelect?.(coe.id)}
             onDragStart={() => onDragStart?.(coe)}
             onDragEnd={onDragEnd}
             onRemove={zone === "assign" ? () => handleRemove(coe) : undefined}
