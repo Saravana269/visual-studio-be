@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,7 +69,7 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
   }, []);
 
   const handleDrop = useCallback(async (targetType: "assign" | "unassign") => {
-    if (!coreSet) return;
+    if (!coreSet || (!draggedCOE && selectedCOEs.size === 0)) return;
     
     const coesToUpdate: COE[] = [];
     

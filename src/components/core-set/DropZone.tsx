@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { MoveHorizontal } from "lucide-react";
@@ -28,7 +27,6 @@ export const DropZone = ({
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only trigger when actually leaving the dropzone, not entering a child
     if (e.currentTarget.contains(e.relatedTarget as Node)) return;
     setIsDragEnter(false);
   };

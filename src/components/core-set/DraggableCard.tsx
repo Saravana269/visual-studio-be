@@ -29,16 +29,16 @@ export const DraggableCard = ({
   const [isBeingDragged, setIsBeingDragged] = useState(false);
   
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    // Set a better drag image
+    // Set drag data
+    e.dataTransfer.setData("text/plain", coe.id);
+    e.dataTransfer.effectAllowed = "move";
+    
+    // Set custom drag image if available
     if (coe.image_url) {
       const img = new Image();
       img.src = coe.image_url;
       e.dataTransfer.setDragImage(img, 20, 20);
     }
-
-    // Set data transfer for proper drag identification
-    e.dataTransfer.setData("text/plain", coe.id);
-    e.dataTransfer.effectAllowed = "move";
     
     setIsBeingDragged(true);
     if (onDragStart) onDragStart();
