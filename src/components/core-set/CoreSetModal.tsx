@@ -21,9 +21,9 @@ const formSchema = z.object({
   description: z.string().optional(),
   image_url: z.string().optional().nullable(),
   tags: z.array(z.string()).optional().nullable(),
-  source_coe_id: z.string().optional().nullable(),
+  source_coe_id: z.array(z.string()).optional().nullable(),
   source_element_id: z.string().optional().nullable(),
-  destination_coe_id: z.string().optional().nullable(),
+  destination_coe_id: z.array(z.string()).optional().nullable(),
   destination_element_ids: z.array(z.string()).optional().nullable(),
 });
 
@@ -46,9 +46,9 @@ export function CoreSetModal({ coreSet, open, onClose }: CoreSetModalProps) {
       description: coreSet?.description || "",
       image_url: coreSet?.image_url || "",
       tags: coreSet?.tags || [],
-      source_coe_id: coreSet?.source_coe_id || null,
+      source_coe_id: coreSet?.source_coe_id ? [coreSet.source_coe_id] : [],
       source_element_id: coreSet?.source_element_id || null,
-      destination_coe_id: coreSet?.destination_coe_id || null,
+      destination_coe_id: coreSet?.destination_coe_id ? [coreSet.destination_coe_id] : [],
       destination_element_ids: coreSet?.destination_element_ids || [],
     },
   });
@@ -62,9 +62,9 @@ export function CoreSetModal({ coreSet, open, onClose }: CoreSetModalProps) {
         description: values.description,
         image_url: values.image_url,
         tags: values.tags,
-        source_coe_id: values.source_coe_id,
+        source_coe_id: values.source_coe_id && values.source_coe_id.length > 0 ? values.source_coe_id[0] : null,
         source_element_id: values.source_element_id,
-        destination_coe_id: values.destination_coe_id,
+        destination_coe_id: values.destination_coe_id && values.destination_coe_id.length > 0 ? values.destination_coe_id[0] : null,
         destination_element_ids: values.destination_element_ids,
       };
       
@@ -191,7 +191,7 @@ export function CoreSetModal({ coreSet, open, onClose }: CoreSetModalProps) {
                   <FormLabel>Source COE</FormLabel>
                   <FormControl>
                     <CoeSelector
-                      value={field.value || ""}
+                      value={field.value || []}
                       onChange={(value) => field.onChange(value)}
                     />
                   </FormControl>

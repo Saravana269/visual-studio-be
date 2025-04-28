@@ -42,6 +42,141 @@ export type Database = {
         }
         Relationships: []
       }
+      classification: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          name: string
+          sub_menu_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          sub_menu_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          sub_menu_id?: string
+        }
+        Relationships: []
+      }
+      component_serial_counter: {
+        Row: {
+          serial_number: number | null
+          short_code: string
+          sub_classification_id: string
+        }
+        Insert: {
+          serial_number?: number | null
+          short_code: string
+          sub_classification_id: string
+        }
+        Update: {
+          serial_number?: number | null
+          short_code?: string
+          sub_classification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "component_serial_counter_sub_classification_id_fkey"
+            columns: ["sub_classification_id"]
+            isOneToOne: false
+            referencedRelation: "sub_classification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      component_type: {
+        Row: {
+          created_at: string | null
+          field_name: string
+          field_type: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          field_name: string
+          field_type: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          field_name?: string
+          field_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      components: {
+        Row: {
+          component_id_code: string
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          manufacturer_id: string | null
+          name: string
+          sub_classification_id: string
+          vendor_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          component_id_code: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          manufacturer_id?: string | null
+          name: string
+          sub_classification_id: string
+          vendor_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          component_id_code?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          manufacturer_id?: string | null
+          name?: string
+          sub_classification_id?: string
+          vendor_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "components_manufacturer_id_fkey"
+            columns: ["manufacturer_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturer_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "components_sub_classification_id_fkey"
+            columns: ["sub_classification_id"]
+            isOneToOne: false
+            referencedRelation: "sub_classification"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "components_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       core_sets: {
         Row: {
           created_at: string | null
@@ -139,6 +274,38 @@ export type Database = {
         }
         Relationships: []
       }
+      files: {
+        Row: {
+          component_id: string
+          created_at: string | null
+          file_name: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          component_id: string
+          created_at?: string | null
+          file_name: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          component_id?: string
+          created_at?: string | null
+          file_name?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       framework_types: {
         Row: {
           created_at: string | null
@@ -160,6 +327,39 @@ export type Database = {
           name?: string
           property_values?: Json | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      manufacturer_details: {
+        Row: {
+          brand_name: string | null
+          created_at: string | null
+          id: string
+          manufacturer_code: string
+          manufacturer_email: string | null
+          manufacturer_name: string
+          poc_mobile: string | null
+          poc_name: string | null
+        }
+        Insert: {
+          brand_name?: string | null
+          created_at?: string | null
+          id?: string
+          manufacturer_code: string
+          manufacturer_email?: string | null
+          manufacturer_name: string
+          poc_mobile?: string | null
+          poc_name?: string | null
+        }
+        Update: {
+          brand_name?: string | null
+          created_at?: string | null
+          id?: string
+          manufacturer_code?: string
+          manufacturer_email?: string | null
+          manufacturer_name?: string
+          poc_mobile?: string | null
+          poc_name?: string | null
         }
         Relationships: []
       }
@@ -272,6 +472,82 @@ export type Database = {
           },
         ]
       }
+      specific_details: {
+        Row: {
+          component_id: string
+          created_at: string | null
+          field_name: string
+          field_type: string
+          field_value: string | null
+          id: string
+          is_unit_required: boolean | null
+          unit_type: string | null
+        }
+        Insert: {
+          component_id: string
+          created_at?: string | null
+          field_name: string
+          field_type: string
+          field_value?: string | null
+          id?: string
+          is_unit_required?: boolean | null
+          unit_type?: string | null
+        }
+        Update: {
+          component_id?: string
+          created_at?: string | null
+          field_name?: string
+          field_type?: string
+          field_value?: string | null
+          id?: string
+          is_unit_required?: boolean | null
+          unit_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specific_details_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sub_classification: {
+        Row: {
+          classification_id: string
+          code: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          name: string
+        }
+        Insert: {
+          classification_id: string
+          code: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+        }
+        Update: {
+          classification_id?: string
+          code?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_classification_classification_id_fkey"
+            columns: ["classification_id"]
+            isOneToOne: false
+            referencedRelation: "classification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tags: {
         Row: {
           created_at: string | null
@@ -293,6 +569,36 @@ export type Database = {
           entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
           label?: string
+        }
+        Relationships: []
+      }
+      vendor_details: {
+        Row: {
+          created_at: string | null
+          id: string
+          poc_mobile: string | null
+          poc_name: string | null
+          vendor_code: string
+          vendor_email: string | null
+          vendor_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          poc_mobile?: string | null
+          poc_name?: string | null
+          vendor_code: string
+          vendor_email?: string | null
+          vendor_name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          poc_mobile?: string | null
+          poc_name?: string | null
+          vendor_code?: string
+          vendor_email?: string | null
+          vendor_name?: string
         }
         Relationships: []
       }
@@ -331,7 +637,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_component_id_code: {
+        Args: {
+          p_menu_code: string
+          p_submenu_code: string
+          p_classification_code: string
+          p_subclassification_code: string
+          p_component_name: string
+        }
+        Returns: string
+      }
+      generate_short_code: {
+        Args: { component_name: string }
+        Returns: string
+      }
     }
     Enums: {
       entity_type: "element" | "coe" | "screen" | "core_set" | "widget"
