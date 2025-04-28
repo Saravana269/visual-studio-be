@@ -33,7 +33,7 @@ const CoreSetDetailsDialog = ({ coreSet, open, onClose }: CoreSetDetailsDialogPr
             <h3 className="text-sm font-medium mb-1">Primary Element</h3>
             <div className="bg-muted rounded-md p-3">
               {coreSet.source_element_id ? (
-                <div className="text-sm">{coreSet.source_element_id}</div>
+                <div className="text-sm">{typeof coreSet.source_element_id === 'string' ? coreSet.source_element_id : 'Invalid element ID'}</div>
               ) : (
                 <div className="text-sm text-muted-foreground">No primary element assigned</div>
               )}
@@ -46,9 +46,9 @@ const CoreSetDetailsDialog = ({ coreSet, open, onClose }: CoreSetDetailsDialogPr
             <div className="bg-muted rounded-md p-3">
               {coreSet.destination_element_ids && coreSet.destination_element_ids.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {coreSet.destination_element_ids.map((elementId) => (
-                    <div key={elementId} className="text-sm bg-background rounded p-2">
-                      {elementId}
+                  {coreSet.destination_element_ids.map((elementId, index) => (
+                    <div key={`${elementId}-${index}`} className="text-sm bg-background rounded p-2">
+                      {typeof elementId === 'string' ? elementId : 'Invalid element ID'}
                     </div>
                   ))}
                 </div>
@@ -63,8 +63,8 @@ const CoreSetDetailsDialog = ({ coreSet, open, onClose }: CoreSetDetailsDialogPr
             <div>
               <h3 className="text-sm font-medium mb-1">Tags</h3>
               <div className="flex flex-wrap gap-1">
-                {coreSet.tags.map(tag => (
-                  <Badge key={tag} variant="secondary">
+                {coreSet.tags.map((tag, idx) => (
+                  <Badge key={`${tag}-${idx}`} variant="secondary">
                     {tag}
                   </Badge>
                 ))}
