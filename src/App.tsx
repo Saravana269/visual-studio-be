@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -11,6 +12,7 @@ import ElementsManager from "./pages/ElementsManager";
 import COEManager from "./pages/COEManager";
 import COEDetailView from "./components/coe/COEDetailView";
 import CoreSetManager from "./pages/CoreSetManager";
+import CoreSetAssignment from "./pages/CoreSetAssignment"; // Add this import
 import WidgetManager from "./pages/WidgetManager";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
