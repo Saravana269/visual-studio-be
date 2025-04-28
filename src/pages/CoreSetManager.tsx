@@ -7,12 +7,14 @@ import { TagManagementRow } from "@/components/elements/TagManagementRow";
 import COETagSearch from "@/components/coe/COETagSearch";
 import { useCoreSetData } from "@/hooks/useCoreSetData";
 import type { CoreSet } from "@/hooks/useCoreSetData";
+import { CoreSetCOEAssignment } from "@/components/core-set/CoreSetCOEAssignment";
 
 const CoreSetManager = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: coreSets = [], isLoading } = useCoreSetData();
   
@@ -34,8 +36,18 @@ const CoreSetManager = () => {
     setIsCreateModalOpen(true);
   };
   
+  const handleView = (coreSet: CoreSet) => {
+    setSelectedCoreSet(coreSet);
+    setIsDetailsOpen(true);
+  };
+  
   const handleCloseModal = (refreshList?: boolean) => {
     setIsCreateModalOpen(false);
+    setSelectedCoreSet(null);
+  };
+  
+  const handleCloseDetails = () => {
+    setIsDetailsOpen(false);
     setSelectedCoreSet(null);
   };
   
@@ -83,12 +95,18 @@ const CoreSetManager = () => {
       <CoreSetList
         coreSets={filteredCoreSets}
         onEdit={handleEdit}
-        onView={handleEdit}
+        onView={handleView}
       />
       
       <CoreSetModal
         open={isCreateModalOpen}
         onClose={handleCloseModal}
+        coreSet={selectedCoreSet}
+      />
+      
+      <CoreSetCOEAssignment
+        open={isDetailsOpen}
+        onClose={handleCloseDetails}
         coreSet={selectedCoreSet}
       />
     </div>
