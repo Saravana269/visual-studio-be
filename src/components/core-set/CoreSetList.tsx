@@ -14,13 +14,39 @@ interface CoreSetListProps {
 
 const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {coreSets.map(coreSet => (
         <Card 
           key={coreSet.id} 
-          className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-200"
+          className="element-card relative flex flex-col overflow-hidden cursor-pointer"
+          onClick={() => onView(coreSet)}
         >
-          <div className="h-48 bg-muted flex items-center justify-center overflow-hidden">
+          <div className="absolute top-2 right-2 z-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="action-menu-button" onClick={e => e.stopPropagation()}>
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(coreSet);
+                }}>
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onView(coreSet);
+                }}>
+                  View Details
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
             {coreSet.image_url ? (
               <img 
                 src={coreSet.image_url} 
@@ -32,37 +58,28 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
             )}
           </div>
           
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-start">
-              <h3 className="font-semibold text-lg">{coreSet.name}</h3>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[160px]">
-                  <DropdownMenuItem onClick={() => onEdit(coreSet)}>
-                    Edit Core Set
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onView(coreSet)}>
-                    View Details
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+          <CardHeader className="pb-2 p-3">
+            <h3 className="font-semibold text-base">{coreSet.name}</h3>
             {coreSet.description && (
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground line-clamp-2">
                 {coreSet.description}
               </p>
             )}
           </CardHeader>
           
-          <CardContent className="pt-0 mt-auto">
+          <CardContent className="pb-2 p-3 flex-1">
             {coreSet.destination_element_ids && coreSet.destination_element_ids.length > 0 && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground mb-2">
                 {coreSet.destination_element_ids.length} connected elements
+              </div>
+            )}
+            {coreSet.tags && coreSet.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {coreSet.tags.map(tag => (
+                  <Badge key={tag} variant="secondary" className="tag-badge">
+                    {tag}
+                  </Badge>
+                ))}
               </div>
             )}
           </CardContent>
