@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface COE {
   id: string;
@@ -28,26 +27,27 @@ interface COEListProps {
 
 const COEList = ({ coes, onEdit, onView }: COEListProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {coes.map((coe) => (
         <Card 
           key={coe.id} 
           className="element-card relative flex flex-col overflow-hidden cursor-pointer cyberpunk-card"
           onClick={() => onView(coe)}
         >
-          <div className="cyberpunk-image-container">
-            <AspectRatio ratio={16/9} className="w-full">
+          <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
+            {coe.image_url ? (
               <img 
-                src={coe.image_url || "https://images.unsplash.com/photo-1518770660439-4636190af475"} 
-                alt={coe.name}
-                className="w-full h-full object-cover cyberpunk-image"
+                src={coe.image_url} 
+                alt={coe.name} 
+                className="w-full h-full object-cover cyberpunk-image" 
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "https://images.unsplash.com/photo-1518770660439-4636190af475";
                 }}
               />
-              <div className="cyberpunk-image-overlay"></div>
-            </AspectRatio>
+            ) : (
+              <div className="text-muted-foreground text-sm">No image</div>
+            )}
           </div>
           
           <CardHeader className="pb-2 p-3">
