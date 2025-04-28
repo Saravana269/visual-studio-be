@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import { AppHeader } from "./components/layout/AppHeader";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
+import { supabase } from "@/integrations/supabase/client";
 
 // Import pages
 import ElementsManager from "./pages/ElementsManager";
@@ -16,17 +17,43 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import "./App.css";
 
-function handleSignOut() {
-  // Implement your sign out logic here
-  window.location.href = "/auth";
-}
+function App() {
+  const [session, setSession] = useState(null);
 
-export default function App() {
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // If not authenticated, only show auth page
+  if (!session) {
+    return (
+      <Router>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+      </Router>
+    );
+  }
+
+  // If authenticated, show full app with sidebar
   return (
     <Router>
       <TooltipProvider>
         <div className="flex h-screen bg-black text-white">
-          <Sidebar onSignOut={handleSignOut} />
+          <Sidebar onSignOut={() => supabase.auth.signOut()} />
           
           <div className="flex-1 flex flex-col ml-[60px]">
             <AppHeader />
@@ -39,7 +66,6 @@ export default function App() {
                 <Route path="/core-set" element={<CoreSetManager />} />
                 <Route path="/widgets" element={<WidgetManager />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/auth" element={<Auth />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
@@ -51,3 +77,5 @@ export default function App() {
     </Router>
   );
 }
+
+export default App;
