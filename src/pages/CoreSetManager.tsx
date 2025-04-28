@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { CoreSetHeader } from "@/components/core-set/CoreSetHeader";
-import { CoreSetList } from "@/components/core-set/CoreSetList";
+import CoreSetHeader from "@/components/core-set/CoreSetHeader";
+import CoreSetList from "@/components/core-set/CoreSetList";
 import { CoreSetModal } from "@/components/core-set/CoreSetModal";
 import { TagManagementRow } from "@/components/elements/TagManagementRow";
-import { COETagSearch } from "@/components/coe/COETagSearch";
+import COETagSearch from "@/components/coe/COETagSearch";
 import { useCoreSetData } from "@/hooks/useCoreSetData";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 
@@ -64,7 +64,6 @@ const CoreSetManager = () => {
       
       <div className="mb-6">
         <TagManagementRow
-          title="Core Set Tags"
           description="Manage and filter Core Sets by tags"
           className="mb-4"
         />
