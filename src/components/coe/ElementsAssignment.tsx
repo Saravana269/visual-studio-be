@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DropZone } from "../core-set/DropZone";
+import { DraggableCard } from "../core-set/DraggableCard";
 
 interface Element {
   id: string;
@@ -158,6 +159,10 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
   const clearSelection = () => {
     setSelectedElements(new Set());
   };
+
+  const handleDragEnd = () => {
+    setDraggedElement(null);
+  };
   
   if (isLoading) {
     return <div className="text-center py-4">Loading elements...</div>;
@@ -194,10 +199,11 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
       
       <div className="grid grid-cols-2 gap-4">
         {/* Unassigned Elements */}
-        <div
-          className="border rounded-md p-2 bg-card min-h-[200px] max-h-[400px] overflow-y-auto"
+        <DropZone
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, "unassign")}
+          zone="unassign"
+          className="bg-background border-dashed"
         >
           <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card">
             Available Elements ({filteredUnassigned.length})
@@ -206,39 +212,14 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
           {filteredUnassigned.length > 0 ? (
             <div className="space-y-2">
               {filteredUnassigned.map((element) => (
-                <Card
+                <DraggableCard
                   key={element.id}
-                  className={`cursor-pointer transition-all p-2 ${
-                    selectedElements.has(element.id) ? "border-primary bg-primary/5" : ""
-                  }`}
-                  draggable
-                  onDragStart={() => handleDragStart(element)}
+                  coe={element}
+                  isSelected={selectedElements.has(element.id)}
                   onClick={() => toggleElementSelection(element.id)}
-                >
-                  <div className="flex items-center gap-2">
-                    {element.image_url && (
-                      <div className="w-8 h-8 bg-muted flex-shrink-0">
-                        <img 
-                          src={element.image_url} 
-                          alt={element.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{element.name}</p>
-                      {element.tags && element.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {element.tags.slice(0, 2).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs py-0 px-1">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Card>
+                  onDragStart={() => handleDragStart(element)}
+                  onDragEnd={handleDragEnd}
+                />
               ))}
             </div>
           ) : (
@@ -246,13 +227,14 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
               No elements found
             </div>
           )}
-        </div>
+        </DropZone>
         
         {/* Assigned Elements Drop Zone */}
-        <div
-          className="border rounded-md p-2 bg-card min-h-[200px] max-h-[400px] overflow-y-auto border-dashed border-primary/50"
+        <DropZone
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, "assign")}
+          zone="assign"
+          className="bg-background border-primary/20 hover:border-primary/40 transition-colors"
         >
           <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card">
             Assigned to COE ({assignedElements.length})
@@ -264,36 +246,14 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
           {assignedElements.length > 0 ? (
             <div className="space-y-2">
               {assignedElements.map((element) => (
-                <Card
+                <DraggableCard
                   key={element.id}
-                  className="p-2"
-                  draggable
+                  coe={element}
+                  isSelected={selectedElements.has(element.id)}
+                  onClick={() => toggleElementSelection(element.id)}
                   onDragStart={() => handleDragStart(element)}
-                >
-                  <div className="flex items-center gap-2">
-                    {element.image_url && (
-                      <div className="w-8 h-8 bg-muted flex-shrink-0">
-                        <img 
-                          src={element.image_url} 
-                          alt={element.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{element.name}</p>
-                      {element.tags && element.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {element.tags.slice(0, 2).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs py-0 px-1">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Card>
+                  onDragEnd={handleDragEnd}
+                />
               ))}
             </div>
           ) : (
@@ -302,7 +262,7 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
               <p className="text-xs mt-1">Or select multiple and drag them as a group</p>
             </div>
           )}
-        </div>
+        </DropZone>
       </div>
       
       {selectedElements.size > 0 && (
