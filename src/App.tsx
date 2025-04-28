@@ -14,8 +14,6 @@ import CoreSetManager from "./pages/CoreSetManager";
 import WidgetManager from "./pages/WidgetManager";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import "./App.css";
 
 function App() {
   const [session, setSession] = useState(null);
@@ -48,7 +46,7 @@ function App() {
     );
   }
 
-  // If authenticated, show full app with sidebar and redirect to elements page
+  // If authenticated, show Elements Manager as landing page
   return (
     <Router>
       <TooltipProvider>
@@ -66,7 +64,7 @@ function App() {
                 <Route path="/core-set" element={<CoreSetManager />} />
                 <Route path="/widgets" element={<WidgetManager />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/elements" replace />} />
               </Routes>
             </main>
           </div>
