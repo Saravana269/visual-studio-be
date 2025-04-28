@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Search, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import COEModal from "@/components/coe/COEModal";
 import COETable from "@/components/coe/COETable";
 import COESidebar from "@/components/coe/COESidebar";
@@ -21,6 +21,7 @@ interface COE {
 }
 
 const COEManager = () => {
+  const navigate = useNavigate();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCOE, setSelectedCOE] = useState<COE | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -28,9 +29,26 @@ const COEManager = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const { toast } = useToast();
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to access this page",
+          variant: "destructive",
+        });
+        navigate("/auth");
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
   
-  // Fetch COEs and their element counts
-  const { data: coes = [], isLoading, refetch } = useQuery({
+  // Fetch COEs and their element counts with proper error handling
+  const { data: coes = [], isLoading, error, refetch } = useQuery({
     queryKey: ["coes"],
     queryFn: async () => {
       try {
@@ -82,42 +100,40 @@ const COEManager = () => {
       }
     },
   });
-  
+
   // Filter COEs based on search query and selected tags
-  const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
+  const filteredCOEs = coes.filter((coe) => {
     const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesTags =
       selectedTags.length === 0 ||
       (coe.tags && selectedTags.every((tag) => coe.tags.includes(tag)));
     return matchesSearch && matchesTags;
-  }) : [];
-  
+  });
+
   // Get unique tags from all COEs
-  const allTags = Array.isArray(coes) 
-    ? Array.from(new Set(coes.flatMap((coe) => coe.tags || []))) 
-    : [];
-  
+  const allTags = Array.from(new Set(coes.flatMap((coe) => coe.tags || [])));
+
   const handleCreateCOE = () => {
     setSelectedCOE(null);
     setIsCreateModalOpen(true);
   };
-  
+
   const handleEditCOE = (coe: COE) => {
     setSelectedCOE(coe);
     setIsCreateModalOpen(true);
   };
-  
+
   const handleViewCOE = (coe: COE) => {
     setSelectedCOE(coe);
     setSidePanelOpen(true);
   };
-  
+
   const handleCloseSidebar = () => {
     setSidePanelOpen(false);
     setSelectedCOE(null);
   };
-  
+
   const handleCloseModal = (shouldRefresh: boolean = false) => {
     setIsCreateModalOpen(false);
     setSelectedCOE(null);
@@ -125,13 +141,13 @@ const COEManager = () => {
       refetch();
     }
   };
-  
+
   const handleTagSelect = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
