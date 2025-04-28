@@ -188,6 +188,31 @@ body {
   box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
 }
 
+.element-count-badge {
+  background: #F6F6F7;
+  border: 1px solid #403E43;
+  color: #221F26;
+  font-size: 0.75rem;
+}
+
+.action-menu-button {
+  background: #F6F6F7;
+  border: 1px solid #403E43;
+  height: 24px;
+  width: 24px;
+  padding: 0;
+}
+
+.action-menu-button:hover {
+  background: #EAEAEA;
+}
+
+.tag-badge {
+  background: #FEC6A1;
+  border: 1px solid #E5946C;
+  color: #8B4A2B;
+}
+
 @keyframes scan-line {
   0% {
     transform: translateY(-100%);

@@ -34,58 +34,21 @@ const COEList = ({ coes, onEdit, onView }: COEListProps) => {
           className="element-card relative flex flex-col overflow-hidden cursor-pointer cyberpunk-card"
           onClick={() => onView(coe)}
         >
-          <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
-            {coe.image_url ? (
-              <img 
-                src={coe.image_url} 
-                alt={coe.name} 
-                className="w-full h-full object-cover cyberpunk-image" 
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "https://images.unsplash.com/photo-1518770660439-4636190af475";
-                }}
-              />
-            ) : (
-              <div className="text-muted-foreground text-sm">No image</div>
-            )}
+          <div className="absolute top-2 left-2 z-10">
+            <Badge variant="secondary" className="element-count-badge">
+              {coe.element_count || 0} Elements
+            </Badge>
           </div>
           
-          <CardHeader className="pb-2 p-3">
-            <h3 className="font-semibold text-base cyberpunk-text">{coe.name}</h3>
-            {coe.description && (
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {coe.description}
-              </p>
-            )}
-          </CardHeader>
-          
-          <CardContent className="pb-2 p-3 flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="outline" className="text-xs cyberpunk-badge">
-                {coe.element_count || 0} Elements
-              </Badge>
-            </div>
-            
-            {coe.tags && coe.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {coe.tags.map(tag => (
-                  <Badge key={tag} variant="secondary" className="text-xs cyberpunk-badge">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </CardContent>
-          
-          <div className="element-card-menu absolute top-2 right-2 z-10">
+          <div className="absolute top-2 right-2 z-10">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cyberpunk-button">
+              <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" className="action-menu-button">
                   <MoreVertical className="h-4 w-4" />
                   <span className="sr-only">Open menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[160px] cyberpunk-menu">
+              <DropdownMenuContent align="end" className="w-[160px]">
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
                   onEdit(coe);
@@ -101,6 +64,39 @@ const COEList = ({ coes, onEdit, onView }: COEListProps) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
+            {coe.image_url ? (
+              <img 
+                src={coe.image_url} 
+                alt={coe.name} 
+                className="w-full h-full object-cover" 
+              />
+            ) : (
+              <div className="text-muted-foreground text-sm">No image</div>
+            )}
+          </div>
+          
+          <CardHeader className="pb-2 p-3">
+            <h3 className="font-semibold text-base">{coe.name}</h3>
+            {coe.description && (
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {coe.description}
+              </p>
+            )}
+          </CardHeader>
+          
+          <CardContent className="pb-2 p-3 flex-1">
+            {coe.tags && coe.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {coe.tags.map(tag => (
+                  <Badge key={tag} variant="secondary" className="tag-badge">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
         </Card>
       ))}
       
