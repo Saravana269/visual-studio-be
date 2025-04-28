@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import CoreSetHeader from "@/components/core-set/CoreSetHeader";
 import CoreSetList from "@/components/core-set/CoreSetList";
@@ -6,7 +7,6 @@ import { TagManagementRow } from "@/components/elements/TagManagementRow";
 import COETagSearch from "@/components/coe/COETagSearch";
 import { useCoreSetData } from "@/hooks/useCoreSetData";
 import type { CoreSet } from "@/hooks/useCoreSetData";
-import { CoreSetCOEAssignment } from "@/components/core-set/CoreSetCOEAssignment";
 import { useAuth } from "@/hooks/useAuth";
 
 const CoreSetManager = () => {
@@ -16,7 +16,6 @@ const CoreSetManager = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: coreSets = [], isLoading } = useCoreSetData();
   
@@ -37,18 +36,8 @@ const CoreSetManager = () => {
     setIsCreateModalOpen(true);
   };
   
-  const handleView = (coreSet: CoreSet) => {
-    setSelectedCoreSet(coreSet);
-    setIsDetailsOpen(true);
-  };
-  
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
-    setSelectedCoreSet(null);
-  };
-  
-  const handleCloseDetails = () => {
-    setIsDetailsOpen(false);
     setSelectedCoreSet(null);
   };
   
@@ -95,7 +84,7 @@ const CoreSetManager = () => {
       <CoreSetList
         coreSets={filteredCoreSets}
         onEdit={handleEdit}
-        onView={handleView}
+        onView={() => {}}
         onMapping={() => {}}
       />
       
