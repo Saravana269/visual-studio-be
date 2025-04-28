@@ -1,11 +1,15 @@
 
-import { Search, Plus, Settings } from "lucide-react";
+import { Search, Plus, Settings, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { CreateTagDialog } from "./CreateTagDialog";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 interface TagManagementRowProps {
   selectedTags: string[];
@@ -23,6 +27,55 @@ export function TagManagementRow({
   onManageTagsClick,
 }: TagManagementRowProps) {
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
+  const [tagSearchQuery, setTagSearchQuery] = useState("");
+  const { toast } = useToast();
+
+  // Fetch all available tags
+  const { data: availableTags = [], isLoading: isLoadingTags } = useQuery({
+    queryKey: ["available-tags"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("elements")
+          .select("tags");
+          
+        if (error) {
+          toast({
+            title: "Error fetching tags",
+            description: error.message,
+            variant: "destructive",
+          });
+          return [];
+        }
+        
+        // Extract all unique tags from elements
+        const allTags = data?.flatMap((item) => item.tags || []) || [];
+        return [...new Set(allTags)].filter(tag => tag && tag.trim() !== "");
+      } catch (error: any) {
+        console.error("Error fetching available tags:", error);
+        toast({
+          title: "Error fetching tags",
+          description: "Failed to load available tags",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+  });
+
+  // Filter tags based on search query
+  const filteredTags = availableTags.filter(tag => 
+    tag.toLowerCase().includes(tagSearchQuery.toLowerCase()) &&
+    !selectedTags.includes(tag)
+  );
+
+  const handleTagClick = (tag: string) => {
+    if (!selectedTags.includes(tag)) {
+      // Call parent's function to add the tag to selected tags
+      onTagSearch(tag); // This will update the search query to find the tag
+      // Alternative approach would be to directly add the tag to selected tags with a new callback
+    }
+  };
 
   const handleTagCreated = (newTag: string) => {
     // The parent component will handle refreshing the tags list
@@ -37,7 +90,11 @@ export function TagManagementRow({
           <Input
             placeholder="Search tags..."
             className="pl-9"
-            onChange={(e) => onTagSearch(e.target.value)}
+            value={tagSearchQuery}
+            onChange={(e) => {
+              setTagSearchQuery(e.target.value);
+              onTagSearch(e.target.value);
+            }}
           />
         </div>
         
@@ -59,6 +116,38 @@ export function TagManagementRow({
             <Settings size={18} />
           </Button>
         </div>
+      </div>
+
+      {/* Horizontal scrollable tag list */}
+      <div className="relative">
+        <ScrollArea className="w-full whitespace-nowrap pb-2" orientation="horizontal">
+          <div className="flex items-center gap-2 py-2">
+            {isLoadingTags ? (
+              <div className="text-sm text-muted-foreground px-2">Loading tags...</div>
+            ) : filteredTags.length > 0 ? (
+              <>
+                <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
+                <div className="flex gap-2">
+                  {filteredTags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1"
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </>
+            ) : tagSearchQuery ? (
+              <div className="text-sm text-muted-foreground px-2">No matching tags found</div>
+            ) : (
+              <div className="text-sm text-muted-foreground px-2 flex items-center gap-1">
+                <Tag size={16} /> Available tags will appear here
+              </div>
+            )}
+          </div>
+        </ScrollArea>
       </div>
 
       {selectedTags.length > 0 && (

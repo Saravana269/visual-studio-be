@@ -651,6 +651,7 @@ export type Database = {
       tags: {
         Row: {
           created_at: string | null
+          created_by: string | null
           entity_id: string
           entity_type: Database["public"]["Enums"]["entity_type"]
           id: string
@@ -658,6 +659,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          created_by?: string | null
           entity_id: string
           entity_type: Database["public"]["Enums"]["entity_type"]
           id?: string
@@ -665,6 +667,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          created_by?: string | null
           entity_id?: string
           entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
