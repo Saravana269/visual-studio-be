@@ -11,6 +11,7 @@ import COEModal from "@/components/coe/COEModal";
 import COETable from "@/components/coe/COETable";
 import COESidebar from "@/components/coe/COESidebar";
 import COEEmptyState from "@/components/coe/COEEmptyState";
+import COEList from "@/components/coe/COEList";
 
 interface COE {
   id: string;
@@ -30,7 +31,6 @@ const COEManager = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const { toast } = useToast();
 
-  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -47,7 +47,6 @@ const COEManager = () => {
     checkAuth();
   }, [navigate, toast]);
   
-  // Fetch COEs and their element counts with proper error handling
   const { data: coes = [], isLoading, error, refetch } = useQuery({
     queryKey: ["coes"],
     queryFn: async () => {
@@ -70,7 +69,6 @@ const COEManager = () => {
           return [];
         }
         
-        // Get element counts for each COE
         const coesWithCounts = await Promise.all(
           coesData.map(async (coe) => {
             try {
@@ -101,7 +99,6 @@ const COEManager = () => {
     },
   });
 
-  // Ensure coes is always an array before filtering
   const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
     const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -111,7 +108,6 @@ const COEManager = () => {
     return matchesSearch && matchesTags;
   }) : [];
 
-  // Get unique tags from all COEs
   const allTags = Array.isArray(coes) ? 
     Array.from(new Set(coes.flatMap((coe) => coe.tags || []))) : [];
 
@@ -149,7 +145,6 @@ const COEManager = () => {
     );
   };
 
-  // If there's an error, show a message
   if (error) {
     return (
       <div className="p-8 text-center">
@@ -225,7 +220,7 @@ const COEManager = () => {
       ) : Array.isArray(coes) && coes.length === 0 ? (
         <COEEmptyState onCreateFirst={handleCreateCOE} />
       ) : (
-        <COETable
+        <COEList
           coes={filteredCOEs}
           onEdit={handleEditCOE}
           onView={handleViewCOE}
@@ -239,7 +234,6 @@ const COEManager = () => {
           onSave={async (coe) => {
             try {
               if (selectedCOE) {
-                // Update existing COE
                 const { error } = await supabase
                   .from("class_of_elements")
                   .update({
@@ -256,7 +250,6 @@ const COEManager = () => {
                   description: `${coe.name} has been updated successfully.`,
                 });
               } else {
-                // Create new COE
                 const { error } = await supabase
                   .from("class_of_elements")
                   .insert([{

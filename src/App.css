@@ -1,3 +1,4 @@
+
 body {
   background: #000000;
 }
@@ -15,6 +16,7 @@ body {
 .sidebar .active {
   color: #00FF00;
   background: #121212;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
 }
 
 .sidebar button:hover,
@@ -33,7 +35,8 @@ body {
 /* Enhanced hover states for menu items */
 .sidebar button,
 .sidebar .menu-item {
-  transition: all 0.2s ease;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .sidebar button:hover,
