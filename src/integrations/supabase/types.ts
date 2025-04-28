@@ -49,6 +49,7 @@ export type Database = {
           destination_coe_id: string | null
           destination_element_ids: string[] | null
           id: string
+          image_url: string | null
           name: string
           source_coe_id: string | null
           source_element_id: string | null
@@ -61,6 +62,7 @@ export type Database = {
           destination_coe_id?: string | null
           destination_element_ids?: string[] | null
           id?: string
+          image_url?: string | null
           name: string
           source_coe_id?: string | null
           source_element_id?: string | null
@@ -73,6 +75,7 @@ export type Database = {
           destination_coe_id?: string | null
           destination_element_ids?: string[] | null
           id?: string
+          image_url?: string | null
           name?: string
           source_coe_id?: string | null
           source_element_id?: string | null

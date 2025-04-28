@@ -1,28 +1,92 @@
 
-import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { CoreSetHeader } from "@/components/core-set/CoreSetHeader";
+import { CoreSetList } from "@/components/core-set/CoreSetList";
+import { CoreSetModal } from "@/components/core-set/CoreSetModal";
+import { TagManagementRow } from "@/components/elements/TagManagementRow";
+import { COETagSearch } from "@/components/coe/COETagSearch";
+import { useCoreSetData } from "@/hooks/useCoreSetData";
+import type { CoreSet } from "@/hooks/useCoreSetData";
 
 const CoreSetManager = () => {
-  const { toast } = useToast();
-
-  useEffect(() => {
-    toast({
-      title: "Coming soon",
-      description: "The Core Set Manager is currently under development.",
-    });
-  }, [toast]);
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedCoreSet, setSelectedCoreSet] = useState<CoreSet | null>(null);
+  
+  const { data: coreSets = [], isLoading } = useCoreSetData();
+  
+  // Get unique tags from all core sets
+  const allTags = Array.from(
+    new Set(coreSets.flatMap(coreSet => coreSet.tags || []))
+  ).sort();
+  
+  const handleTagSelect = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+  
+  const handleEdit = (coreSet: CoreSet) => {
+    setSelectedCoreSet(coreSet);
+    setIsCreateModalOpen(true);
+  };
+  
+  const handleCloseModal = (refreshList?: boolean) => {
+    setIsCreateModalOpen(false);
+    setSelectedCoreSet(null);
+  };
+  
+  // Filter core sets based on search and tags
+  const filteredCoreSets = coreSets.filter(coreSet => {
+    const matchesSearch = coreSet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         coreSet.description?.toLowerCase().includes(searchQuery.toLowerCase());
+                         
+    const matchesTags = selectedTags.length === 0 ||
+                       selectedTags.every(tag => coreSet.tags?.includes(tag));
+                       
+    return matchesSearch && matchesTags;
+  });
+  
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading Core Sets...</div>;
+  }
+  
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Core Set Manager</h1>
-      <div className="bg-muted p-8 rounded-md text-center">
-        <h2 className="text-xl font-medium text-muted-foreground">
-          This feature is coming soon
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          The Core Set Manager is currently under development and will be available soon.
-        </p>
+    <div className="space-y-6">
+      <CoreSetHeader 
+        onCreateCoreSet={() => setIsCreateModalOpen(true)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+      
+      <div className="mb-6">
+        <TagManagementRow
+          title="Core Set Tags"
+          description="Manage and filter Core Sets by tags"
+          className="mb-4"
+        />
+        
+        <COETagSearch
+          selectedTags={selectedTags}
+          allTags={allTags}
+          onTagSelect={handleTagSelect}
+        />
       </div>
+      
+      <CoreSetList
+        coreSets={filteredCoreSets}
+        onEdit={handleEdit}
+        onView={handleEdit}
+      />
+      
+      <CoreSetModal
+        open={isCreateModalOpen}
+        onClose={handleCloseModal}
+        coreSet={selectedCoreSet}
+      />
     </div>
   );
 };
