@@ -2,18 +2,22 @@
 body {
   background: #000000;
 }
+
 .sidebar {
   background: #000000;
-  transition: width 0.3s ease;
   width: 60px;
+  transition: none;
 }
-.sidebar:hover {
-  width: 200px;
+
+.sidebar .menu-text {
+  display: none;
 }
+
 .sidebar .active {
   color: #00FF00;
   background: #121212;
 }
+
 .sidebar button:hover,
 .sidebar .menu-item:hover {
   background: #121212;
@@ -21,15 +25,8 @@ body {
   box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
   transition: background 0.3s, color 0.3s, box-shadow 0.3s;
 }
+
 .app-header {
   background: #121212;
   border-bottom: 1px solid #222222;
-}
-.menu-text {
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.sidebar:hover .menu-text {
-  opacity: 1;
 }

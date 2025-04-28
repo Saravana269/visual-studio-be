@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Pencil } from "lucide-react";
 import { type Element } from "@/pages/ElementsManager";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ElementListProps {
   elements: Element[];
@@ -18,24 +16,6 @@ export function ElementList({
   onEdit,
   onViewDetails
 }: ElementListProps) {
-  // Fetch COE data to display names instead of IDs
-  const {
-    data: coes
-  } = useQuery({
-    queryKey: ["coes"],
-    queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from("class_of_elements").select("id, name");
-      if (error || !data) return {};
-      return data.reduce((acc, coe) => {
-        acc[coe.id] = coe.name;
-        return acc;
-      }, {} as Record<string, string>);
-    }
-  });
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {elements.map(element => (
@@ -63,19 +43,9 @@ export function ElementList({
           
           <CardContent className="pb-2 flex-1">
             {element.tags && element.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2">
                 {element.tags.map(tag => (
                   <Badge key={tag} variant="secondary">{tag}</Badge>
-                ))}
-              </div>
-            )}
-            
-            {element.coe_ids && element.coe_ids.length > 0 && coes && (
-              <div className="flex flex-wrap gap-1">
-                {element.coe_ids.map(coeId => (
-                  <Badge key={coeId} variant="outline">
-                    {coes[coeId] || "Unknown COE"}
-                  </Badge>
                 ))}
               </div>
             )}

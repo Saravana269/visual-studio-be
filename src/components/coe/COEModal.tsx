@@ -5,14 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { TagSelector } from "@/components/elements/TagSelector";
 
 interface COE {
   id?: string;
   name: string;
   description: string | null;
-  tags: string[] | null;
-  image_url?: string | null;
 }
 
 interface COEModalProps {
@@ -26,39 +23,31 @@ const COEModal = ({ isOpen, onClose, onSave, coe }: COEModalProps) => {
   const [formData, setFormData] = useState<COE>({
     name: "",
     description: "",
-    tags: [],
-    image_url: null
   });
   
   const [errors, setErrors] = useState<{
     name?: string;
   }>({});
   
-  // Reset form when modal opens/closes or when coe changes
   useEffect(() => {
     if (isOpen && coe) {
       setFormData({
         name: coe.name || "",
         description: coe.description || "",
-        tags: coe.tags || [],
-        image_url: coe.image_url || null
       });
     } else if (isOpen) {
       setFormData({
         name: "",
         description: "",
-        tags: [],
-        image_url: null
       });
     }
     
     setErrors({});
   }, [isOpen, coe]);
   
-  const handleChange = (field: keyof COE, value: string | string[] | null) => {
+  const handleChange = (field: keyof COE, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Clear error for this field if it exists
     if (errors[field as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -113,14 +102,6 @@ const COEModal = ({ isOpen, onClose, onSave, coe }: COEModalProps) => {
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="Enter a description"
               rows={4}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Tags</Label>
-            <TagSelector 
-              value={formData.tags || []} 
-              onChange={(tags) => handleChange("tags", tags)}
             />
           </div>
         </div>
