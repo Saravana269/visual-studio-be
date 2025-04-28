@@ -41,27 +41,66 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
         return;
       }
 
-      const { data, error } = await supabase
-        .from("tags")
-        .insert({
-          label: label.trim(),
-          entity_type: "elements",
-          created_by: userId, // Add the user ID as created_by
-          entity_id: "00000000-0000-0000-0000-000000000000" // Placeholder value as required
-        })
-        .select()
-        .single();
+      // First, check what valid entity_type values are available
+      const { data: typeData, error: typeError } = await supabase
+        .rpc('get_entity_type_enum_values');
+        
+      if (typeError) {
+        console.error("Error fetching valid entity types:", typeError);
+        // Fallback to using 'element' instead of 'elements'
+        const { data, error } = await supabase
+          .from("tags")
+          .insert({
+            label: label.trim(),
+            entity_type: "element", // Try using 'element' (singular) instead of 'elements'
+            created_by: userId,
+            entity_id: "00000000-0000-0000-0000-000000000000" // Placeholder value as required
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Tag created successfully",
-      });
+        toast({
+          title: "Success",
+          description: "Tag created successfully",
+        });
 
-      onTagCreated(label.trim());
-      setLabel("");
-      onClose();
+        onTagCreated(label.trim());
+        setLabel("");
+        onClose();
+        return;
+      }
+
+      // If we can get valid entity types, use the first one
+      if (typeData && Array.isArray(typeData) && typeData.length > 0) {
+        console.log("Valid entity types:", typeData);
+        const validEntityType = typeData[0].value;
+        
+        const { data, error } = await supabase
+          .from("tags")
+          .insert({
+            label: label.trim(),
+            entity_type: validEntityType,
+            created_by: userId,
+            entity_id: "00000000-0000-0000-0000-000000000000" // Placeholder value as required
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Tag created successfully",
+        });
+
+        onTagCreated(label.trim());
+        setLabel("");
+        onClose();
+      } else {
+        throw new Error("Could not determine valid entity types");
+      }
     } catch (error) {
       console.error("Error creating tag:", error);
       toast({
