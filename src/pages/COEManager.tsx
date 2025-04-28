@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import COEModal from "@/components/coe/COEModal";
 import COETable from "@/components/coe/COETable";
 import COESidebar from "@/components/coe/COESidebar";
