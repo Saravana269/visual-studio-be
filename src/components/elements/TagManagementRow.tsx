@@ -132,7 +132,7 @@ export function TagManagementRow({
               {isLoadingTags ? <div className="text-sm text-muted-foreground px-2">Loading tags...</div> : filteredTags.length > 0 ? <>
                   <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
                   <div className="flex gap-2 flex-nowrap">
-                    {filteredTags.map(tag => <Badge key={tag} className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1 whitespace-nowrap" onClick={() => handleTagClick(tag)}>
+                    {filteredTags.map(tag => <Badge key={tag} onClick={() => handleTagClick(tag)} className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1 whitespace-nowrap rounded-sm">
                         {tag}
                       </Badge>)}
                   </div>
