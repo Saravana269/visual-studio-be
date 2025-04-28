@@ -7,7 +7,7 @@ import { X, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { COE } from "@/hooks/useCOEData";
 
-interface DraggableCardProps {
+export interface DraggableCardProps {
   coe: COE;
   isSelected?: boolean;
   isDragging?: boolean;

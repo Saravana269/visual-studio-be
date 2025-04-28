@@ -11,6 +11,7 @@ import { ElementFormDialog } from "@/components/elements/ElementFormDialog";
 import { ElementSidebar } from "@/components/elements/ElementSidebar";
 import { TagManagementRow } from "@/components/elements/TagManagementRow";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,7 @@ export interface Element {
   name: string;
   description?: string;
   image_url?: string;
-  properties?: any;
+  properties?: Record<string, unknown>;
   tags?: string[];
   coe_ids?: string[];
 }
@@ -36,6 +37,11 @@ const ITEMS_PER_PAGE = 4;
 
 const ElementsManager = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  // Use the authentication hook
+  useAuth();
+  
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<Element | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -45,63 +51,56 @@ const ElementsManager = () => {
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
   const [tagDialogMode, setTagDialogMode] = useState<'add' | 'remove'>('add');
   const [tagSelections, setTagSelections] = useState<Record<string, boolean>>({});
-  const { toast } = useToast();
-
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to access this page",
-          variant: "destructive",
-        });
-        navigate("/auth");
-      }
-    };
-    
-    checkAuth();
-  }, [navigate, toast]);
-
+  
   // Fetch elements data with error handling
   const { data: elements = [], isLoading, error, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("elements")
-        .select("*");
+      try {
+        const { data, error } = await supabase
+          .from("elements")
+          .select("*");
 
-      if (error) {
+        if (error) {
+          console.error("Error fetching elements:", error);
+          toast({
+            title: "Error fetching elements",
+            description: error.message,
+            variant: "destructive",
+          });
+          return [];
+        }
+
+        return data as Element[];
+      } catch (error: any) {
         console.error("Error fetching elements:", error);
-        toast({
-          title: "Error fetching elements",
-          description: error.message,
-          variant: "destructive",
-        });
         return [];
       }
-
-      return data as Element[];
     },
   });
 
   // Fetch tags
-  const { data: availableTags } = useQuery({
+  const { data: availableTags = [] } = useQuery({
     queryKey: ["element-tags"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("elements").select("tags");
-      if (error || !data) return [];
-      const allTags = data.flatMap((item) => item.tags || []);
-      return [...new Set(allTags)];
+      try {
+        const { data, error } = await supabase.from("elements").select("tags");
+        if (error || !data) return [];
+        const allTags = data.flatMap((item) => item.tags || []);
+        return [...new Set(allTags)];
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+        return [];
+      }
     },
   });
 
+  // Filter elements based on search query and selected tags
   const filteredElements = elements?.filter((element) => {
     const matchesSearch = element.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTags =
       selectedTags.length === 0 ||
-      (element.tags && selectedTags.every((tag) => element.tags.includes(tag)));
+      (element.tags && selectedTags.every((tag) => element.tags?.includes(tag)));
     return matchesSearch && matchesTags;
   });
 
@@ -155,11 +154,8 @@ const ElementsManager = () => {
     }
   };
 
-  const [tagSearchQuery, setTagSearchQuery] = useState("");
-  
   const handleTagSearch = (query: string) => {
-    setTagSearchQuery(query);
-    // Filter elements based on tag search if needed
+    setSearchQuery(query);
   };
 
   const handleManageTags = (element: Element, action: 'add' | 'remove') => {
@@ -221,7 +217,7 @@ const ElementsManager = () => {
       
       refetch();
       setIsTagDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating tags:", error);
       toast({
         title: "Error updating tags",
@@ -256,7 +252,7 @@ const ElementsManager = () => {
             selectedTags={selectedTags}
             onTagSearch={handleTagSearch}
             onTagRemove={handleClearTag}
-            onAddTagClick={() => handleManageTags(selectedElement || elements[0], 'add')}
+            onAddTagClick={() => selectedElement && handleManageTags(selectedElement, 'add')}
             onManageTagsClick={() => {/* Implement tag management */}}
           />
         </div>
@@ -325,10 +321,10 @@ const ElementsManager = () => {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
-                Add Tags to {selectedElement?.name}
+                {tagDialogMode === 'add' ? 'Add Tags to' : 'Remove Tags from'} {selectedElement?.name || ''}
               </DialogTitle>
               <DialogDescription>
-                Please select the tags you would like to add below
+                Please select the tags you would like to {tagDialogMode === 'add' ? 'add' : 'remove'}
               </DialogDescription>
             </DialogHeader>
             
@@ -374,7 +370,7 @@ const ElementsManager = () => {
                 className="bg-[#00B86B] hover:bg-[#00A25F]"
                 disabled={Object.values(tagSelections).every(v => !v)}
               >
-                Add Selected Tags
+                {tagDialogMode === 'add' ? 'Add' : 'Remove'} Selected Tags
               </Button>
             </DialogFooter>
           </DialogContent>
