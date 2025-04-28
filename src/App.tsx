@@ -21,6 +21,7 @@ import { Loader2 } from "lucide-react";
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener first
@@ -28,14 +29,24 @@ function App() {
       (_event, session) => {
         setUser(session?.user || null);
         setIsLoading(false);
+        setIsAuthInitialized(true);
       }
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      setIsLoading(false);
-    });
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setIsLoading(false);
+        setIsAuthInitialized(true);
+      }
+    };
+
+    checkSession();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -50,7 +61,7 @@ function App() {
   }
 
   // If not authenticated, only show auth page
-  if (!user) {
+  if (!user && isAuthInitialized) {
     return (
       <Router>
         <Routes>

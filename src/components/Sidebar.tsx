@@ -27,6 +27,13 @@ export default function Sidebar({ onSignOut }: { onSignOut: () => void }) {
 
   const handleSignOut = async () => {
     try {
+      // Prevent default form submission behavior
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
+      
       await onSignOut();
       console.log("User signed out successfully");
     } catch (error) {
@@ -60,6 +67,12 @@ export default function Sidebar({ onSignOut }: { onSignOut: () => void }) {
                     hover:text-[#00FF00] hover:bg-[#121212]
                     ${isActive ? "text-[#00FF00] bg-[#121212]" : ""}`
                   }
+                  onClick={(e) => {
+                    // Prevent default if already on the same page
+                    if (location.pathname === item.path) {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   <div className="flex items-center justify-center">
                     {item.icon}

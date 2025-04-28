@@ -14,6 +14,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: number | undefined;
     
     // Set up auth state listener first to avoid race conditions
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -44,49 +45,34 @@ export const useAuth = () => {
       }
     );
     
-    // Quick check for existing session with a timeout
-    const sessionTimeout = setTimeout(() => {
-      if (mounted && isChecking) {
-        console.log("Session check timed out: forcing completion");
-        // If we're still checking after 2s, force complete to avoid UI freeze
-        setIsChecking(false);
-        
-        const isAuthRoute = 
-          location.pathname.includes('/auth') || 
-          location.pathname === '/';
-          
-        if (!isAuthRoute) {
-          navigate("/auth", { replace: true });
-        }
-      }
-    }, 2000);
-    
-    // Then check for existing session
+    // Check for existing session without immediate timeout
     const checkAuth = async () => {
       try {
         const { data: { session: existingSession }, error } = await supabase.auth.getSession();
         
         if (error) throw error;
         
-        if (!existingSession && mounted) {
-          const isAuthRoute = 
-            location.pathname.includes('/auth') || 
-            location.pathname === '/';
-            
-          if (!isAuthRoute) {
-            console.log("No existing session: redirecting to auth");
-            navigate("/auth", { replace: true });
-          }
-        }
-        
         if (mounted) {
           setSession(existingSession);
           setIsChecking(false);
+          
+          // Only redirect if no session and not on auth route
+          if (!existingSession) {
+            const isAuthRoute = 
+              location.pathname.includes('/auth') || 
+              location.pathname === '/';
+              
+            if (!isAuthRoute) {
+              console.log("No existing session: redirecting to auth");
+              navigate("/auth", { replace: true });
+            }
+          }
         }
       } catch (error) {
         console.error("Error checking auth:", error);
         if (mounted) {
           setIsChecking(false);
+          // Only redirect on actual errors
           navigate("/auth", { replace: true });
         }
       }
@@ -94,9 +80,17 @@ export const useAuth = () => {
     
     checkAuth();
     
+    // Set a more reasonable timeout only for UI feedback, not for navigation
+    timeoutId = window.setTimeout(() => {
+      if (mounted && isChecking) {
+        console.log("Session check timed out: updating UI state only");
+        setIsChecking(false);
+      }
+    }, 3000);
+    
     return () => {
       mounted = false;
-      clearTimeout(sessionTimeout);
+      if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, [navigate, toast, location.pathname]);
