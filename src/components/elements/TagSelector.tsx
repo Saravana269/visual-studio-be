@@ -14,19 +14,37 @@ interface TagSelectorProps {
 export function TagSelector({ value, onChange }: TagSelectorProps) {
   const [inputValue, setInputValue] = useState("");
 
-  // Fetch all existing tags for autocomplete
+  // Fetch all existing tags for autocomplete, combining both sources
   const { data: existingTags } = useQuery({
     queryKey: ["all-element-tags"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch tags from elements table arrays
+      const { data: elementsData, error: elementsError } = await supabase
         .from("elements")
         .select("tags");
       
-      if (error || !data) return [];
+      if (elementsError) {
+        console.error("Error fetching element tags:", elementsError);
+        return [];
+      }
+      
+      // Fetch tags from dedicated tags table
+      const { data: tagsData, error: tagsError } = await supabase
+        .from("tags")
+        .select("label")
+        .eq("entity_type", "elements");
+      
+      if (tagsError) {
+        console.error("Error fetching tags from tags table:", tagsError);
+        // Continue with element tags if dedicated tags query fails
+      }
       
       // Extract all tags and remove duplicates
-      const allTags = data.flatMap(item => item.tags || []);
-      return [...new Set(allTags)];
+      const elementTags = elementsData?.flatMap(item => item.tags || []) || [];
+      const dedicatedTags = tagsData?.map(tag => tag.label) || [];
+      
+      const allTags = [...elementTags, ...dedicatedTags];
+      return [...new Set(allTags)].filter(tag => tag && tag.trim() !== "");
     }
   });
 

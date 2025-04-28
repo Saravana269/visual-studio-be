@@ -653,7 +653,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
+          entity_type: string
           id: string
           label: string
         }
@@ -661,7 +661,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
+          entity_type: string
           id?: string
           label: string
         }
@@ -669,7 +669,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           entity_id?: string
-          entity_type?: Database["public"]["Enums"]["entity_type"]
+          entity_type?: string
           id?: string
           label?: string
         }

@@ -43,7 +43,7 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
 
       // First, check what valid entity_type values are available
       const { data: typeData, error: typeError } = await supabase
-        .rpc('get_entity_type_enum_values');
+        .rpc('get_entity_type_values');
         
       if (typeError) {
         console.error("Error fetching valid entity types:", typeError);

@@ -30,26 +30,48 @@ export function TagManagementRow({
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const { toast } = useToast();
 
-  // Fetch all available tags
+  // Fetch tags from both elements arrays and the tags table
   const { data: availableTags = [], isLoading: isLoadingTags } = useQuery({
     queryKey: ["available-tags"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        // 1. Fetch tags from elements table arrays
+        const { data: elementsData, error: elementsError } = await supabase
           .from("elements")
           .select("tags");
           
-        if (error) {
+        if (elementsError) {
           toast({
-            title: "Error fetching tags",
-            description: error.message,
+            title: "Error fetching element tags",
+            description: elementsError.message,
             variant: "destructive",
           });
           return [];
         }
         
+        // 2. Fetch tags from the dedicated tags table
+        const { data: tagsData, error: tagsError } = await supabase
+          .from("tags")
+          .select("label")
+          .eq("entity_type", "elements");
+        
+        if (tagsError) {
+          toast({
+            title: "Error fetching tags",
+            description: tagsError.message,
+            variant: "destructive",
+          });
+          // Continue with element tags even if tags table query fails
+        }
+        
         // Extract all unique tags from elements
-        const allTags = data?.flatMap((item) => item.tags || []) || [];
+        const elementTags = elementsData?.flatMap((item) => item.tags || []) || [];
+        
+        // Extract labels from tags table
+        const dedicatedTags = tagsData?.map(tag => tag.label) || [];
+        
+        // Combine both sources and remove duplicates
+        const allTags = [...elementTags, ...dedicatedTags];
         return [...new Set(allTags)].filter(tag => tag && tag.trim() !== "");
       } catch (error: any) {
         console.error("Error fetching available tags:", error);
