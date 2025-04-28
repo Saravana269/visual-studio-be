@@ -10,6 +10,7 @@ interface COE {
   id?: string;
   name: string;
   description: string | null;
+  tags?: string[] | null;  // Make tags optional in the interface
 }
 
 interface COEModalProps {

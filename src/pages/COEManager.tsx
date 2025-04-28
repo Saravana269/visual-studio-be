@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Search, LayoutGrid, List } from "lucide-react";
@@ -302,7 +301,7 @@ const COEManager = () => {
                   description: updatedCOE.description,
                   tags: updatedCOE.tags,
                 })
-                .eq("id", updatedCOE.id);
+                .eq("id", selectedCOE.id);
               
               if (error) throw error;
               
