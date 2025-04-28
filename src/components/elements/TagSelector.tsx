@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,7 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
     if (isMultipleMode) {
       onChange(newValue === "" ? [] : [newValue]);
     } else {
+      // Convert empty string to null to properly handle tag clearing
       onChange(newValue === "" ? null : newValue);
     }
   };

@@ -212,12 +212,20 @@ const ElementsManager = () => {
     setIsSubmittingTag(true);
     
     try {
+      // Convert empty string to null for the primary_tag_id field
+      const tagValue = selectedTagInDialog === "" ? null : selectedTagInDialog;
+      
+      console.log("Updating element tag with value:", tagValue);
+      
       const { error } = await supabase
         .from("elements")
-        .update({ primary_tag_id: selectedTagInDialog })
+        .update({ primary_tag_id: tagValue })
         .eq("id", selectedElement.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Database error when updating tag:", error);
+        throw error;
+      }
       
       toast({
         title: "Tag updated",
@@ -226,6 +234,7 @@ const ElementsManager = () => {
           : "Tag has been removed from the element."
       });
       
+      // Refresh the elements data to show the updated tag
       refetch();
       setIsTagDialogOpen(false);
     } catch (error: any) {
