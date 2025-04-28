@@ -57,11 +57,11 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
   
   // Filter COEs into assigned and unassigned based on coreSet_id
   const assignedCOEs = coes.filter(
-    (coe) => coe.coreSet_id && coe.coreSet_id.includes(coreSet?.id)
+    (coe) => coe.coreSet_id && coreSet && coe.coreSet_id.includes(coreSet.id)
   );
   
   const unassignedCOEs = coes.filter(
-    (coe) => !coe.coreSet_id || !coe.coreSet_id.includes(coreSet?.id)
+    (coe) => !coe.coreSet_id || !coreSet || !coe.coreSet_id.includes(coreSet.id)
   );
   
   // Filter COEs based on search query
@@ -175,7 +175,10 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
     setSelectedCOEs(new Set());
   };
   
-  if (!coreSet) return null;
+  // Don't render anything if coreSet is null
+  if (!coreSet) {
+    return null;
+  }
   
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -332,6 +335,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
                           className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0" 
                           onClick={async (e) => {
                             e.stopPropagation();
+                            if (!coreSet) return;
                             try {
                               const updatedCoreSetIds = (coe.coreSet_id || []).filter(id => id !== coreSet.id);
                               await supabase

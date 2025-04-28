@@ -65,7 +65,7 @@ const CoreSetManager = () => {
   // Filter core sets based on search and tags
   const filteredCoreSets = coreSets.filter(coreSet => {
     const matchesSearch = coreSet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         coreSet.description?.toLowerCase().includes(searchQuery.toLowerCase());
+                         (coreSet.description || '').toLowerCase().includes(searchQuery.toLowerCase());
                          
     const matchesTags = selectedTags.length === 0 ||
                        selectedTags.every(tag => coreSet.tags?.includes(tag));
@@ -116,11 +116,14 @@ const CoreSetManager = () => {
         coreSet={selectedCoreSet}
       />
       
-      <CoreSetCOEAssignment
-        open={isMappingOpen}
-        onClose={handleCloseMapping}
-        coreSet={selectedCoreSet}
-      />
+      {/* Only render CoreSetCOEAssignment if there's a selected core set */}
+      {selectedCoreSet && (
+        <CoreSetCOEAssignment
+          open={isMappingOpen}
+          onClose={handleCloseMapping}
+          coreSet={selectedCoreSet}
+        />
+      )}
     </div>
   );
 };
