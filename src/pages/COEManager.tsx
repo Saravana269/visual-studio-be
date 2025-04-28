@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +15,7 @@ import COETagSearch from "@/components/coe/COETagSearch";
 import type { COE } from "@/hooks/useCOEData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 
 const COEManager = () => {
   const { toast } = useToast();
@@ -254,7 +256,7 @@ const COEManager = () => {
           onClose={handleCloseSidebar}
           coe={selectedCOE}
           onUpdate={refetch}
-          onSave={(updatedCOE) => {
+          onSave={async (updatedCOE) => {
             try {
               const { error } = await supabase
                 .from("class_of_elements")
