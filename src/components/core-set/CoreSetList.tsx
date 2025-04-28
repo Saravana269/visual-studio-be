@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical, Map } from "lucide-react";
@@ -25,8 +24,7 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
 
   const handleMapping = (e: React.MouseEvent, coreSet: CoreSet) => {
     e.stopPropagation(); // Prevent triggering the card click
-    // Handle mapping logic here - for now just log
-    console.log("Mapping clicked for core set:", coreSet.name);
+    handleViewDetails(coreSet); // Use the details dialog for mapping now
   };
 
   // Safe string rendering helper
@@ -121,7 +119,13 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
       <CoreSetDetailsDialog
         coreSet={selectedCoreSet}
         open={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          // Trigger a refetch by calling onView with the selected core set
+          if (selectedCoreSet) {
+            onView(selectedCoreSet);
+          }
+        }}
       />
     </>
   );
