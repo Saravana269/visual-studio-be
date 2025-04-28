@@ -1,19 +1,14 @@
 
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Search, MoveHorizontal } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { MoveHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CoreSet } from "@/hooks/useCoreSetData";
-import type { COE } from "@/hooks/useCOEData";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { DraggableCard } from "./DraggableCard";
-import { DropZone } from "./DropZone";
+import { useCOEAssignment } from "@/hooks/useCOEAssignment";
+import { COESearchControls } from "./COESearchControls";
+import { COEDropZoneList } from "./COEDropZoneList";
 
 interface CoreSetCOEAssignmentProps {
   coreSet: CoreSet | null;
@@ -22,159 +17,32 @@ interface CoreSetCOEAssignmentProps {
 }
 
 export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssignmentProps) => {
-  const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [draggedCOE, setDraggedCOE] = useState<COE | null>(null);
-  const [dragOverZone, setDragOverZone] = useState<"assign" | "unassign" | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [selectedCOEs, setSelectedCOEs] = useState<Set<string>>(new Set());
+  const {
+    searchQuery,
+    setSearchQuery,
+    draggedCOE,
+    dragOverZone,
+    isDragging,
+    selectedCOEs,
+    isLoading,
+    assignedCOEs,
+    filteredUnassigned,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDrop,
+    toggleCOESelection,
+    selectAllVisible,
+    clearSelection,
+    refetch
+  } = useCOEAssignment(coreSet);
   
   useEffect(() => {
     if (!open) {
-      setSelectedCOEs(new Set());
+      clearSelection();
       setSearchQuery("");
-      setDraggedCOE(null);
-      setDragOverZone(null);
-      setIsDragging(false);
     }
   }, [open, coreSet?.id]);
-  
-  const { data: coes = [], isLoading, refetch } = useQuery({
-    queryKey: ["coes-for-coreset", coreSet?.id],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("class_of_elements")
-          .select("*");
-        
-        if (error) {
-          console.error("Error fetching COEs:", error);
-          return [];
-        }
-        
-        return data || [];
-      } catch (error) {
-        console.error("Unexpected error in COE query:", error);
-        return [];
-      }
-    },
-    enabled: open && !!coreSet,
-  });
-  
-  const assignedCOEs = coes.filter(
-    (coe) => coe.coreSet_id && coreSet && coe.coreSet_id.includes(coreSet.id)
-  );
-  
-  const unassignedCOEs = coes.filter(
-    (coe) => !coe.coreSet_id || !coreSet || !coe.coreSet_id.includes(coreSet.id)
-  );
-  
-  const filteredUnassigned = searchQuery
-    ? unassignedCOEs.filter(coe => 
-        coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (coe.tags && coe.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
-      )
-    : unassignedCOEs;
-  
-  const handleDragStart = (coe: COE) => {
-    setDraggedCOE(coe);
-    setIsDragging(true);
-  };
-  
-  const handleDragEnd = () => {
-    setDraggedCOE(null);
-    setIsDragging(false);
-    setDragOverZone(null);
-  };
-  
-  const handleDragOver = (e: React.DragEvent, zone: "assign" | "unassign") => {
-    e.preventDefault();
-    setDragOverZone(zone);
-  };
-  
-  const handleDrop = async (e: React.DragEvent, targetType: "assign" | "unassign") => {
-    e.preventDefault();
-    
-    if (!coreSet) return;
-    
-    const coesToUpdate: COE[] = [];
-    
-    if (draggedCOE) {
-      coesToUpdate.push(draggedCOE);
-    }
-    
-    if (selectedCOEs.size > 0) {
-      coes
-        .filter(coe => selectedCOEs.has(coe.id))
-        .forEach(coe => {
-          if (!coesToUpdate.some(c => c.id === coe.id)) {
-            coesToUpdate.push(coe);
-          }
-        });
-    }
-    
-    if (coesToUpdate.length === 0) return;
-    
-    try {
-      for (const coe of coesToUpdate) {
-        let updatedCoreSetIds = coe.coreSet_id || [];
-        
-        if (targetType === "assign" && !updatedCoreSetIds.includes(coreSet.id)) {
-          updatedCoreSetIds = [...updatedCoreSetIds, coreSet.id];
-        } else if (targetType === "unassign") {
-          updatedCoreSetIds = updatedCoreSetIds.filter(id => id !== coreSet.id);
-        }
-        
-        const { error } = await supabase
-          .from("class_of_elements")
-          .update({ coreSet_id: updatedCoreSetIds })
-          .eq("id", coe.id);
-          
-        if (error) {
-          console.error(`Error updating COE ${coe.id}:`, error);
-          throw new Error(error.message);
-        }
-      }
-      
-      setSelectedCOEs(new Set());
-      setDraggedCOE(null);
-      
-      refetch();
-      
-      toast({
-        title: `${coesToUpdate.length} COE${coesToUpdate.length !== 1 ? 's' : ''} ${targetType === "assign" ? "assigned" : "unassigned"}`,
-        description: `Successfully ${targetType === "assign" ? "added to" : "removed from"} this Core Set`,
-      });
-    } catch (error: any) {
-      console.error(`Error ${targetType}ing COEs:`, error);
-      toast({
-        title: "Error",
-        description: `Failed to ${targetType} COEs: ${error.message || "Unknown error"}`,
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const toggleCOESelection = (coeId: string) => {
-    const newSelected = new Set(selectedCOEs);
-    if (newSelected.has(coeId)) {
-      newSelected.delete(coeId);
-    } else {
-      newSelected.add(coeId);
-    }
-    setSelectedCOEs(newSelected);
-  };
-  
-  const selectAllVisible = () => {
-    const newSelected = new Set(selectedCOEs);
-    filteredUnassigned.forEach(coe => newSelected.add(coe.id));
-    setSelectedCOEs(newSelected);
-  };
-  
-  const clearSelection = () => {
-    setSelectedCOEs(new Set());
-  };
   
   if (!coreSet) {
     return null;
@@ -200,30 +68,13 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
 
           <Separator />
 
-          <div className="flex justify-between items-center">
-            <div className="relative w-full max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search COEs..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              {selectedCOEs.size > 0 ? (
-                <Button size="sm" variant="ghost" onClick={clearSelection}>
-                  Clear ({selectedCOEs.size})
-                </Button>
-              ) : (
-                <Button size="sm" variant="ghost" onClick={selectAllVisible}>
-                  Select All
-                </Button>
-              )}
-            </div>
-          </div>
+          <COESearchControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedCount={selectedCOEs.size}
+            onSelectAll={selectAllVisible}
+            onClearSelection={clearSelection}
+          />
           
           {isDragging && (
             <div className="flex items-center justify-center p-2 mb-2 bg-primary/10 rounded-md animate-pulse">
@@ -248,90 +99,43 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
               </>
             ) : (
               <>
-                <DropZone
+                <COEDropZoneList
+                  zone="unassign"
+                  title={`Available COEs (${filteredUnassigned.length})`}
+                  coes={filteredUnassigned}
                   isOver={dragOverZone === "unassign"}
-                  onDragOver={(e) => handleDragOver(e, "unassign")}
-                  onDrop={(e) => handleDrop(e, "unassign")}
-                >
-                  <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card z-10">
-                    Available COEs ({filteredUnassigned.length})
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {filteredUnassigned.map((coe) => (
-                      <DraggableCard
-                        key={coe.id}
-                        coe={coe}
-                        isSelected={selectedCOEs.has(coe.id)}
-                        isDragging={draggedCOE?.id === coe.id && isDragging}
-                        onClick={() => toggleCOESelection(coe.id)}
-                        onDragStart={() => handleDragStart(coe)}
-                        onDragEnd={handleDragEnd}
-                      />
-                    ))}
-                    
-                    {filteredUnassigned.length === 0 && (
-                      <div className="text-center p-4 text-sm text-muted-foreground">
-                        No COEs available
-                      </div>
-                    )}
-                  </div>
-                </DropZone>
+                  selectedCOEs={selectedCOEs}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    handleDragOver("unassign");
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleDrop("unassign");
+                  }}
+                  onSelect={toggleCOESelection}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  refetch={refetch}
+                />
                 
-                <DropZone
+                <COEDropZoneList
+                  zone="assign"
+                  title={`Assigned to Core Set (${assignedCOEs.length})`}
+                  coes={assignedCOEs}
                   isOver={dragOverZone === "assign"}
-                  onDragOver={(e) => handleDragOver(e, "assign")}
-                  onDrop={(e) => handleDrop(e, "assign")}
-                  className="border-dashed border-primary/50"
-                >
-                  <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card z-10">
-                    Assigned to Core Set ({assignedCOEs.length})
-                    {selectedCOEs.size > 0 && (
-                      <Badge className="ml-2 bg-primary">
-                        Drag {selectedCOEs.size} COEs here
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {assignedCOEs.map((coe) => (
-                      <DraggableCard
-                        key={coe.id}
-                        coe={coe}
-                        onRemove={async () => {
-                          if (!coreSet) return;
-                          try {
-                            const updatedCoreSetIds = (coe.coreSet_id || []).filter(id => id !== coreSet.id);
-                            await supabase
-                              .from("class_of_elements")
-                              .update({ coreSet_id: updatedCoreSetIds })
-                              .eq("id", coe.id);
-                            
-                            refetch();
-                            
-                            toast({
-                              title: "COE removed",
-                              description: `${coe.name} has been removed from this Core Set`
-                            });
-                          } catch (error: any) {
-                            console.error("Error removing COE:", error);
-                            toast({
-                              title: "Error",
-                              description: `Failed to remove COE: ${error.message || "Unknown error"}`,
-                              variant: "destructive"
-                            });
-                          }
-                        }}
-                      />
-                    ))}
-                    
-                    {assignedCOEs.length === 0 && (
-                      <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground border-2 border-dashed border-muted rounded-lg">
-                        <p>Drop COEs here to assign them</p>
-                      </div>
-                    )}
-                  </div>
-                </DropZone>
+                  selectedCOEs={selectedCOEs}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    handleDragOver("assign");
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleDrop("assign");
+                  }}
+                  coreSet={coreSet}
+                  refetch={refetch}
+                />
               </>
             )}
           </div>
@@ -341,40 +145,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
               <Button 
                 size="sm"
                 className="animate-in fade-in slide-in-from-bottom-2"
-                onClick={async () => {
-                  if (!coreSet) return;
-                  
-                  try {
-                    for (const coeId of selectedCOEs) {
-                      const coe = coes.find(c => c.id === coeId);
-                      if (coe) {
-                        const updatedCoreSetIds = [...(coe.coreSet_id || [])];
-                        if (!updatedCoreSetIds.includes(coreSet.id)) {
-                          updatedCoreSetIds.push(coreSet.id);
-                          await supabase
-                            .from("class_of_elements")
-                            .update({ coreSet_id: updatedCoreSetIds })
-                            .eq("id", coeId);
-                        }
-                      }
-                    }
-                    
-                    setSelectedCOEs(new Set());
-                    refetch();
-                    
-                    toast({
-                      title: `${selectedCOEs.size} COEs assigned`,
-                      description: "Successfully added to this Core Set"
-                    });
-                  } catch (error: any) {
-                    console.error("Error assigning COEs:", error);
-                    toast({
-                      title: "Error",
-                      description: `Failed to assign COEs: ${error.message || "Unknown error"}`,
-                      variant: "destructive"
-                    });
-                  }
-                }}
+                onClick={() => handleDrop("assign")}
               >
                 Assign {selectedCOEs.size} Selected
               </Button>

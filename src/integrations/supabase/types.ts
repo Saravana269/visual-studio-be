@@ -53,7 +53,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
-          sub_menu_id: string
+          submenu_id: string
         }
         Insert: {
           code: string
@@ -62,7 +62,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
-          sub_menu_id: string
+          submenu_id: string
         }
         Update: {
           code?: string
@@ -71,7 +71,45 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
-          sub_menu_id?: string
+          submenu_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classification_submenu_id_fkey"
+            columns: ["submenu_id"]
+            isOneToOne: false
+            referencedRelation: "submenu"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classification_backup: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          name: string | null
+          sub_menu_id: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          name?: string | null
+          sub_menu_id?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          name?: string | null
+          sub_menu_id?: string | null
         }
         Relationships: []
       }
@@ -369,6 +407,27 @@ export type Database = {
         }
         Relationships: []
       }
+      menu: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       screen_connectors: {
         Row: {
           condition_logic: Json | null
@@ -553,6 +612,38 @@ export type Database = {
             columns: ["classification_id"]
             isOneToOne: false
             referencedRelation: "classification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      submenu: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          menu_id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          menu_id: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          menu_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submenu_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu"
             referencedColumns: ["id"]
           },
         ]
