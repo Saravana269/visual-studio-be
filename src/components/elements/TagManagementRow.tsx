@@ -8,7 +8,7 @@ import { useState } from "react";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 
 interface TagManagementRowProps {
@@ -120,7 +120,7 @@ export function TagManagementRow({
 
       {/* Horizontal scrollable tag list */}
       <div className="relative">
-        <ScrollArea className="w-full whitespace-nowrap pb-2" orientation="horizontal">
+        <ScrollArea className="w-full whitespace-nowrap pb-2">
           <div className="flex items-center gap-2 py-2">
             {isLoadingTags ? (
               <div className="text-sm text-muted-foreground px-2">Loading tags...</div>
@@ -147,6 +147,7 @@ export function TagManagementRow({
               </div>
             )}
           </div>
+          <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </div>
 
