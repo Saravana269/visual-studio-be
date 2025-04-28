@@ -181,7 +181,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
   }
   
   return (
-    <Sheet open={open} onOpenChange={onClose}>
+    <Sheet open={open && !!coreSet} onOpenChange={onClose}>
       <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader className="mb-4">
           <SheetTitle>{coreSet.name}</SheetTitle>

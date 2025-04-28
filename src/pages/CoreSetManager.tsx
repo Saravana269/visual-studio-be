@@ -8,8 +8,12 @@ import COETagSearch from "@/components/coe/COETagSearch";
 import { useCoreSetData } from "@/hooks/useCoreSetData";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 import { CoreSetCOEAssignment } from "@/components/core-set/CoreSetCOEAssignment";
+import { useAuth } from "@/hooks/useAuth";
 
 const CoreSetManager = () => {
+  // Add authentication check
+  useAuth();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
