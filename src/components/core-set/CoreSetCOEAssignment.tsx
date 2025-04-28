@@ -1,11 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Search } from "lucide-react";
+import { Search, MoveHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 import type { COE } from "@/hooks/useCOEData";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -30,6 +33,9 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
     if (!open) {
       setSelectedCOEs(new Set());
       setSearchQuery("");
+      setDraggedCOE(null);
+      setDragOverZone(null);
+      setIsDragging(false);
     }
   }, [open, coreSet?.id]);
   
@@ -138,7 +144,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
       
       toast({
         title: `${coesToUpdate.length} COE${coesToUpdate.length !== 1 ? 's' : ''} ${targetType === "assign" ? "assigned" : "unassigned"}`,
-        description: `Successfully ${targetType === "assign" ? "added to" : "removed from"} this Core Set`
+        description: `Successfully ${targetType === "assign" ? "added to" : "removed from"} this Core Set`,
       });
     } catch (error: any) {
       console.error(`Error ${targetType}ing COEs:`, error);
@@ -192,6 +198,8 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
             </p>
           </div>
 
+          <Separator />
+
           <div className="flex justify-between items-center">
             <div className="relative w-full max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -217,85 +225,122 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
             </div>
           </div>
           
+          {isDragging && (
+            <div className="flex items-center justify-center p-2 mb-2 bg-primary/10 rounded-md animate-pulse">
+              <MoveHorizontal className="mr-2 h-4 w-4" />
+              <span className="text-sm font-medium">Drag to assign/unassign</span>
+            </div>
+          )}
+          
           <div className="grid grid-cols-2 gap-4">
-            <DropZone
-              isOver={dragOverZone === "unassign"}
-              onDragOver={(e) => handleDragOver(e, "unassign")}
-              onDrop={(e) => handleDrop(e, "unassign")}
-            >
-              <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card">
-                Available COEs ({filteredUnassigned.length})
-              </div>
-              
-              <div className="space-y-2">
-                {filteredUnassigned.map((coe) => (
-                  <DraggableCard
-                    key={coe.id}
-                    coe={coe}
-                    isSelected={selectedCOEs.has(coe.id)}
-                    isDragging={draggedCOE?.id === coe.id}
-                    onClick={() => toggleCOESelection(coe.id)}
-                    onDragStart={() => handleDragStart(coe)}
-                    onDragEnd={handleDragEnd}
-                  />
-                ))}
-              </div>
-            </DropZone>
-            
-            <DropZone
-              isOver={dragOverZone === "assign"}
-              onDragOver={(e) => handleDragOver(e, "assign")}
-              onDrop={(e) => handleDrop(e, "assign")}
-              className="border-dashed border-primary/50"
-            >
-              <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card">
-                Assigned to Core Set ({assignedCOEs.length})
-                {selectedCOEs.size > 0 && (
-                  <Badge className="ml-2 bg-primary">
-                    Drag {selectedCOEs.size} COEs here
-                  </Badge>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                {assignedCOEs.map((coe) => (
-                  <DraggableCard
-                    key={coe.id}
-                    coe={coe}
-                    onRemove={async () => {
-                      if (!coreSet) return;
-                      try {
-                        const updatedCoreSetIds = (coe.coreSet_id || []).filter(id => id !== coreSet.id);
-                        await supabase
-                          .from("class_of_elements")
-                          .update({ coreSet_id: updatedCoreSetIds })
-                          .eq("id", coe.id);
-                        
-                        refetch();
-                        
-                        toast({
-                          title: "COE removed",
-                          description: `${coe.name} has been removed from this Core Set`
-                        });
-                      } catch (error: any) {
-                        console.error("Error removing COE:", error);
-                        toast({
-                          title: "Error",
-                          description: `Failed to remove COE: ${error.message || "Unknown error"}`,
-                          variant: "destructive"
-                        });
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-            </DropZone>
+            {isLoading ? (
+              <>
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              </>
+            ) : (
+              <>
+                <DropZone
+                  isOver={dragOverZone === "unassign"}
+                  onDragOver={(e) => handleDragOver(e, "unassign")}
+                  onDrop={(e) => handleDrop(e, "unassign")}
+                >
+                  <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card z-10">
+                    Available COEs ({filteredUnassigned.length})
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {filteredUnassigned.map((coe) => (
+                      <DraggableCard
+                        key={coe.id}
+                        coe={coe}
+                        isSelected={selectedCOEs.has(coe.id)}
+                        isDragging={draggedCOE?.id === coe.id && isDragging}
+                        onClick={() => toggleCOESelection(coe.id)}
+                        onDragStart={() => handleDragStart(coe)}
+                        onDragEnd={handleDragEnd}
+                      />
+                    ))}
+                    
+                    {filteredUnassigned.length === 0 && (
+                      <div className="text-center p-4 text-sm text-muted-foreground">
+                        No COEs available
+                      </div>
+                    )}
+                  </div>
+                </DropZone>
+                
+                <DropZone
+                  isOver={dragOverZone === "assign"}
+                  onDragOver={(e) => handleDragOver(e, "assign")}
+                  onDrop={(e) => handleDrop(e, "assign")}
+                  className="border-dashed border-primary/50"
+                >
+                  <div className="text-xs font-medium text-muted-foreground mb-2 p-1 sticky top-0 bg-card z-10">
+                    Assigned to Core Set ({assignedCOEs.length})
+                    {selectedCOEs.size > 0 && (
+                      <Badge className="ml-2 bg-primary">
+                        Drag {selectedCOEs.size} COEs here
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {assignedCOEs.map((coe) => (
+                      <DraggableCard
+                        key={coe.id}
+                        coe={coe}
+                        onRemove={async () => {
+                          if (!coreSet) return;
+                          try {
+                            const updatedCoreSetIds = (coe.coreSet_id || []).filter(id => id !== coreSet.id);
+                            await supabase
+                              .from("class_of_elements")
+                              .update({ coreSet_id: updatedCoreSetIds })
+                              .eq("id", coe.id);
+                            
+                            refetch();
+                            
+                            toast({
+                              title: "COE removed",
+                              description: `${coe.name} has been removed from this Core Set`
+                            });
+                          } catch (error: any) {
+                            console.error("Error removing COE:", error);
+                            toast({
+                              title: "Error",
+                              description: `Failed to remove COE: ${error.message || "Unknown error"}`,
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                      />
+                    ))}
+                    
+                    {assignedCOEs.length === 0 && (
+                      <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground border-2 border-dashed border-muted rounded-lg">
+                        <p>Drop COEs here to assign them</p>
+                      </div>
+                    )}
+                  </div>
+                </DropZone>
+              </>
+            )}
           </div>
           
-          {selectedCOEs.size > 0 && (
+          {selectedCOEs.size > 0 && !isDragging && (
             <div className="flex justify-end">
               <Button 
                 size="sm"
+                className="animate-in fade-in slide-in-from-bottom-2"
                 onClick={async () => {
                   if (!coreSet) return;
                   

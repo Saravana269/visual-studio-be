@@ -3,7 +3,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { X, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { COE } from "@/hooks/useCOEData";
 
@@ -13,6 +13,8 @@ interface DraggableCardProps {
   isDragging?: boolean;
   onRemove?: () => void;
   onClick?: () => void;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
 }
 
 export const DraggableCard = ({
@@ -21,6 +23,8 @@ export const DraggableCard = ({
   isDragging,
   onRemove,
   onClick,
+  onDragStart,
+  onDragEnd,
 }: DraggableCardProps) => {
   return (
     <Card
@@ -34,8 +38,13 @@ export const DraggableCard = ({
       )}
       onClick={onClick}
       draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
     >
       <div className="flex items-center gap-2">
+        <div className="text-muted-foreground">
+          <GripVertical className="h-4 w-4" />
+        </div>
         {coe.image_url && (
           <div className="w-8 h-8 bg-muted flex-shrink-0">
             <img 
