@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 
 interface ElementListProps {
   elements: Element[];
@@ -72,7 +71,7 @@ export function ElementList({
           </CardContent>
           
           {/* Menu button - three dots */}
-          <div className="element-card-menu">
+          <div className="element-card-menu absolute top-2 right-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -81,15 +80,27 @@ export function ElementList({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[160px]">
-                <DropdownMenuItem onClick={() => onEdit(element)}>Edit</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onViewDetails(element)}>View Details</DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(element);
+                }}>Edit</DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(element);
+                }}>View Details</DropdownMenuItem>
                 
                 {(!element.tags || element.tags.length === 0) ? (
-                  <DropdownMenuItem onClick={() => onManageTags(element, 'add')}>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onManageTags(element, 'add');
+                  }}>
                     Add Tags
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem onClick={() => onManageTags(element, 'remove')}>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onManageTags(element, 'remove');
+                  }}>
                     Remove Tags
                   </DropdownMenuItem>
                 )}
