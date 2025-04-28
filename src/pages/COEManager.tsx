@@ -33,52 +33,70 @@ const COEManager = () => {
   const { data: coes = [], isLoading, refetch } = useQuery({
     queryKey: ["coes"],
     queryFn: async () => {
-      const { data: coesData, error: coesError } = await supabase
-        .from("class_of_elements")
-        .select("*");
-      
-      if (coesError) {
-        toast({
-          title: "Error fetching COEs",
-          description: coesError.message,
-          variant: "destructive",
-        });
+      try {
+        const { data: coesData, error: coesError } = await supabase
+          .from("class_of_elements")
+          .select("*");
+        
+        if (coesError) {
+          toast({
+            title: "Error fetching COEs",
+            description: coesError.message,
+            variant: "destructive",
+          });
+          return [];
+        }
+        
+        if (!coesData || !Array.isArray(coesData)) {
+          console.error("COEs data is not an array:", coesData);
+          return [];
+        }
+        
+        // Get element counts for each COE
+        const coesWithCounts = await Promise.all(
+          coesData.map(async (coe) => {
+            try {
+              const { count } = await supabase
+                .from("elements")
+                .select("*", { count: 'exact' })
+                .contains('coe_ids', [coe.id]);
+              
+              return {
+                ...coe,
+                element_count: count || 0
+              };
+            } catch (error) {
+              console.error(`Error getting element count for COE ${coe.id}:`, error);
+              return {
+                ...coe,
+                element_count: 0
+              };
+            }
+          })
+        );
+        
+        return coesWithCounts;
+      } catch (error) {
+        console.error("Unexpected error in COE query:", error);
         return [];
       }
-      
-      // Get element counts for each COE
-      const coesWithCounts = await Promise.all(
-        coesData.map(async (coe) => {
-          const { count } = await supabase
-            .from("elements")
-            .select("*", { count: 'exact' })
-            .contains('coe_ids', [coe.id]);
-          
-          return {
-            ...coe,
-            element_count: count || 0
-          };
-        })
-      );
-      
-      return coesWithCounts;
     },
   });
   
   // Filter COEs based on search query and selected tags
-  const filteredCOEs = coes.filter((coe) => {
+  const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
     const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesTags =
       selectedTags.length === 0 ||
       (coe.tags && selectedTags.every((tag) => coe.tags.includes(tag)));
     return matchesSearch && matchesTags;
-  });
+  }) : [];
   
   // Get unique tags from all COEs
-  const allTags = Array.from(
-    new Set(coes.flatMap((coe) => coe.tags || []))
-  );
+  const allTags = Array.isArray(coes) 
+    ? Array.from(new Set(coes.flatMap((coe) => coe.tags || []))) 
+    : [];
   
   const handleCreateCOE = () => {
     setSelectedCOE(null);
