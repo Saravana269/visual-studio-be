@@ -9,9 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "./ImageUploader";
-import { TagSelector } from "./TagSelector";
-import { JsonEditor } from "./JsonEditor";
-import { CoeSelector } from "./CoeSelector";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Element } from "@/pages/ElementsManager";
@@ -21,9 +18,6 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   image_url: z.string().optional().nullable(),
-  properties: z.any().optional().nullable(),
-  tags: z.array(z.string()).optional(),
-  coe_ids: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -44,9 +38,6 @@ export function ElementFormDialog({ element, open, onClose }: ElementFormDialogP
       name: element?.name || "",
       description: element?.description || "",
       image_url: element?.image_url || "",
-      properties: element?.properties || {},
-      tags: element?.tags || [],
-      coe_ids: element?.coe_ids || [],
     },
   });
   
@@ -58,9 +49,6 @@ export function ElementFormDialog({ element, open, onClose }: ElementFormDialogP
         name: values.name,
         description: values.description,
         image_url: values.image_url,
-        properties: values.properties,
-        tags: values.tags,
-        coe_ids: values.coe_ids,
       };
       
       if (element) {
@@ -104,7 +92,7 @@ export function ElementFormDialog({ element, open, onClose }: ElementFormDialogP
   
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {element ? `Edit Element: ${element.name}` : "Create New Element"}
@@ -113,105 +101,48 @@ export function ElementFormDialog({ element, open, onClose }: ElementFormDialogP
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Element name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter a description" 
-                          className="min-h-[120px]" 
-                          {...field} 
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="image_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image</FormLabel>
-                      <FormControl>
-                        <ImageUploader 
-                          value={field.value || ""} 
-                          onChange={field.onChange} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags</FormLabel>
-                      <FormControl>
-                        <TagSelector 
-                          value={field.value || []} 
-                          onChange={field.onChange} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="coe_ids"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Associated COEs</FormLabel>
-                      <FormControl>
-                        <CoeSelector 
-                          value={field.value || []} 
-                          onChange={field.onChange} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Element name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <FormField
               control={form.control}
-              name="properties"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>JSON Properties</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <JsonEditor 
-                      value={field.value || {}} 
+                    <Textarea 
+                      placeholder="Enter a description" 
+                      className="min-h-[120px]" 
+                      {...field} 
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image</FormLabel>
+                  <FormControl>
+                    <ImageUploader 
+                      value={field.value || ""} 
                       onChange={field.onChange} 
                     />
                   </FormControl>
