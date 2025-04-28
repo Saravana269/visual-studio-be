@@ -9,8 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/elements/ImageUploader";
-import { TagSelector } from "@/components/elements/TagSelector";
-import { CoeSelector } from "@/components/elements/CoeSelector";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -20,9 +18,6 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   image_url: z.string().optional().nullable(),
-  tags: z.array(z.string()).optional().nullable(),
-  source_coe_id: z.array(z.string()).optional().nullable(),
-  source_element_id: z.string().optional().nullable(),
   destination_coe_id: z.array(z.string()).optional().nullable(),
   destination_element_ids: z.array(z.string()).optional().nullable()
 });
@@ -49,9 +44,6 @@ export function CoreSetModal({
       name: coreSet?.name || "",
       description: coreSet?.description || "",
       image_url: coreSet?.image_url || "",
-      tags: coreSet?.tags || [],
-      source_coe_id: coreSet?.source_coe_id ? [coreSet.source_coe_id] : [],
-      source_element_id: coreSet?.source_element_id || null,
       destination_coe_id: coreSet?.destination_coe_id ? [coreSet.destination_coe_id] : [],
       destination_element_ids: coreSet?.destination_element_ids || []
     }
@@ -64,9 +56,6 @@ export function CoreSetModal({
         name: values.name,
         description: values.description,
         image_url: values.image_url,
-        tags: values.tags,
-        source_coe_id: values.source_coe_id && values.source_coe_id.length > 0 ? values.source_coe_id[0] : null,
-        source_element_id: values.source_element_id,
         destination_coe_id: values.destination_coe_id && values.destination_coe_id.length > 0 ? values.destination_coe_id[0] : null,
         destination_element_ids: values.destination_element_ids
       };
@@ -153,34 +142,6 @@ export function CoreSetModal({
                   <FormLabel>Image</FormLabel>
                   <FormControl>
                     <ImageUploader value={field.value || ""} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tags</FormLabel>
-                  <FormControl>
-                    <TagSelector value={field.value || []} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="source_coe_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Source COE</FormLabel>
-                  <FormControl>
-                    <CoeSelector value={field.value || []} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
