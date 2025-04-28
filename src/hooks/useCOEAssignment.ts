@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,7 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
           return [];
         }
         
+        console.log("Fetched COEs:", data?.length || 0);
         return data || [];
       } catch (error) {
         console.error("Unexpected error in COE query:", error);
@@ -52,11 +54,13 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
     : unassignedCOEs;
 
   const handleDragStart = useCallback((coe: COE) => {
+    console.log("Drag started:", coe.name);
     setDraggedCOE(coe);
     setIsDragging(true);
   }, []);
 
   const handleDragEnd = useCallback(() => {
+    console.log("Drag ended");
     setDraggedCOE(null);
     setIsDragging(false);
     setDragOverZone(null);
@@ -69,12 +73,20 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
   }, []);
 
   const handleDrop = useCallback(async (targetType: "assign" | "unassign") => {
-    if (!coreSet || (!draggedCOE && selectedCOEs.size === 0)) return;
+    console.log("Drop in zone:", targetType);
+    console.log("Dragged COE:", draggedCOE?.name);
+    console.log("Selected COEs count:", selectedCOEs.size);
+    
+    if (!coreSet || (!draggedCOE && selectedCOEs.size === 0)) {
+      console.log("No CoreSet or no COEs to update");
+      return;
+    }
     
     const coesToUpdate: COE[] = [];
     
     if (draggedCOE) {
       coesToUpdate.push(draggedCOE);
+      console.log("Adding dragged COE to update list:", draggedCOE.name);
     }
     
     if (selectedCOEs.size > 0) {
@@ -83,20 +95,27 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
         .forEach(coe => {
           if (!coesToUpdate.some(c => c.id === coe.id)) {
             coesToUpdate.push(coe);
+            console.log("Adding selected COE to update list:", coe.name);
           }
         });
     }
     
-    if (coesToUpdate.length === 0) return;
+    if (coesToUpdate.length === 0) {
+      console.log("No COEs to update after filtering");
+      return;
+    }
     
     try {
+      console.log("Updating COEs:", coesToUpdate.length);
       for (const coe of coesToUpdate) {
         let updatedCoreSetIds = coe.coreSet_id || [];
         
         if (targetType === "assign" && !updatedCoreSetIds.includes(coreSet.id)) {
           updatedCoreSetIds = [...updatedCoreSetIds, coreSet.id];
+          console.log(`Adding CoreSet ID ${coreSet.id} to COE ${coe.name}`);
         } else if (targetType === "unassign") {
           updatedCoreSetIds = updatedCoreSetIds.filter(id => id !== coreSet.id);
+          console.log(`Removing CoreSet ID ${coreSet.id} from COE ${coe.name}`);
         }
         
         const { error } = await supabase
@@ -104,7 +123,10 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
           .update({ coreSet_id: updatedCoreSetIds })
           .eq("id", coe.id);
           
-        if (error) throw new Error(error.message);
+        if (error) {
+          console.error("Error updating COE:", error);
+          throw new Error(error.message);
+        }
       }
       
       setSelectedCOEs(new Set());

@@ -34,13 +34,15 @@ export const DraggableCard = ({
   const [isDraggable, setIsDraggable] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout>();
   const touchStartPosition = useRef<{ x: number; y: number } | null>(null);
-  
+  const mouseDownTimer = useRef<NodeJS.Timeout>();
+
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     touchStartPosition.current = { x: touch.clientX, y: touch.clientY };
     
     longPressTimer.current = setTimeout(() => {
       setIsDraggable(true);
+      console.log("Long press activated - now draggable");
     }, 500); // 500ms for long press
   };
   
@@ -62,15 +64,16 @@ export const DraggableCard = ({
     clearTimeout(longPressTimer.current);
     touchStartPosition.current = null;
     // Keep draggable state for a short while to allow for the drag to start
-    setTimeout(() => setIsDraggable(false), 100);
+    setTimeout(() => setIsDraggable(false), 300);
   };
   
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!draggable || !isDraggable) {
+    if (!draggable) {
       e.preventDefault();
       return;
     }
     
+    // Allow dragging after long press even without explicitly setting isDraggable
     e.dataTransfer.setData("text/plain", coe.id);
     e.dataTransfer.effectAllowed = "move";
     
@@ -82,32 +85,52 @@ export const DraggableCard = ({
     
     setIsBeingDragged(true);
     if (onDragStart) onDragStart();
+    console.log("Drag started for:", coe.name);
   };
   
   const handleDragEnd = () => {
     setIsBeingDragged(false);
     setIsDraggable(false);
     if (onDragEnd) onDragEnd();
+    console.log("Drag ended for:", coe.name);
+  };
+  
+  const handleMouseDown = () => {
+    mouseDownTimer.current = setTimeout(() => {
+      setIsDraggable(true);
+      console.log("Mouse long press activated - now draggable");
+    }, 500);
+  };
+  
+  const handleMouseUp = () => {
+    clearTimeout(mouseDownTimer.current);
+  };
+  
+  const handleMouseLeave = () => {
+    clearTimeout(mouseDownTimer.current);
   };
 
   return (
     <Card
       className={cn(
         "relative transition-all duration-200 group p-2",
-        isDraggable && "cursor-move",
-        !isDraggable && "cursor-default",
+        (isDraggable || isBeingDragged) && "cursor-move",
+        !isDraggable && !isBeingDragged && "cursor-default",
         isSelected && "border-primary bg-primary/10",
         isBeingDragged && "opacity-40 scale-95",
         !isBeingDragged && "hover:shadow-md hover:-translate-y-0.5 hover:border-primary/50",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
         "animate-in fade-in-0 zoom-in-95"
       )}
-      draggable={isDraggable}
+      draggable={true} 
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2">
@@ -120,7 +143,7 @@ export const DraggableCard = ({
           
           <div className={cn(
             "text-muted-foreground p-1 rounded-md",
-            isDraggable ? "bg-primary/10 text-primary" : "group-hover:bg-primary/10 group-hover:text-primary"
+            (isDraggable || isBeingDragged) ? "bg-primary/10 text-primary" : "group-hover:bg-primary/10 group-hover:text-primary"
           )}>
             <GripVertical className="h-4 w-4" />
           </div>

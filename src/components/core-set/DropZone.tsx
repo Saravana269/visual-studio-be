@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { MoveHorizontal } from "lucide-react";
@@ -24,11 +25,13 @@ export const DropZone = ({
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragEnter(true);
+    console.log(`Drag entered ${zone} zone`);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     if (e.currentTarget.contains(e.relatedTarget as Node)) return;
     setIsDragEnter(false);
+    console.log(`Drag left ${zone} zone`);
   };
 
   return (
@@ -42,9 +45,14 @@ export const DropZone = ({
         "animate-in fade-in-0 zoom-in-95",
         className
       )}
-      onDragOver={onDragOver}
+      onDragOver={(e) => {
+        e.preventDefault();
+        onDragOver(e);
+      }}
       onDrop={(e) => {
+        e.preventDefault();
         setIsDragEnter(false);
+        console.log(`Item dropped in ${zone} zone`);
         onDrop(e);
       }}
       onDragEnter={handleDragEnter}
