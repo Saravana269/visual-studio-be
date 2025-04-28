@@ -14,34 +14,51 @@ import CoreSetManager from "./pages/CoreSetManager";
 import WidgetManager from "./pages/WidgetManager";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import AuthCallback from "./components/auth/AuthCallback";
+import { User } from "@supabase/supabase-js";
+import { Loader2 } from "lucide-react";
 
 function App() {
-  const [session, setSession] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+        setIsLoading(false);
+      }
+    );
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-background">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   // If not authenticated, only show auth page
-  if (!session) {
+  if (!user) {
     return (
       <Router>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="*" element={<Navigate to="/auth" replace />} />
         </Routes>
+        <Toaster />
       </Router>
     );
   }
@@ -64,6 +81,8 @@ function App() {
                 <Route path="/core-set" element={<CoreSetManager />} />
                 <Route path="/widgets" element={<WidgetManager />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/auth" element={<Navigate to="/elements" replace />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="*" element={<Navigate to="/elements" replace />} />
               </Routes>
             </main>
