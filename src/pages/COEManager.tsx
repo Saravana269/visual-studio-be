@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +20,7 @@ interface COE {
   name: string;
   description: string | null;
   tags: string[] | null;
-  image_url: string | null;
+  image_url?: string | null;
   element_count?: number;
 }
 
