@@ -29,12 +29,19 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
     console.log("Mapping clicked for core set:", coreSet.name);
   };
 
+  // Safe string rendering helper
+  const safeRenderString = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'string') return value;
+    return String(value);
+  };
+
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {coreSets.map(coreSet => (
           <Card 
-            key={coreSet.id} 
+            key={safeRenderString(coreSet.id)} 
             className="element-card relative flex flex-col overflow-hidden cursor-pointer"
             onClick={() => handleViewDetails(coreSet)}
           >
@@ -67,8 +74,8 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
             <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
               {coreSet.image_url ? (
                 <img 
-                  src={coreSet.image_url} 
-                  alt={coreSet.name}
+                  src={safeRenderString(coreSet.image_url)} 
+                  alt={safeRenderString(coreSet.name)}
                   className="w-full h-full object-cover" 
                 />
               ) : (
@@ -77,10 +84,10 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
             </div>
             
             <CardHeader className="pb-2 p-3">
-              <h3 className="font-semibold text-base">{coreSet.name}</h3>
+              <h3 className="font-semibold text-base">{safeRenderString(coreSet.name)}</h3>
               {coreSet.description && (
                 <p className="text-xs text-muted-foreground line-clamp-2">
-                  {coreSet.description}
+                  {safeRenderString(coreSet.description)}
                 </p>
               )}
             </CardHeader>
@@ -93,9 +100,9 @@ const CoreSetList = ({ coreSets, onEdit, onView }: CoreSetListProps) => {
               )}
               {coreSet.tags && coreSet.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {coreSet.tags.map(tag => (
-                    <Badge key={tag} variant="secondary" className="tag-badge">
-                      {tag}
+                  {coreSet.tags.map((tag, idx) => (
+                    <Badge key={`tag-${idx}-${safeRenderString(tag).substring(0, 3)}`} variant="secondary" className="tag-badge">
+                      {safeRenderString(tag)}
                     </Badge>
                   ))}
                 </div>

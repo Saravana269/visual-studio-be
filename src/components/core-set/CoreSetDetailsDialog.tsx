@@ -12,6 +12,15 @@ interface CoreSetDetailsDialogProps {
 const CoreSetDetailsDialog = ({ coreSet, open, onClose }: CoreSetDetailsDialogProps) => {
   if (!coreSet) return null;
 
+  // Helper function to safely stringify any value
+  const safeRender = (value: any): string => {
+    if (value === null || value === undefined) return 'Not specified';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    // For objects or arrays, use JSON stringification
+    return 'Complex value';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -33,7 +42,7 @@ const CoreSetDetailsDialog = ({ coreSet, open, onClose }: CoreSetDetailsDialogPr
             <h3 className="text-sm font-medium mb-1">Primary Element</h3>
             <div className="bg-muted rounded-md p-3">
               {coreSet.source_element_id ? (
-                <div className="text-sm">{typeof coreSet.source_element_id === 'string' ? coreSet.source_element_id : 'Invalid element ID'}</div>
+                <div className="text-sm">{safeRender(coreSet.source_element_id)}</div>
               ) : (
                 <div className="text-sm text-muted-foreground">No primary element assigned</div>
               )}
@@ -47,8 +56,8 @@ const CoreSetDetailsDialog = ({ coreSet, open, onClose }: CoreSetDetailsDialogPr
               {coreSet.destination_element_ids && coreSet.destination_element_ids.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
                   {coreSet.destination_element_ids.map((elementId, index) => (
-                    <div key={`${elementId}-${index}`} className="text-sm bg-background rounded p-2">
-                      {typeof elementId === 'string' ? elementId : 'Invalid element ID'}
+                    <div key={`element-${index}`} className="text-sm bg-background rounded p-2">
+                      {safeRender(elementId)}
                     </div>
                   ))}
                 </div>
@@ -64,8 +73,8 @@ const CoreSetDetailsDialog = ({ coreSet, open, onClose }: CoreSetDetailsDialogPr
               <h3 className="text-sm font-medium mb-1">Tags</h3>
               <div className="flex flex-wrap gap-1">
                 {coreSet.tags.map((tag, idx) => (
-                  <Badge key={`${tag}-${idx}`} variant="secondary">
-                    {tag}
+                  <Badge key={`tag-${idx}`} variant="secondary">
+                    {safeRender(tag)}
                   </Badge>
                 ))}
               </div>
