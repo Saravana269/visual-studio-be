@@ -17,6 +17,7 @@ interface COE {
   id: string;
   name: string;
   description: string | null;
+  image_url?: string | null;
   tags: string[] | null;
   element_count?: number;
 }
@@ -220,11 +221,19 @@ const COEManager = () => {
       ) : Array.isArray(coes) && coes.length === 0 ? (
         <COEEmptyState onCreateFirst={handleCreateCOE} />
       ) : (
-        <COEList
-          coes={filteredCOEs}
-          onEdit={handleEditCOE}
-          onView={handleViewCOE}
-        />
+        viewMode === 'grid' ? (
+          <COEList
+            coes={filteredCOEs}
+            onEdit={handleEditCOE}
+            onView={handleViewCOE}
+          />
+        ) : (
+          <COETable
+            coes={filteredCOEs}
+            onEdit={handleEditCOE}
+            onView={handleViewCOE}
+          />
+        )
       )}
       
       {isCreateModalOpen && (
@@ -240,6 +249,7 @@ const COEManager = () => {
                     name: coe.name,
                     description: coe.description,
                     tags: coe.tags,
+                    image_url: coe.image_url,
                   })
                   .eq("id", selectedCOE.id);
                 
@@ -256,6 +266,7 @@ const COEManager = () => {
                     name: coe.name,
                     description: coe.description,
                     tags: coe.tags,
+                    image_url: coe.image_url,
                   }]);
                 
                 if (error) throw error;
@@ -293,6 +304,7 @@ const COEManager = () => {
                   name: updatedCOE.name,
                   description: updatedCOE.description,
                   tags: updatedCOE.tags,
+                  image_url: updatedCOE.image_url,
                 })
                 .eq("id", selectedCOE.id);
               

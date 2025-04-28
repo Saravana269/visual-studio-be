@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ImageUploader } from "@/components/elements/ImageUploader";
 
 interface COE {
   id?: string;
   name: string;
   description: string | null;
-  tags?: string[] | null;  // Make tags optional in the interface
+  image_url?: string | null;
+  tags?: string[] | null;
 }
 
 interface COEModalProps {
@@ -24,6 +26,7 @@ const COEModal = ({ isOpen, onClose, onSave, coe }: COEModalProps) => {
   const [formData, setFormData] = useState<COE>({
     name: "",
     description: "",
+    image_url: "",
   });
   
   const [errors, setErrors] = useState<{
@@ -35,11 +38,13 @@ const COEModal = ({ isOpen, onClose, onSave, coe }: COEModalProps) => {
       setFormData({
         name: coe.name || "",
         description: coe.description || "",
+        image_url: coe.image_url || "",
       });
     } else if (isOpen) {
       setFormData({
         name: "",
         description: "",
+        image_url: "",
       });
     }
     
@@ -103,6 +108,14 @@ const COEModal = ({ isOpen, onClose, onSave, coe }: COEModalProps) => {
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="Enter a description"
               rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Image</Label>
+            <ImageUploader
+              value={formData.image_url || ""}
+              onChange={(url) => handleChange("image_url", url)}
             />
           </div>
         </div>
