@@ -9,7 +9,6 @@ export function useWidgetState() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   
   // Dialog state
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
@@ -31,8 +30,6 @@ export function useWidgetState() {
     setViewMode,
     
     // Dialog state
-    isDetailDialogOpen,
-    setIsDetailDialogOpen,
     isCreateDialogOpen,
     setIsCreateDialogOpen,
     isEditDialogOpen,

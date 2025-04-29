@@ -13,7 +13,6 @@ interface WidgetGridProps {
   isLoading: boolean;
   tagDetails: Record<string, string>;
   onEditClick: (widget: Widget) => void;
-  onViewDetails: (widget: Widget) => void;
   onCreateClick: () => void;
 }
 
@@ -21,8 +20,7 @@ export function WidgetGrid({
   widgets, 
   isLoading, 
   tagDetails, 
-  onEditClick, 
-  onViewDetails,
+  onEditClick,
   onCreateClick
 }: WidgetGridProps) {
   const navigate = useNavigate();
@@ -34,8 +32,7 @@ export function WidgetGrid({
   };
 
   // Navigate to screens page
-  const handleManageScreens = (widget: Widget, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleNavigateToScreens = (widget: Widget) => {
     navigate(`/widgets/${widget.id}/screens`);
   };
 
@@ -74,18 +71,12 @@ export function WidgetGrid({
         <Card 
           key={widget.id} 
           className="element-card relative flex flex-col overflow-hidden cursor-pointer" 
-          onClick={(e) => {
-            if ((e.target as HTMLElement).closest('.element-card-menu, .screen-management-button')) {
-              e.stopPropagation();
-              return;
-            }
-            onViewDetails(widget);
-          }}
+          onClick={() => handleNavigateToScreens(widget)}
         >
           <div className="absolute top-2 right-2 z-10">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="element-card-menu">
+                <Button variant="ghost" size="sm" className="element-card-menu" onClick={(e) => e.stopPropagation()}>
                   <MoreVertical className="h-4 w-4" />
                   <span className="sr-only">Open menu</span>
                 </Button>
@@ -97,13 +88,7 @@ export function WidgetGrid({
                 }}>
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  onViewDetails(widget);
-                }}>
-                  View Details
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => handleManageScreens(widget, e)}>
+                <DropdownMenuItem onClick={() => handleNavigateToScreens(widget)}>
                   <Layout size={14} className="mr-2" /> Manage Screens
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -147,13 +132,16 @@ export function WidgetGrid({
             )}
           </div>
           
-          {/* Add direct access button for screen management */}
+          {/* Make the manage screens button more prominent */}
           <div className="px-3 pb-3 mt-auto">
             <Button
               variant="outline"
               size="sm"
               className="w-full screen-management-button bg-[#1E1E1E] hover:bg-[#333333] border-[#444444] text-[#9b87f5] hover:text-[#7E69AB] flex items-center justify-center"
-              onClick={(e) => handleManageScreens(widget, e)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigateToScreens(widget);
+              }}
             >
               <Layout size={14} className="mr-2" /> Manage Screens
             </Button>

@@ -14,8 +14,6 @@ export function useWidgetManager() {
     setSelectedTagIds,
     viewMode,
     setViewMode,
-    isDetailDialogOpen,
-    setIsDetailDialogOpen,
     isCreateDialogOpen,
     setIsCreateDialogOpen,
     isEditDialogOpen,
@@ -37,12 +35,6 @@ export function useWidgetManager() {
 
   // Get tag filtering functions
   const { handleTagSelect: filterTagSelect, handleTagRemove: filterTagRemove, handleTagClear } = useWidgetTagFiltering();
-
-  // Handle viewing widget details
-  const handleViewDetails = (widget: Widget) => {
-    setSelectedWidget(widget);
-    setIsDetailDialogOpen(true);
-  };
 
   // Handle creating a new widget
   const handleCreateWidget = async () => {
@@ -91,7 +83,6 @@ export function useWidgetManager() {
     selectedTagIds,
     viewMode,
     selectedWidget,
-    isDetailDialogOpen,
     isCreateDialogOpen,
     isEditDialogOpen,
     widgetFormData,
@@ -100,13 +91,11 @@ export function useWidgetManager() {
     // Setters
     setSearchQuery,
     setViewMode,
-    setIsDetailDialogOpen,
     setIsCreateDialogOpen,
     setIsEditDialogOpen,
     setWidgetFormData,
     
     // Handlers
-    handleViewDetails,
     handleCreateWidget,
     handleUpdateWidget,
     handleEditClick,

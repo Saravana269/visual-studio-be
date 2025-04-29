@@ -2,7 +2,6 @@
 import { TagManagementRow } from "@/components/elements/TagManagementRow";
 import { WidgetGrid } from "@/components/widgets/WidgetGrid";
 import { WidgetList } from "@/components/widgets/WidgetList";
-import { WidgetDetailDialog } from "@/components/widgets/WidgetDetailDialog";
 import { WidgetFormDialog } from "@/components/widgets/WidgetFormDialog";
 import { SearchFilterBar } from "@/components/widgets/search/SearchFilterBar";
 import { WidgetHeaderActions } from "@/components/widgets/header/WidgetHeaderActions";
@@ -15,8 +14,6 @@ const WidgetManager = () => {
     searchQuery,
     selectedTagIds,
     viewMode,
-    selectedWidget,
-    isDetailDialogOpen,
     isCreateDialogOpen,
     isEditDialogOpen,
     widgetFormData,
@@ -24,12 +21,10 @@ const WidgetManager = () => {
     
     setSearchQuery,
     setViewMode,
-    setIsDetailDialogOpen,
     setIsCreateDialogOpen,
     setIsEditDialogOpen,
     setWidgetFormData,
     
-    handleViewDetails,
     handleCreateWidget,
     handleUpdateWidget,
     handleEditClick,
@@ -77,7 +72,6 @@ const WidgetManager = () => {
           isLoading={isLoading}
           tagDetails={tagDetails}
           onEditClick={handleEditClick}
-          onViewDetails={handleViewDetails}
           onCreateClick={handleOpenCreateDialog}
         />
       ) : (
@@ -85,7 +79,6 @@ const WidgetManager = () => {
           widgets={widgets}
           tagDetails={tagDetails}
           onEditClick={handleEditClick}
-          onViewDetails={handleViewDetails}
         />
       )}
 
@@ -106,15 +99,6 @@ const WidgetManager = () => {
         setFormData={setWidgetFormData}
         onSave={handleUpdateWidget}
         mode="edit"
-      />
-
-      {/* Widget Detail Dialog */}
-      <WidgetDetailDialog
-        isOpen={isDetailDialogOpen}
-        onOpenChange={setIsDetailDialogOpen}
-        selectedWidget={selectedWidget}
-        onEditClick={handleEditClick}
-        tagDetails={tagDetails}
       />
     </div>
   );

@@ -2,20 +2,27 @@
 import { Widget } from "@/types/widget";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Tag } from "lucide-react";
+import { Layout, Tag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface WidgetListProps {
   widgets: Widget[];
   tagDetails: Record<string, string>;
   onEditClick: (widget: Widget) => void;
-  onViewDetails: (widget: Widget) => void;
 }
 
-export function WidgetList({ widgets, tagDetails, onEditClick, onViewDetails }: WidgetListProps) {
+export function WidgetList({ widgets, tagDetails, onEditClick }: WidgetListProps) {
+  const navigate = useNavigate();
+
   // Get tag labels from tag IDs
   const getTagLabels = (tagIds: string[] | null): string[] => {
     if (!tagIds) return [];
     return tagIds.map(id => tagDetails[id] || "Unknown Tag").filter(Boolean);
+  };
+
+  // Navigate to screen manager
+  const handleNavigateToScreens = (widget: Widget) => {
+    navigate(`/widgets/${widget.id}/screens`);
   };
 
   return (
@@ -63,10 +70,11 @@ export function WidgetList({ widgets, tagDetails, onEditClick, onViewDetails }: 
                   </Button>
                   <Button 
                     variant="ghost" 
-                    size="sm" 
-                    onClick={() => onViewDetails(widget)}
+                    size="sm"
+                    className="flex items-center" 
+                    onClick={() => handleNavigateToScreens(widget)}
                   >
-                    View
+                    <Layout size={14} className="mr-1" /> Manage Screens
                   </Button>
                 </div>
               </TableCell>
