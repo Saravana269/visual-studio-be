@@ -1,9 +1,11 @@
 
 import { Widget } from "@/types/widget";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Tag } from "lucide-react";
+import { Plus, Tag, MoreVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface WidgetGridProps {
   widgets: Widget[];
@@ -11,7 +13,7 @@ interface WidgetGridProps {
   tagDetails: Record<string, string>;
   onEditClick: (widget: Widget) => void;
   onViewDetails: (widget: Widget) => void;
-  onCreateClick: () => void; // Added this prop
+  onCreateClick: () => void;
 }
 
 export function WidgetGrid({ 
@@ -20,7 +22,7 @@ export function WidgetGrid({
   tagDetails, 
   onEditClick, 
   onViewDetails,
-  onCreateClick // Added this prop 
+  onCreateClick
 }: WidgetGridProps) {
   // Get tag labels from tag IDs
   const getTagLabels = (tagIds: string[] | null): string[] => {
@@ -48,7 +50,7 @@ export function WidgetGrid({
           Get started by creating your first widget
         </p>
         <Button 
-          onClick={onCreateClick} // Use the new prop here
+          onClick={onCreateClick}
           className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
         >
           <Plus size={16} className="mr-2" /> Create Widget
@@ -58,70 +60,80 @@ export function WidgetGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {widgets.map(widget => (
         <Card 
           key={widget.id} 
-          className="cursor-pointer hover:border-[#9b87f5] transition-all"
-          onClick={() => onViewDetails(widget)}
+          className="element-card relative flex flex-col overflow-hidden cursor-pointer" 
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('.element-card-menu')) {
+              e.stopPropagation();
+              return;
+            }
+            onViewDetails(widget);
+          }}
         >
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">{widget.name}</CardTitle>
-            {widget.description && (
-              <CardDescription className="line-clamp-2">{widget.description}</CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
+          <div className="absolute top-2 right-2 z-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="element-card-menu">
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onEditClick(widget);
+                }}>
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(widget);
+                }}>
+                  View Details
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="h-32 bg-muted flex items-center justify-center overflow-hidden">
             {widget.image_url ? (
-              <div className="w-full h-32 bg-muted rounded-md mb-3 overflow-hidden">
-                <img 
-                  src={widget.image_url} 
-                  alt={widget.name} 
-                  className="w-full h-full object-cover" 
-                />
-              </div>
+              <img 
+                src={widget.image_url} 
+                alt={widget.name} 
+                className="w-full h-full object-cover" 
+              />
             ) : (
-              <div className="w-full h-32 bg-muted rounded-md mb-3 flex items-center justify-center">
-                <p className="text-muted-foreground text-sm">No preview available</p>
-              </div>
+              <div className="text-muted-foreground text-sm">No image</div>
             )}
-            
-            {/* Tags display */}
+          </div>
+          
+          <div className="pb-2 p-3">
+            <h3 className="font-semibold text-base">{widget.name}</h3>
+            {widget.description && (
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {widget.description}
+              </p>
+            )}
+          </div>
+          
+          <div className="pb-2 p-3 flex-1">
             {widget.tags && widget.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {getTagLabels(widget.tags).map((tagLabel, idx) => (
-                  <div 
+                  <Badge 
                     key={idx} 
-                    className="bg-[#E5DEFF] text-[#6E59A5] text-xs px-2 py-1 rounded-sm flex items-center"
+                    variant="outline" 
+                    className="tag-badge bg-[#FFA13010] text-[#FFA130] border-[#FFA130] rounded-sm"
                   >
                     <Tag size={10} className="mr-1" /> {tagLabel}
-                  </div>
+                  </Badge>
                 ))}
               </div>
             )}
-          </CardContent>
-          <CardFooter className="pt-0 flex justify-between">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditClick(widget);
-              }}
-            >
-              Edit
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetails(widget);
-              }}
-            >
-              Details
-            </Button>
-          </CardFooter>
+          </div>
         </Card>
       ))}
     </div>
