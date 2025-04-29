@@ -281,27 +281,18 @@ const COEManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Updated header with integrated tag search */}
       <COEHeader 
         onCreateCOE={() => setIsCreateModalOpen(true)} 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        selectedTags={selectedTags}
+        allTags={allAdditionalTags}
+        onTagSelect={handleTagSelect}
+        onAddTagClick={handleAddTag}
       />
       
-      <div className="mb-6">
-        <TagManagementRow
-          selectedTags={selectedTags}
-          tagDetails={allAdditionalTags.reduce((acc: Record<string, string>, tag) => {
-            acc[tag] = tag;
-            return acc;
-          }, {})}
-          onTagSearch={setTagSearchQuery}
-          onTagSelect={handleTagSelect}
-          onTagRemove={handleClearTag}
-          onAddTagClick={handleAddTag}
-          onManageTagsClick={() => {/* Implement tag management */}}
-        />
-      </div>
-
+      {/* Filter by Primary Tag section */}
       <div className="mb-6">
         <h3 className="text-sm font-medium mb-2">Filter by Primary Tag</h3>
         <div className="relative">
@@ -332,12 +323,6 @@ const COEManager = () => {
           </ScrollArea>
         </div>
       </div>
-
-      <COETagSearch
-        selectedTags={selectedTags}
-        allTags={allAdditionalTags}
-        onTagSelect={handleTagSelect}
-      />
       
       {isLoading ? (
         <div className="flex justify-center">

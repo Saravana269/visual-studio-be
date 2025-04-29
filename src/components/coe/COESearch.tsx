@@ -1,9 +1,9 @@
 
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus, Settings } from "lucide-react";
+import COETagSearch from "./COETagSearch";
 
 interface COESearchProps {
   searchQuery: string;
@@ -11,6 +11,8 @@ interface COESearchProps {
   selectedTags: string[];
   allTags: string[];
   onTagSelect: (tag: string) => void;
+  onAddTagClick?: () => void;
+  onSettingsClick?: () => void;
 }
 
 const COESearch = ({ 
@@ -18,12 +20,14 @@ const COESearch = ({
   setSearchQuery, 
   selectedTags, 
   allTags, 
-  onTagSelect 
+  onTagSelect,
+  onAddTagClick,
+  onSettingsClick
 }: COESearchProps) => {
   return (
     <div className="space-y-4">
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1">
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="relative flex-shrink-0 w-64">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search COEs..."
@@ -32,28 +36,37 @@ const COESearch = ({
             className="pl-9"
           />
         </div>
-      </div>
-      
-      {allTags.length > 0 && (
-        <div className="relative">
-          <ScrollArea className="w-full pb-4">
-            <div className="flex items-center gap-2 py-1 flex-nowrap">
-              <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
-              {allTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className="cursor-pointer whitespace-nowrap"
-                  onClick={() => onTagSelect(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+        
+        <div className="flex-1 min-w-0">
+          <COETagSearch
+            selectedTags={selectedTags}
+            allTags={allTags}
+            onTagSelect={onTagSelect}
+          />
         </div>
-      )}
+        
+        {onAddTagClick && (
+          <Button 
+            onClick={onAddTagClick}
+            size="sm" 
+            className="flex-shrink-0"
+            variant="outline"
+          >
+            <Plus size={16} /> Add Tag
+          </Button>
+        )}
+        
+        {onSettingsClick && (
+          <Button
+            onClick={onSettingsClick}
+            size="sm"
+            className="flex-shrink-0"
+            variant="outline"
+          >
+            <Settings size={16} />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

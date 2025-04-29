@@ -7,18 +7,20 @@ interface COETagSearchProps {
   selectedTags: string[];
   allTags: string[];
   onTagSelect: (tag: string) => void;
+  className?: string;
 }
 
 const COETagSearch = ({ 
   selectedTags, 
   allTags, 
-  onTagSelect 
+  onTagSelect,
+  className = ""
 }: COETagSearchProps) => {
   return (
-    <div className="space-y-4">
+    <div className={`${className}`}>
       {allTags.length > 0 && (
         <div className="relative">
-          <ScrollArea className="w-full pb-4">
+          <ScrollArea className="w-full">
             <div className="flex items-center gap-2 py-1 flex-nowrap">
               <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
               {allTags.map((tag) => (
