@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query"; 
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; 
+import { Badge } from "@/components/ui/badge";
 import COEModal from "@/components/coe/COEModal";
 import COEEmptyState from "@/components/coe/COEEmptyState";
 import COEList from "@/components/coe/COEList";
@@ -21,13 +21,16 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { CreateTagDialog } from "@/components/elements/CreateTagDialog";
-
 const COEManager = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
-  const { session, isChecking } = useAuth();
+  const {
+    session,
+    isChecking
+  } = useAuth();
   const userId = session?.user?.id;
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCOE, setSelectedCOE] = useState<COE | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,27 +44,31 @@ const COEManager = () => {
   const [isSubmittingTag, setIsSubmittingTag] = useState(false);
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
   const [selectedPrimaryTagId, setSelectedPrimaryTagId] = useState<string | null>(null);
-
-  const { data: coes = [], isLoading, error, refetch } = useCOEData();
-
-  const { data: availableTags = [], refetch: refetchTags } = useQuery({
+  const {
+    data: coes = [],
+    isLoading,
+    error,
+    refetch
+  } = useCOEData();
+  const {
+    data: availableTags = [],
+    refetch: refetchTags
+  } = useQuery({
     queryKey: ["coe-tags", userId],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("tags")
-          .select("*")
-          .eq("entity_type", "COE");
-          
+        const {
+          data,
+          error
+        } = await supabase.from("tags").select("*").eq("entity_type", "COE");
         if (error) {
           toast({
             title: "Error fetching tags",
             description: error.message,
-            variant: "destructive",
+            variant: "destructive"
           });
           return [];
         }
-        
         return data;
       } catch (error: any) {
         console.error("Error fetching tags:", error);
@@ -70,21 +77,20 @@ const COEManager = () => {
     },
     enabled: !isChecking
   });
-
-  const { data: tagDetails = {} } = useQuery({
+  const {
+    data: tagDetails = {}
+  } = useQuery({
     queryKey: ["coe-tag-details"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("tags")
-          .select("id, label")
-          .eq("entity_type", "COE");
-          
+        const {
+          data,
+          error
+        } = await supabase.from("tags").select("id, label").eq("entity_type", "COE");
         if (error) {
           console.error("Error fetching tag details:", error);
           return {};
         }
-        
         return data.reduce((acc: Record<string, string>, tag) => {
           acc[tag.id] = tag.label;
           return acc;
@@ -95,7 +101,6 @@ const COEManager = () => {
       }
     }
   });
-
   const handleCloseModal = (shouldRefetch = false) => {
     setIsCreateModalOpen(false);
     setSelectedCOE(null);
@@ -103,70 +108,47 @@ const COEManager = () => {
       refetch();
     }
   };
-
-  const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
-    const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesAdditionalTags =
-      selectedTags.length === 0 ||
-      (coe.tags && selectedTags.every((tag) => coe.tags.includes(tag)));
-    
-    const matchesPrimaryTag =
-      !selectedPrimaryTagId || coe.primary_tag_id === selectedPrimaryTagId;
-    
+  const filteredCOEs = Array.isArray(coes) ? coes.filter(coe => {
+    const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) || coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesAdditionalTags = selectedTags.length === 0 || coe.tags && selectedTags.every(tag => coe.tags.includes(tag));
+    const matchesPrimaryTag = !selectedPrimaryTagId || coe.primary_tag_id === selectedPrimaryTagId;
     return matchesSearch && matchesAdditionalTags && matchesPrimaryTag;
   }) : [];
-
-  const allAdditionalTags = Array.isArray(coes) ? 
-    Array.from(new Set(coes.flatMap((coe) => coe.tags || []))) : [];
-
+  const allAdditionalTags = Array.isArray(coes) ? Array.from(new Set(coes.flatMap(coe => coe.tags || []))) : [];
   const handleCreateCOE = () => {
     setSelectedCOE(null);
     setIsCreateModalOpen(true);
   };
-
   const handleEditCOE = (coe: COE) => {
     setSelectedCOE(coe);
     setIsCreateModalOpen(true);
   };
-
   const handleTagSelect = (tagId: string) => {
     if (tagId) {
-      setSelectedTags((prev) =>
-        prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
-      );
+      setSelectedTags(prev => prev.includes(tagId) ? prev.filter(t => t !== tagId) : [...prev, tagId]);
       setCurrentPage(1);
     }
   };
-
   const handleTagRemove = (tagId: string) => {
-    setSelectedTags((prev) => prev.filter((t) => t !== tagId));
+    setSelectedTags(prev => prev.filter(t => t !== tagId));
     setCurrentPage(1);
   };
-
   const handleTagClear = () => {
     setSelectedTags([]);
     setCurrentPage(1);
   };
-
   const [currentPage, setCurrentPage] = useState(1);
-
   const handlePrimaryTagSelect = (tagId: string) => {
     setSelectedPrimaryTagId(selectedPrimaryTagId === tagId ? null : tagId);
     setCurrentPage(1);
   };
-
   const handleTagSearch = (query: string) => {
     setSearchQuery(query);
   };
-
   const handleManageTags = (coe: COE, action: 'add' | 'remove') => {
     setSelectedCOE(coe);
     setTagDialogMode(action);
-    
     const selections: Record<string, boolean> = {};
-    
     if (action === 'add') {
       (allAdditionalTags || []).forEach(tag => {
         selections[tag] = false;
@@ -176,48 +158,38 @@ const COEManager = () => {
         selections[tag] = false;
       });
     }
-    
     setTagSelections(selections);
     setIsTagDialogOpen(true);
   };
-
   const handleTagSelectionChange = (tag: string, checked: boolean) => {
     setTagSelections(prev => ({
       ...prev,
       [tag]: checked
     }));
   };
-
   const handleAssignTag = (coe: COE) => {
     setSelectedCOE(coe);
     setSelectedTagInDialog(coe.primary_tag_id || "");
     setIsAssignTagDialogOpen(true);
   };
-
   const handleSaveTag = async () => {
     if (!selectedCOE) return;
     setIsSubmittingTag(true);
-    
     try {
       const tagValue = selectedTagInDialog === "" ? null : selectedTagInDialog;
-      
-      const { error } = await supabase
-        .from("class_of_elements")
-        .update({ primary_tag_id: tagValue })
-        .eq("id", selectedCOE.id);
-        
+      const {
+        error
+      } = await supabase.from("class_of_elements").update({
+        primary_tag_id: tagValue
+      }).eq("id", selectedCOE.id);
       if (error) {
         console.error("Database error when updating tag:", error);
         throw error;
       }
-      
       toast({
         title: "Tag updated",
-        description: selectedTagInDialog 
-          ? "Tag has been assigned to the COE." 
-          : "Tag has been removed from the COE."
+        description: selectedTagInDialog ? "Tag has been assigned to the COE." : "Tag has been removed from the COE."
       });
-      
       refetch();
       setIsAssignTagDialogOpen(false);
     } catch (error: any) {
@@ -225,41 +197,32 @@ const COEManager = () => {
       toast({
         title: "Error updating tag",
         description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsSubmittingTag(false);
     }
   };
-
   const handleSaveTags = async () => {
     if (!selectedCOE) return;
-    
     try {
-      const selectedTagsList = Object.entries(tagSelections)
-        .filter(([_, selected]) => selected)
-        .map(([tag]) => tag);
-      
+      const selectedTagsList = Object.entries(tagSelections).filter(([_, selected]) => selected).map(([tag]) => tag);
       let updatedTags: string[] = [...(selectedCOE.tags || [])];
-      
       if (tagDialogMode === 'add') {
         updatedTags = [...new Set([...updatedTags, ...selectedTagsList])];
       } else {
         updatedTags = updatedTags.filter(tag => !selectedTagsList.includes(tag));
       }
-      
-      const { error } = await supabase
-        .from("class_of_elements")
-        .update({ tags: updatedTags })
-        .eq("id", selectedCOE.id);
-        
+      const {
+        error
+      } = await supabase.from("class_of_elements").update({
+        tags: updatedTags
+      }).eq("id", selectedCOE.id);
       if (error) throw error;
-      
       toast({
         title: "Tags updated",
-        description: tagDialogMode === 'add' ? "Tags have been added." : "Tags have been removed.",
+        description: tagDialogMode === 'add' ? "Tags have been added." : "Tags have been removed."
       });
-      
       refetch();
       setIsTagDialogOpen(false);
     } catch (error) {
@@ -267,23 +230,20 @@ const COEManager = () => {
       toast({
         title: "Error updating tags",
         description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleAddTag = () => {
     setIsCreateTagDialogOpen(true);
   };
-
   const handleTagCreated = (newTag: string) => {
     refetchTags();
     toast({
       title: "Tag created",
-      description: `Tag "${newTag}" has been created successfully.`,
+      description: `Tag "${newTag}" has been created successfully.`
     });
   };
-
   const handleManageTagsClick = () => {
     // This would open a tag management dialog or navigate to a tag management page
     toast({
@@ -291,140 +251,69 @@ const COEManager = () => {
       description: "Tag management will be available in a future update."
     });
   };
-
   if (error) {
-    return (
-      <div className="p-8 text-center">
+    return <div className="p-8 text-center">
         <h2 className="text-xl font-bold text-red-500 mb-4">Error Loading Data</h2>
         <p className="mb-4">There was a problem loading the COE data.</p>
         <Button onClick={() => refetch()}>Try Again</Button>
-      </div>
-    );
+      </div>;
   }
 
   // Filter by Primary Tag section
-  const PrimaryTagFilter = () => (
-    <div className="mb-6">
-      <h3 className="text-sm font-medium mb-2">Filter by Primary Tag</h3>
-      <div className="relative">
-        <ScrollArea className="w-full pb-4">
-          <div className="flex items-center gap-2 py-1 flex-nowrap">
-            <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
-            {Object.entries(tagDetails).map(([tagId, tagLabel]) => (
-              <Badge 
-                key={tagId} 
-                variant={selectedPrimaryTagId === tagId ? "default" : "outline"}
-                className="cursor-pointer whitespace-nowrap"
-                onClick={() => handlePrimaryTagSelect(tagId)}
-              >
-                {tagLabel}
-              </Badge>
-            ))}
-            {selectedPrimaryTagId && (
-              <Badge 
-                variant="secondary" 
-                className="cursor-pointer whitespace-nowrap" 
-                onClick={() => setSelectedPrimaryTagId(null)}
-              >
-                Clear filter
-              </Badge>
-            )}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="space-y-6">
+  const PrimaryTagFilter = () => {};
+  return <div className="space-y-6">
       {/* Updated header with integrated tag management row */}
-      <COEHeader 
-        onCreateCOE={handleCreateCOE} 
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedTags={selectedTags}
-        tagDetails={tagDetails}
-        onTagSelect={handleTagSelect}
-        onTagRemove={handleTagRemove}
-        onTagClear={handleTagClear}
-        onTagSearch={handleTagSearch}
-        onAddTagClick={handleAddTag}
-        onSettingsClick={handleManageTagsClick}
-      />
+      <COEHeader onCreateCOE={handleCreateCOE} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedTags={selectedTags} tagDetails={tagDetails} onTagSelect={handleTagSelect} onTagRemove={handleTagRemove} onTagClear={handleTagClear} onTagSearch={handleTagSearch} onAddTagClick={handleAddTag} onSettingsClick={handleManageTagsClick} />
       
       {/* Filter by Primary Tag section */}
       <PrimaryTagFilter />
       
-      {isLoading ? (
-        <div className="flex justify-center">
+      {isLoading ? <div className="flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00B86B]" />
-        </div>
-      ) : Array.isArray(coes) && coes.length === 0 ? (
-        <COEEmptyState onCreateFirst={() => setIsCreateModalOpen(true)} />
-      ) : (
-        <COEList
-          coes={filteredCOEs}
-          onEdit={handleEditCOE}
-          onAssignTag={handleAssignTag}
-        />
-      )}
+        </div> : Array.isArray(coes) && coes.length === 0 ? <COEEmptyState onCreateFirst={() => setIsCreateModalOpen(true)} /> : <COEList coes={filteredCOEs} onEdit={handleEditCOE} onAssignTag={handleAssignTag} />}
       
-      {isCreateModalOpen && (
-        <COEModal
-          isOpen={isCreateModalOpen}
-          onClose={handleCloseModal}
-          coe={selectedCOE}
-          onSave={async (coe) => {
-            try {
-              if (selectedCOE) {
-                const { error } = await supabase
-                  .from("class_of_elements")
-                  .update({
-                    name: coe.name,
-                    description: coe.description,
-                    tags: coe.tags,
-                    image_url: coe.image_url,
-                    primary_tag_id: coe.primary_tag_id,
-                  })
-                  .eq("id", selectedCOE.id);
-                
-                if (error) throw error;
-                
-                toast({
-                  title: "COE updated",
-                  description: `${coe.name} has been updated successfully.`,
-                });
-              } else {
-                const { error } = await supabase
-                  .from("class_of_elements")
-                  .insert([{
-                    name: coe.name,
-                    description: coe.description,
-                    tags: coe.tags,
-                    image_url: coe.image_url,
-                    primary_tag_id: coe.primary_tag_id,
-                  }]);
-                
-                if (error) throw error;
-                
-                toast({
-                  title: "COE created",
-                  description: `${coe.name} has been created successfully.`,
-                });
-              }
-              
-              handleCloseModal(true);
-            } catch (error) {
-              toast({
-                title: "Error",
-                description: error instanceof Error ? error.message : "An unknown error occurred",
-                variant: "destructive",
-              });
-            }
-          }}
-        />
-      )}
+      {isCreateModalOpen && <COEModal isOpen={isCreateModalOpen} onClose={handleCloseModal} coe={selectedCOE} onSave={async coe => {
+      try {
+        if (selectedCOE) {
+          const {
+            error
+          } = await supabase.from("class_of_elements").update({
+            name: coe.name,
+            description: coe.description,
+            tags: coe.tags,
+            image_url: coe.image_url,
+            primary_tag_id: coe.primary_tag_id
+          }).eq("id", selectedCOE.id);
+          if (error) throw error;
+          toast({
+            title: "COE updated",
+            description: `${coe.name} has been updated successfully.`
+          });
+        } else {
+          const {
+            error
+          } = await supabase.from("class_of_elements").insert([{
+            name: coe.name,
+            description: coe.description,
+            tags: coe.tags,
+            image_url: coe.image_url,
+            primary_tag_id: coe.primary_tag_id
+          }]);
+          if (error) throw error;
+          toast({
+            title: "COE created",
+            description: `${coe.name} has been created successfully.`
+          });
+        }
+        handleCloseModal(true);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "An unknown error occurred",
+          variant: "destructive"
+        });
+      }
+    }} />}
       
       <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
@@ -438,51 +327,25 @@ const COEManager = () => {
           </DialogHeader>
           
           <div className="py-4">
-            <Input
-              placeholder="Search available tags..."
-              className="mb-4"
-              onChange={(e) => {
-                setTagSearchQuery(e.target.value);
-              }}
-            />
+            <Input placeholder="Search available tags..." className="mb-4" onChange={e => {
+            setTagSearchQuery(e.target.value);
+          }} />
             
             <div className="space-y-4 max-h-[300px] overflow-y-auto">
-              {Object.entries(tagSelections)
-                .filter(([tag]) => 
-                  tag.toLowerCase().includes(tagSearchQuery.toLowerCase())
-                )
-                .map(([tag, isSelected]) => (
-                  <div key={tag} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={`tag-${tag}`} 
-                      checked={isSelected}
-                      onCheckedChange={(checked) => 
-                        handleTagSelectionChange(tag, checked === true)
-                      } 
-                    />
-                    <label 
-                      htmlFor={`tag-${tag}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
+              {Object.entries(tagSelections).filter(([tag]) => tag.toLowerCase().includes(tagSearchQuery.toLowerCase())).map(([tag, isSelected]) => <div key={tag} className="flex items-center space-x-2">
+                    <Checkbox id={`tag-${tag}`} checked={isSelected} onCheckedChange={checked => handleTagSelectionChange(tag, checked === true)} />
+                    <label htmlFor={`tag-${tag}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       {tag}
                     </label>
-                  </div>
-                ))}
+                  </div>)}
             </div>
           </div>
           
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsTagDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsTagDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSaveTags}
-              className="bg-[#00B86B] hover:bg-[#00A25F]"
-              disabled={Object.values(tagSelections).every(v => !v)}
-            >
+            <Button onClick={handleSaveTags} className="bg-[#00B86B] hover:bg-[#00A25F]" disabled={Object.values(tagSelections).every(v => !v)}>
               {tagDialogMode === 'add' ? 'Add' : 'Remove'} Selected Tags
             </Button>
           </DialogFooter>
@@ -501,60 +364,35 @@ const COEManager = () => {
           </DialogHeader>
           
           <div className="py-4">
-            <Input
-              placeholder="Filter tags..."
-              className="mb-4"
-              onChange={(e) => {
-                // Filter tags functionality if needed
-              }}
-            />
+            <Input placeholder="Filter tags..." className="mb-4" onChange={e => {
+            // Filter tags functionality if needed
+          }} />
             
-            <RadioGroup
-              value={selectedTagInDialog || ''}
-              onValueChange={(val) => setSelectedTagInDialog(val)}
-              className="space-y-3 max-h-[300px] overflow-y-auto"
-            >
+            <RadioGroup value={selectedTagInDialog || ''} onValueChange={val => setSelectedTagInDialog(val)} className="space-y-3 max-h-[300px] overflow-y-auto">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem id="tag-none" value="" />
                 <Label htmlFor="tag-none">No tag (clear assignment)</Label>
               </div>
               
-              {availableTags.map((tag) => (
-                <div key={tag.id} className="flex items-center space-x-2">
+              {availableTags.map(tag => <div key={tag.id} className="flex items-center space-x-2">
                   <RadioGroupItem id={`tag-${tag.id}`} value={tag.id} />
                   <Label htmlFor={`tag-${tag.id}`}>{tag.label}</Label>
-                </div>
-              ))}
+                </div>)}
             </RadioGroup>
           </div>
           
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsAssignTagDialogOpen(false)}
-              disabled={isSubmittingTag}
-            >
+            <Button variant="outline" onClick={() => setIsAssignTagDialogOpen(false)} disabled={isSubmittingTag}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSaveTag}
-              className="bg-[#00B86B] hover:bg-[#00A25F]"
-              disabled={isSubmittingTag}
-            >
+            <Button onClick={handleSaveTag} className="bg-[#00B86B] hover:bg-[#00A25F]" disabled={isSubmittingTag}>
               {isSubmittingTag ? "Saving..." : "Assign Tag"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <CreateTagDialog
-        open={isCreateTagDialogOpen}
-        onClose={() => setIsCreateTagDialogOpen(false)}
-        onTagCreated={handleTagCreated}
-        entityType="COE"
-      />
-    </div>
-  );
+      <CreateTagDialog open={isCreateTagDialogOpen} onClose={() => setIsCreateTagDialogOpen(false)} onTagCreated={handleTagCreated} entityType="COE" />
+    </div>;
 };
-
 export default COEManager;
