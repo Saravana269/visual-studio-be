@@ -10,11 +10,14 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 
+// Define the allowed entity types
+type EntityType = "Element" | "COE";
+
 interface CreateTagDialogProps {
   open: boolean;
   onClose: () => void;
   onTagCreated: (tag: string) => void;
-  entityType?: "Element" | "COE";
+  entityType?: EntityType;
 }
 
 // Create a schema for tag validation

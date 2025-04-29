@@ -12,6 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Separator } from "@/components/ui/separator";
 
+// Define the allowed entity types
+type EntityType = "Element" | "COE";
+
 interface TagManagementRowProps {
   selectedTag?: string | null;
   selectedTags?: string[];
@@ -22,7 +25,7 @@ interface TagManagementRowProps {
   onTagClear?: () => void;
   onAddTagClick: () => void;
   onManageTagsClick?: () => void;
-  entityType?: string;
+  entityType?: EntityType;
 }
 
 export function TagManagementRow({
