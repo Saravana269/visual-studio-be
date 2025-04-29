@@ -32,21 +32,23 @@ const COEHeader = ({
 }: COEHeaderProps) => {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-between items-center gap-4">
-        <COESearch 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedTags={selectedTags}
-          tagDetails={tagDetails}
-          onTagSelect={onTagSelect}
-          onTagRemove={onTagRemove}
-          onTagClear={onTagClear}
-          onTagSearch={onTagSearch}
-          onAddTagClick={onAddTagClick}
-          onSettingsClick={onSettingsClick}
-        />
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1">
+          <COESearch 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedTags={selectedTags}
+            tagDetails={tagDetails}
+            onTagSelect={onTagSelect}
+            onTagRemove={onTagRemove}
+            onTagClear={onTagClear}
+            onTagSearch={onTagSearch}
+            onAddTagClick={onAddTagClick}
+            onSettingsClick={onSettingsClick}
+          />
+        </div>
         
-        <Button onClick={onCreateCOE} className="flex items-center gap-2 bg-[#00B86B] hover:bg-[#00A25F]">
+        <Button onClick={onCreateCOE} className="flex items-center gap-2 bg-[#00B86B] hover:bg-[#00A25F] whitespace-nowrap">
           <Plus size={16} /> Create COE
         </Button>
       </div>

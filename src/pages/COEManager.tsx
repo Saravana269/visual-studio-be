@@ -269,10 +269,25 @@ const COEManager = () => {
   // Filter by Primary Tag section
   return <div className="space-y-6">
       {/* Updated header with integrated tag management row */}
-      <COEHeader onCreateCOE={handleCreateCOE} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedTags={selectedTags} tagDetails={tagDetails} onTagSelect={handleTagSelect} onTagRemove={handleTagRemove} onTagClear={handleTagClear} onTagSearch={handleTagSearch} onAddTagClick={handleAddTag} onSettingsClick={handleManageTagsClick} />
+      <COEHeader 
+        onCreateCOE={handleCreateCOE} 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} 
+        selectedTags={selectedTags} 
+        tagDetails={tagDetails} 
+        onTagSelect={handleTagSelect} 
+        onTagRemove={handleTagRemove} 
+        onTagClear={handleTagClear} 
+        onTagSearch={handleTagSearch} 
+        onAddTagClick={handleAddTag} 
+        onSettingsClick={handleManageTagsClick} 
+      />
       
       {/* Filter by Primary Tag section */}
-      <PrimaryTagFilter />
+      <PrimaryTagFilter 
+        selectedTagId={selectedPrimaryTagId}
+        onTagSelect={handlePrimaryTagSelect}
+      />
       
       {isLoading ? <div className="flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00B86B]" />
