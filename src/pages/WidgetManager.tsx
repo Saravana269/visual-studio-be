@@ -1,3 +1,4 @@
+
 import { Plus, ListFilter, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,7 @@ const WidgetManager = () => {
     setViewMode,
     setIsDetailDialogOpen,
     setIsCreateDialogOpen,
-    setIsEditDialogOpen, // Make sure this is exported from the hook
+    setIsEditDialogOpen,
     setWidgetFormData,
     
     handleViewDetails,
@@ -38,15 +39,18 @@ const WidgetManager = () => {
     handleTagClear
   } = useWidgetManager();
 
+  // Handler for opening the create widget dialog
+  const handleOpenCreateDialog = () => {
+    setWidgetFormData({ name: "", description: "", tags: [] });
+    setIsCreateDialogOpen(true);
+  };
+
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Widget Manager</h1>
         <Button 
-          onClick={() => {
-            setWidgetFormData({ name: "", description: "", tags: [] });
-            setIsCreateDialogOpen(true);
-          }}
+          onClick={handleOpenCreateDialog}
           className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
         >
           <Plus size={16} className="mr-2" /> New Widget
@@ -97,6 +101,7 @@ const WidgetManager = () => {
           tagDetails={tagDetails}
           onEditClick={handleEditClick}
           onViewDetails={handleViewDetails}
+          onCreateClick={handleOpenCreateDialog} // Pass the handler to open create dialog
         />
       ) : (
         <WidgetList

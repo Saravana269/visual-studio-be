@@ -11,6 +11,7 @@ interface WidgetGridProps {
   tagDetails: Record<string, string>;
   onEditClick: (widget: Widget) => void;
   onViewDetails: (widget: Widget) => void;
+  onCreateClick: () => void; // Added this prop
 }
 
 export function WidgetGrid({ 
@@ -18,7 +19,8 @@ export function WidgetGrid({
   isLoading, 
   tagDetails, 
   onEditClick, 
-  onViewDetails 
+  onViewDetails,
+  onCreateClick // Added this prop 
 }: WidgetGridProps) {
   // Get tag labels from tag IDs
   const getTagLabels = (tagIds: string[] | null): string[] => {
@@ -46,7 +48,7 @@ export function WidgetGrid({
           Get started by creating your first widget
         </p>
         <Button 
-          onClick={() => {}}
+          onClick={onCreateClick} // Use the new prop here
           className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
         >
           <Plus size={16} className="mr-2" /> Create Widget
