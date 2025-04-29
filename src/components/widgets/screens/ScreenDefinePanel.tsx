@@ -1,8 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { ScreenStepper } from "./ScreenStepper";
 import { ScreenFieldEditor } from "./ScreenFieldEditor";
 import { ScreenFormData } from "@/types/screen";
 import { useEffect, useState } from "react";
+import { formatDate } from "@/lib/utils";
+
 interface ScreenDefinePanelProps {
   totalSteps: number;
   currentStep: number;
@@ -13,6 +16,7 @@ interface ScreenDefinePanelProps {
   isLoading: boolean;
   autosave?: boolean;
 }
+
 export function ScreenDefinePanel({
   totalSteps,
   currentStep,
@@ -46,10 +50,15 @@ export function ScreenDefinePanel({
       if (saveTimeout) clearTimeout(saveTimeout);
     };
   }, [formData, autosave, onSave]);
+
   return <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
       <div className="bg-[#00FF00]/20 p-4 border-b border-[#00FF00]/30">
         <h2 className="text-xl font-medium text-[#00FF00]">Screen Define Area</h2>
-        {lastSaved}
+        {lastSaved && (
+          <div className="text-sm text-gray-400 mt-1">
+            Last saved: {lastSaved.toLocaleTimeString()}
+          </div>
+        )}
       </div>
       
       <div className="flex-1 overflow-hidden flex flex-col">
