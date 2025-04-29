@@ -60,7 +60,7 @@ export function WidgetFormDialog({
             <TagManager
               initialTags={formData.tags}
               onChange={(tags) => setFormData({...formData, tags: tags})}
-              entityType="widget"
+              entityType="Widget"
             />
           </div>
         </div>

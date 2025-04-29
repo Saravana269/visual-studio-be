@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +9,7 @@ import { TagList } from "./TagList";
 import { TagActions } from "./TagActions";
 
 // Define the allowed entity types
-export type EntityType = "Element" | "COE";
+export type EntityType = "Element" | "COE" | "CoreSet" | "Widget" | "Screen";
 
 interface TagManagementRowProps {
   selectedTag?: string | null;
