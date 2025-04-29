@@ -1,3 +1,4 @@
+
 import { WidgetDetail } from "@/types/widget";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Tag, Layout } from "lucide-react";
+import { Tag } from "lucide-react";
 
 interface WidgetDetailDialogProps {
   isOpen: boolean;
@@ -142,28 +143,21 @@ export function WidgetDetailDialog({
                         ))}
                       </TableBody>
                     </Table>
-                    <div className="p-4 flex justify-end">
-                      <Button 
-                        onClick={handleManageScreens} 
-                        className="bg-[#9b87f5] hover:bg-[#7E69AB] gap-2"
-                      >
-                        <Layout size={16} />
-                        Manage Screens
-                      </Button>
-                    </div>
                   </div>
                 ) : (
                   <div className="text-center p-4">
                     <p className="text-muted-foreground">No screens have been added to this widget yet.</p>
-                    <Button 
-                      className="mt-4 bg-[#9b87f5] hover:bg-[#7E69AB] gap-2"
-                      onClick={handleManageScreens}
-                    >
-                      <Plus size={16} />
-                      Add Screens
-                    </Button>
                   </div>
                 )}
+                {/* Navigate directly to screen manager */}
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    className="bg-[#9b87f5] hover:bg-[#7E69AB]"
+                    onClick={handleManageScreens}
+                  >
+                    {widgetDetail.screens?.length > 0 ? "Manage Screens" : "Add Screens"}
+                  </Button>
+                </div>
               </TabsContent>
               
               <TabsContent value="info">
