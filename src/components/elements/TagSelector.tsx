@@ -22,7 +22,10 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
   const userId = session?.user?.id;
 
   const isMultipleMode = Array.isArray(value);
-  const singleValue = isMultipleMode ? (value.length > 0 ? value[0] : "") : value || "";
+  // Ensure we have a string or empty string for single select value
+  const singleValue = isMultipleMode 
+    ? (value.length > 0 ? String(value[0]) : "") 
+    : (value ? String(value) : "");
 
   const { data: availableTags = [], refetch } = useQuery({
     queryKey: ["all-element-tags", userId],

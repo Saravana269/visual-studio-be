@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Plus, Search, X, ChevronRight, ChevronLeft } from "lucide-react";
@@ -61,7 +60,6 @@ const ElementsManager = () => {
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
   const [isSubmittingTag, setIsSubmittingTag] = useState(false);
   
-  // Fetch elements with their associated tags
   const { data: elements = [], isLoading, error, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
@@ -88,7 +86,6 @@ const ElementsManager = () => {
     },
   });
 
-  // Fetch all available tags
   const { data: availableTags = [], refetch: refetchTags } = useQuery({
     queryKey: ["element-tags", userId],
     queryFn: async () => {
@@ -113,10 +110,9 @@ const ElementsManager = () => {
         return [];
       }
     },
-    enabled: !isChecking // Only run once we've checked authentication
+    enabled: !isChecking
   });
 
-  // Fetch tag details for element filtering
   const { data: tagDetails = {} } = useQuery({
     queryKey: ["tag-details"],
     queryFn: async () => {
@@ -130,7 +126,6 @@ const ElementsManager = () => {
           return {};
         }
         
-        // Convert to a map of id -> label for easier lookup
         return data.reduce((acc: Record<string, string>, tag) => {
           acc[tag.id] = tag.label;
           return acc;
@@ -142,15 +137,16 @@ const ElementsManager = () => {
     }
   });
 
-  // Filter elements based on search query and selected tag
   const filteredElements = elements?.filter((element) => {
     const matchesSearch = element.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (element.description && element.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    // If a tag is selected, filter by that tag
-    const matchesTag = !selectedTagId || element.primary_tag_id === selectedTagId;
+    if (selectedTagId) {
+      const matchesTag = element.primary_tag_id === selectedTagId;
+      return matchesSearch && matchesTag;
+    }
     
-    return matchesSearch && matchesTag;
+    return matchesSearch;
   });
 
   const totalPages = Math.ceil((filteredElements?.length || 0) / ITEMS_PER_PAGE);
@@ -184,7 +180,7 @@ const ElementsManager = () => {
 
   const handleTagSelect = (tagId: string) => {
     setSelectedTagId(selectedTagId === tagId ? null : tagId);
-    setCurrentPage(1); // Reset to first page when changing filters
+    setCurrentPage(1);
   };
 
   const handleClearTagFilter = () => {
@@ -212,7 +208,6 @@ const ElementsManager = () => {
     setIsSubmittingTag(true);
     
     try {
-      // Convert empty string to null for the primary_tag_id field
       const tagValue = selectedTagInDialog === "" ? null : selectedTagInDialog;
       
       console.log("Updating element tag with value:", tagValue);
@@ -234,7 +229,6 @@ const ElementsManager = () => {
           : "Tag has been removed from the element."
       });
       
-      // Refresh the elements data to show the updated tag
       refetch();
       setIsTagDialogOpen(false);
     } catch (error: any) {
@@ -260,8 +254,7 @@ const ElementsManager = () => {
       description: `Tag "${newTag}" has been created successfully.`,
     });
   };
-  
-  // Get the label for the currently selected tag
+
   const selectedTagLabel = selectedTagId ? tagDetails[selectedTagId] : null;
 
   return (
@@ -372,7 +365,7 @@ const ElementsManager = () => {
               
               <RadioGroup
                 value={selectedTagInDialog || ''}
-                onValueChange={setSelectedTagInDialog}
+                onValueChange={(val) => setSelectedTagInDialog(val)}
                 className="space-y-3 max-h-[300px] overflow-y-auto"
               >
                 <div className="flex items-center space-x-2">
