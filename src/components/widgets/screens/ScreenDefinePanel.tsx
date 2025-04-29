@@ -4,7 +4,6 @@ import { ScreenStepper } from "./ScreenStepper";
 import { ScreenFieldEditor } from "./ScreenFieldEditor";
 import { ScreenFormData } from "@/types/screen";
 import { useEffect, useState } from "react";
-import { formatDate } from "@/lib/utils";
 
 interface ScreenDefinePanelProps {
   totalSteps: number;
@@ -29,6 +28,15 @@ export function ScreenDefinePanel({
 }: ScreenDefinePanelProps) {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [stepperStep, setStepperStep] = useState<number>(1);
+  
+  // Steps for the stepper
+  const steps = [
+    { id: 1, label: "Screen Name" },
+    { id: 2, label: "Description" },
+    { id: 3, label: "Response Type" },
+    { id: 4, label: "Preview" }
+  ];
 
   // Handle autosave
   useEffect(() => {
@@ -51,6 +59,20 @@ export function ScreenDefinePanel({
     };
   }, [formData, autosave, onSave]);
 
+  // Function to go to the next step
+  const goToNextStep = () => {
+    if (stepperStep < steps.length) {
+      setStepperStep(stepperStep + 1);
+    }
+  };
+
+  // Function to go to the previous step
+  const goToPrevStep = () => {
+    if (stepperStep > 1) {
+      setStepperStep(stepperStep - 1);
+    }
+  };
+
   return <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
       <div className="bg-[#00FF00]/20 p-4 border-b border-[#00FF00]/30">
         <h2 className="text-xl font-medium text-[#00FF00]">Screen Define Area</h2>
@@ -62,19 +84,51 @@ export function ScreenDefinePanel({
       </div>
       
       <div className="flex-1 overflow-hidden flex flex-col">
-        {totalSteps > 1 && <div className="px-6 pt-4">
-            <ScreenStepper totalSteps={totalSteps} currentStep={currentStep} />
-          </div>}
-        
-        <div className="flex-1 overflow-auto p-6">
-          <ScreenFieldEditor formData={formData} setFormData={setFormData} onSave={() => onSave(formData)} autoSave={autosave} />
+        <div className="px-6 pt-4">
+          <ScreenStepper 
+            totalSteps={steps.length} 
+            currentStep={stepperStep - 1}
+            steps={steps.map(step => step.label)}
+          />
         </div>
         
-        {!autosave && <div className="border-t border-gray-800 p-4 flex justify-end">
-            <Button onClick={() => onSave(formData)} disabled={!formData.name || isLoading} className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
-              {isLoading ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}
-            </Button>
-          </div>}
+        <div className="flex-1 overflow-auto p-6">
+          <ScreenFieldEditor 
+            formData={formData} 
+            setFormData={setFormData} 
+            onSave={() => onSave(formData)} 
+            autoSave={autosave} 
+            currentStepperStep={stepperStep}
+          />
+        </div>
+        
+        <div className="border-t border-gray-800 p-4 flex justify-between">
+          <Button 
+            onClick={goToPrevStep} 
+            disabled={stepperStep === 1} 
+            className="bg-gray-800 hover:bg-gray-700 text-white">
+            Previous
+          </Button>
+          
+          <div>
+            {(!autosave && stepperStep === steps.length) && (
+              <Button 
+                onClick={() => onSave(formData)} 
+                disabled={!formData.name || isLoading} 
+                className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
+                {isLoading ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}
+              </Button>
+            )}
+            
+            {stepperStep < steps.length && (
+              <Button 
+                onClick={goToNextStep} 
+                className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
+                Next
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
     </div>;
 }

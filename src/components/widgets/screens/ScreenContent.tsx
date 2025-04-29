@@ -39,7 +39,7 @@ export function ScreenContent({
         {/* Right panel */}
         <div className="lg:col-span-3 h-full">
           <ScreenDefinePanel
-            totalSteps={screens.length}
+            totalSteps={4} // Fixed at 4 steps as per requirement
             currentStep={activeScreenIndex}
             formData={formData}
             setFormData={setFormData}
