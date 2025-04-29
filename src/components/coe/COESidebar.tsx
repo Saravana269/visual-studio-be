@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { COETagSelector } from "@/components/coe/COETagSelector";
 import { TagSelector } from "@/components/elements/TagSelector";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,7 @@ interface COE {
   name: string;
   description: string | null;
   tags: string[] | null;
+  primary_tag_id: string | null;
   image_url?: string | null;
   element_count?: number;
 }
@@ -45,10 +47,12 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
     name: string;
     description: string | null;
     tags: string[] | null;
+    primary_tag_id: string | null;
   }>({
     name: "",
     description: "",
     tags: [],
+    primary_tag_id: null,
   });
   
   // Reset form and edit mode when sidebar opens/closes
@@ -58,6 +62,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
         name: coe.name,
         description: coe.description,
         tags: coe.tags,
+        primary_tag_id: coe.primary_tag_id,
       });
     }
     setEditMode(false);
@@ -83,6 +88,25 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
     },
     enabled: !!coe?.id
   });
+
+  // Fetch tag details if primary_tag_id exists
+  const { data: tagDetail } = useQuery({
+    queryKey: ["coe-tag-detail", coe?.primary_tag_id],
+    queryFn: async () => {
+      if (!coe?.primary_tag_id) return null;
+      
+      const { data, error } = await supabase
+        .from("tags")
+        .select("id, label")
+        .eq("id", coe.primary_tag_id)
+        .single();
+      
+      if (error || !data) return null;
+      
+      return data;
+    },
+    enabled: !!coe?.primary_tag_id
+  });
   
   const handleSave = () => {
     if (coe && formData.name.trim()) {
@@ -91,6 +115,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
         name: formData.name,
         description: formData.description,
         tags: formData.tags,
+        primary_tag_id: formData.primary_tag_id,
       });
       setEditMode(false);
     }
@@ -186,9 +211,30 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
             )}
           </div>
           
+          {/* Primary Tag */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Primary Tag</h3>
+            {editMode ? (
+              <COETagSelector
+                value={formData.primary_tag_id}
+                onChange={(tagId) => setFormData({ ...formData, primary_tag_id: tagId })}
+              />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {tagDetail ? (
+                  <Badge variant="secondary" className="bg-blue-100">
+                    {tagDetail.label}
+                  </Badge>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No primary tag assigned.</p>
+                )}
+              </div>
+            )}
+          </div>
+          
           {/* Tags */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium">Tags</h3>
+            <h3 className="text-sm font-medium">Additional Tags</h3>
             {editMode ? (
               <TagSelector
                 value={formData.tags}
@@ -203,7 +249,7 @@ const COESidebar = ({ isOpen, onClose, coe, onUpdate, onSave }: COESidebarProps)
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No tags.</p>
+                  <p className="text-sm text-muted-foreground">No additional tags.</p>
                 )}
               </div>
             )}

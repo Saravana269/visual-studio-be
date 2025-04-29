@@ -1,9 +1,12 @@
+
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface COE {
   id: string;
@@ -11,16 +14,53 @@ interface COE {
   description: string | null;
   image_url?: string | null;
   tags: string[] | null;
+  primary_tag_id: string | null;
   element_count?: number;
 }
 
 interface COEListProps {
   coes: COE[];
   onEdit: (coe: COE) => void;
+  onAssignTag?: (coe: COE) => void;
 }
 
-const COEList = ({ coes, onEdit }: COEListProps) => {
+const COEList = ({ coes, onEdit, onAssignTag }: COEListProps) => {
   const navigate = useNavigate();
+
+  // Fetch tag details for all primary tags
+  const { data: tagDetails = {} } = useQuery({
+    queryKey: ["coe-tag-details"],
+    queryFn: async () => {
+      try {
+        // Create a list of all primary tag IDs
+        const tagIds = coes
+          .map(coe => coe.primary_tag_id)
+          .filter((id): id is string => !!id);
+
+        if (tagIds.length === 0) return {};
+
+        const { data, error } = await supabase
+          .from("tags")
+          .select("id, label")
+          .in("id", tagIds);
+
+        if (error) {
+          console.error("Error fetching tag details:", error);
+          return {};
+        }
+
+        // Convert to a map for easy lookup
+        return data.reduce((acc: Record<string, string>, tag) => {
+          acc[tag.id] = tag.label;
+          return acc;
+        }, {});
+      } catch (error) {
+        console.error("Error fetching tag details:", error);
+        return {};
+      }
+    },
+    enabled: coes.some(coe => !!coe.primary_tag_id)
+  });
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -51,6 +91,14 @@ const COEList = ({ coes, onEdit }: COEListProps) => {
                 }}>
                   Edit
                 </DropdownMenuItem>
+                {onAssignTag && (
+                  <DropdownMenuItem onClick={e => {
+                    e.stopPropagation();
+                    onAssignTag(coe);
+                  }}>
+                    Assign Tag
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={e => {
                   e.stopPropagation();
                   navigate(`/coe/${coe.id}`);
@@ -73,11 +121,23 @@ const COEList = ({ coes, onEdit }: COEListProps) => {
           </CardHeader>
           
           <CardContent className="pb-2 p-3 flex-1">
-            {coe.tags && coe.tags.length > 0 && <div className="flex flex-wrap gap-1">
-                {coe.tags.map(tag => <Badge key={tag} variant="secondary" className="tag-badge">
+            {/* Primary Tag */}
+            {coe.primary_tag_id && tagDetails[coe.primary_tag_id] && (
+              <Badge variant="secondary" className="mb-2 bg-blue-100">
+                {tagDetails[coe.primary_tag_id]}
+              </Badge>
+            )}
+            
+            {/* Additional Tags */}
+            {coe.tags && coe.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {coe.tags.map(tag => (
+                  <Badge key={tag} variant="secondary" className="tag-badge">
                     {tag}
-                  </Badge>)}
-              </div>}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}

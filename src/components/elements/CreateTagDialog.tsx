@@ -14,6 +14,7 @@ interface CreateTagDialogProps {
   open: boolean;
   onClose: () => void;
   onTagCreated: (tag: string) => void;
+  entityType?: "Element" | "COE";
 }
 
 // Create a schema for tag validation
@@ -21,7 +22,7 @@ const tagSchema = z.object({
   label: z.string().min(1, "Tag name cannot be empty")
 });
 
-export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialogProps) {
+export function CreateTagDialog({ open, onClose, onTagCreated, entityType = "Element" }: CreateTagDialogProps) {
   const [label, setLabel] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -52,12 +53,12 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
         return;
       }
 
-      // Insert the tag with standard entity type "Element"
+      // Insert the tag with specified entity type
       const { data, error: insertError } = await supabase
         .from("tags")
         .insert({
           label: validatedData.label.trim(),
-          entity_type: "Element", // Always use standardized "Element"
+          entity_type: entityType, // Use the specified entity type
           created_by: userId,
           entity_id: "00000000-0000-0000-0000-000000000000" // Placeholder value as required
         })
@@ -68,7 +69,7 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
 
       toast({
         title: "Success",
-        description: "Tag created successfully",
+        description: `${entityType} tag created successfully`,
       });
 
       onTagCreated(validatedData.label.trim());
@@ -83,11 +84,11 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
           variant: "destructive",
         });
       } else {
-        console.error("Error creating tag:", err);
-        setError("Failed to create tag");
+        console.error(`Error creating ${entityType} tag:`, err);
+        setError(`Failed to create ${entityType} tag`);
         toast({
           title: "Error",
-          description: "Failed to create tag. Please try again.",
+          description: `Failed to create ${entityType} tag. Please try again.`,
           variant: "destructive",
         });
       }
@@ -100,7 +101,7 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create New Tag</DialogTitle>
+          <DialogTitle>Create New {entityType} Tag</DialogTitle>
           <DialogDescription>Enter a name for your new tag</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -130,7 +131,7 @@ export function CreateTagDialog({ open, onClose, onTagCreated }: CreateTagDialog
                   Creating...
                 </>
               ) : (
-                "Create Tag"
+                `Create ${entityType} Tag`
               )}
             </Button>
           </DialogFooter>

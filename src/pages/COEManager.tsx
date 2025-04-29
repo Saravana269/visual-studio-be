@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCOEData } from "@/hooks/useCOEData";
@@ -15,11 +16,15 @@ import type { COE } from "@/hooks/useCOEData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { CreateTagDialog } from "@/components/elements/CreateTagDialog";
 
 const COEManager = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  useAuth();
+  const { session, isChecking } = useAuth();
+  const userId = session?.user?.id;
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCOE, setSelectedCOE] = useState<COE | null>(null);
@@ -29,8 +34,65 @@ const COEManager = () => {
   const [tagDialogMode, setTagDialogMode] = useState<'add' | 'remove'>('add');
   const [tagSelections, setTagSelections] = useState<Record<string, boolean>>({});
   const [tagSearchQuery, setTagSearchQuery] = useState("");
+  const [isAssignTagDialogOpen, setIsAssignTagDialogOpen] = useState(false);
+  const [selectedTagInDialog, setSelectedTagInDialog] = useState<string | null>(null);
+  const [isSubmittingTag, setIsSubmittingTag] = useState(false);
+  const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
+  const [selectedPrimaryTagId, setSelectedPrimaryTagId] = useState<string | null>(null);
 
   const { data: coes = [], isLoading, error, refetch } = useCOEData();
+
+  const { data: availableTags = [], refetch: refetchTags } = useQuery({
+    queryKey: ["coe-tags", userId],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("tags")
+          .select("*")
+          .eq("entity_type", "COE");
+          
+        if (error) {
+          toast({
+            title: "Error fetching tags",
+            description: error.message,
+            variant: "destructive",
+          });
+          return [];
+        }
+        
+        return data;
+      } catch (error: any) {
+        console.error("Error fetching tags:", error);
+        return [];
+      }
+    },
+    enabled: !isChecking
+  });
+
+  const { data: tagDetails = {} } = useQuery({
+    queryKey: ["coe-tag-details"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("tags")
+          .select("id, label")
+          .eq("entity_type", "COE");
+          
+        if (error) {
+          console.error("Error fetching tag details:", error);
+          return {};
+        }
+        
+        return data.reduce((acc: Record<string, string>, tag) => {
+          acc[tag.id] = tag.label;
+          return acc;
+        }, {});
+      } catch (error) {
+        console.error("Error fetching tag details:", error);
+        return {};
+      }
+    }
+  });
 
   const handleCloseModal = (shouldRefetch = false) => {
     setIsCreateModalOpen(false);
@@ -43,13 +105,18 @@ const COEManager = () => {
   const filteredCOEs = Array.isArray(coes) ? coes.filter((coe) => {
     const matchesSearch = coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (coe.description && coe.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesTags =
+    
+    const matchesAdditionalTags =
       selectedTags.length === 0 ||
       (coe.tags && selectedTags.every((tag) => coe.tags.includes(tag)));
-    return matchesSearch && matchesTags;
+    
+    const matchesPrimaryTag =
+      !selectedPrimaryTagId || coe.primary_tag_id === selectedPrimaryTagId;
+    
+    return matchesSearch && matchesAdditionalTags && matchesPrimaryTag;
   }) : [];
 
-  const allTags = Array.isArray(coes) ? 
+  const allAdditionalTags = Array.isArray(coes) ? 
     Array.from(new Set(coes.flatMap((coe) => coe.tags || []))) : [];
 
   const handleCreateCOE = () => {
@@ -68,6 +135,10 @@ const COEManager = () => {
     );
   };
 
+  const handlePrimaryTagSelect = (tagId: string) => {
+    setSelectedPrimaryTagId(selectedPrimaryTagId === tagId ? null : tagId);
+  };
+
   const handleClearTag = (tag: string) => {
     setSelectedTags((prev) => prev.filter((t) => t !== tag));
   };
@@ -79,7 +150,7 @@ const COEManager = () => {
     const selections: Record<string, boolean> = {};
     
     if (action === 'add') {
-      (allTags || []).forEach(tag => {
+      (allAdditionalTags || []).forEach(tag => {
         selections[tag] = false;
       });
     } else {
@@ -97,6 +168,50 @@ const COEManager = () => {
       ...prev,
       [tag]: checked
     }));
+  };
+
+  const handleAssignTag = (coe: COE) => {
+    setSelectedCOE(coe);
+    setSelectedTagInDialog(coe.primary_tag_id || "");
+    setIsAssignTagDialogOpen(true);
+  };
+
+  const handleSaveTag = async () => {
+    if (!selectedCOE) return;
+    setIsSubmittingTag(true);
+    
+    try {
+      const tagValue = selectedTagInDialog === "" ? null : selectedTagInDialog;
+      
+      const { error } = await supabase
+        .from("class_of_elements")
+        .update({ primary_tag_id: tagValue })
+        .eq("id", selectedCOE.id);
+        
+      if (error) {
+        console.error("Database error when updating tag:", error);
+        throw error;
+      }
+      
+      toast({
+        title: "Tag updated",
+        description: selectedTagInDialog 
+          ? "Tag has been assigned to the COE." 
+          : "Tag has been removed from the COE."
+      });
+      
+      refetch();
+      setIsAssignTagDialogOpen(false);
+    } catch (error: any) {
+      console.error("Error updating tag:", error);
+      toast({
+        title: "Error updating tag",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingTag(false);
+    }
   };
 
   const handleSaveTags = async () => {
@@ -139,6 +254,18 @@ const COEManager = () => {
     }
   };
 
+  const handleAddTag = () => {
+    setIsCreateTagDialogOpen(true);
+  };
+
+  const handleTagCreated = (newTag: string) => {
+    refetchTags();
+    toast({
+      title: "Tag created",
+      description: `Tag "${newTag}" has been created successfully.`,
+    });
+  };
+
   if (error) {
     return (
       <div className="p-8 text-center">
@@ -160,21 +287,46 @@ const COEManager = () => {
       <div className="mb-6">
         <TagManagementRow
           selectedTags={selectedTags}
-          tagDetails={allTags.reduce((acc: Record<string, string>, tag) => {
+          tagDetails={allAdditionalTags.reduce((acc: Record<string, string>, tag) => {
             acc[tag] = tag;
             return acc;
           }, {})}
           onTagSearch={setTagSearchQuery}
           onTagSelect={handleTagSelect}
           onTagRemove={handleClearTag}
-          onAddTagClick={() => selectedCOE && handleManageTags(selectedCOE, 'add')}
+          onAddTagClick={handleAddTag}
           onManageTagsClick={() => {/* Implement tag management */}}
         />
       </div>
 
+      <div className="mb-6">
+        <h3 className="text-sm font-medium mb-2">Filter by Primary Tag</h3>
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(tagDetails).map(([tagId, tagLabel]) => (
+            <Badge 
+              key={tagId} 
+              variant={selectedPrimaryTagId === tagId ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => handlePrimaryTagSelect(tagId)}
+            >
+              {tagLabel}
+            </Badge>
+          ))}
+          {selectedPrimaryTagId && (
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer" 
+              onClick={() => setSelectedPrimaryTagId(null)}
+            >
+              Clear filter
+            </Badge>
+          )}
+        </div>
+      </div>
+
       <COETagSearch
         selectedTags={selectedTags}
-        allTags={allTags}
+        allTags={allAdditionalTags}
         onTagSelect={handleTagSelect}
       />
       
@@ -188,6 +340,7 @@ const COEManager = () => {
         <COEList
           coes={filteredCOEs}
           onEdit={handleEditCOE}
+          onAssignTag={handleAssignTag}
         />
       )}
       
@@ -206,6 +359,7 @@ const COEManager = () => {
                     description: coe.description,
                     tags: coe.tags,
                     image_url: coe.image_url,
+                    primary_tag_id: coe.primary_tag_id,
                   })
                   .eq("id", selectedCOE.id);
                 
@@ -223,6 +377,7 @@ const COEManager = () => {
                     description: coe.description,
                     tags: coe.tags,
                     image_url: coe.image_url,
+                    primary_tag_id: coe.primary_tag_id,
                   }]);
                 
                 if (error) throw error;
@@ -307,6 +462,71 @@ const COEManager = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isAssignTagDialogOpen} onOpenChange={setIsAssignTagDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              Assign Tag to {selectedCOE?.name || ''}
+            </DialogTitle>
+            <DialogDescription>
+              Select a tag to assign to this COE. Only one tag can be assigned as the primary tag.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <Input
+              placeholder="Filter tags..."
+              className="mb-4"
+              onChange={(e) => {
+                // Filter tags functionality if needed
+              }}
+            />
+            
+            <RadioGroup
+              value={selectedTagInDialog || ''}
+              onValueChange={(val) => setSelectedTagInDialog(val)}
+              className="space-y-3 max-h-[300px] overflow-y-auto"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem id="tag-none" value="" />
+                <Label htmlFor="tag-none">No tag (clear assignment)</Label>
+              </div>
+              
+              {availableTags.map((tag) => (
+                <div key={tag.id} className="flex items-center space-x-2">
+                  <RadioGroupItem id={`tag-${tag.id}`} value={tag.id} />
+                  <Label htmlFor={`tag-${tag.id}`}>{tag.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAssignTagDialogOpen(false)}
+              disabled={isSubmittingTag}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveTag}
+              className="bg-[#00B86B] hover:bg-[#00A25F]"
+              disabled={isSubmittingTag}
+            >
+              {isSubmittingTag ? "Saving..." : "Assign Tag"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <CreateTagDialog
+        open={isCreateTagDialogOpen}
+        onClose={() => setIsCreateTagDialogOpen(false)}
+        onTagCreated={handleTagCreated}
+        entityType="COE"
+      />
     </div>
   );
 };

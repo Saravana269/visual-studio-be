@@ -18,6 +18,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          primary_tag_id: string | null
           tags: string[] | null
           updated_at: string | null
         }
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          primary_tag_id?: string | null
           tags?: string[] | null
           updated_at?: string | null
         }
@@ -40,10 +42,19 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          primary_tag_id?: string | null
           tags?: string[] | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "class_of_elements_primary_tag_id_fkey"
+            columns: ["primary_tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       classification: {
         Row: {

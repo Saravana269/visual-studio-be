@@ -9,6 +9,7 @@ export interface COE {
   description: string | null;
   image_url?: string | null;
   tags: string[] | null;
+  primary_tag_id: string | null;
   element_count?: number;
   coreSet_id?: string[] | null;
 }

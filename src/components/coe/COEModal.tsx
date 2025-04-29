@@ -1,133 +1,138 @@
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ImageUploader } from "@/components/elements/ImageUploader";
-
-interface COE {
-  id?: string;
-  name: string;
-  description: string | null;
-  image_url?: string | null;
-  tags?: string[] | null;
-}
+import { TagSelector } from "@/components/elements/TagSelector";
+import { COETagSelector } from "@/components/coe/COETagSelector";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import type { COE } from "@/hooks/useCOEData";
 
 interface COEModalProps {
   isOpen: boolean;
-  onClose: () => void;
-  onSave: (coe: COE) => void;
+  onClose: (refetch?: boolean) => void;
   coe: COE | null;
+  onSave: (coe: Partial<COE>) => Promise<void>;
 }
 
-const COEModal = ({ isOpen, onClose, onSave, coe }: COEModalProps) => {
-  const [formData, setFormData] = useState<COE>({
+const COEModal = ({ isOpen, onClose, coe, onSave }: COEModalProps) => {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<Partial<COE>>({
     name: "",
     description: "",
-    image_url: "",
+    tags: [],
+    primary_tag_id: null,
   });
-  
-  const [errors, setErrors] = useState<{
-    name?: string;
-  }>({});
-  
+
+  // Reset form when modal opens/closes or COE changes
   useEffect(() => {
-    if (isOpen && coe) {
+    if (isOpen) {
       setFormData({
-        name: coe.name || "",
-        description: coe.description || "",
-        image_url: coe.image_url || "",
-      });
-    } else if (isOpen) {
-      setFormData({
-        name: "",
-        description: "",
-        image_url: "",
+        name: coe?.name || "",
+        description: coe?.description || "",
+        tags: coe?.tags || [],
+        primary_tag_id: coe?.primary_tag_id || null,
       });
     }
-    
-    setErrors({});
   }, [isOpen, coe]);
-  
-  const handleChange = (field: keyof COE, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (errors[field as keyof typeof errors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  };
-  
-  const validateForm = (): boolean => {
-    const newErrors: typeof errors = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+    if (!formData.name || formData.name.trim() === "") {
+      toast({
+        title: "Validation Error",
+        description: "COE name is required",
+        variant: "destructive",
+      });
+      return;
     }
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-  
-  const handleSubmit = () => {
-    if (validateForm()) {
-      onSave(formData);
+    setIsSubmitting(true);
+    
+    try {
+      await onSave({
+        ...formData,
+        name: formData.name.trim(),
+      });
+    } catch (error) {
+      console.error("Error saving COE:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{coe ? "Edit" : "Create"} Class of Elements</DialogTitle>
+          <DialogTitle>{coe ? "Edit" : "Add"} Class of Elements</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Enter COE name"
-              className={errors.name ? "border-destructive" : ""}
-            />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name}</p>
-            )}
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            {/* Name */}
+            <div className="grid gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter COE name"
+              />
+            </div>
+            
+            {/* Description */}
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                rows={3}
+                value={formData.description || ""}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter description"
+              />
+            </div>
+            
+            {/* Primary Tag */}
+            <div className="grid gap-2">
+              <Label htmlFor="primary-tag">Primary Tag</Label>
+              <COETagSelector
+                value={formData.primary_tag_id}
+                onChange={(tagId) => setFormData({ ...formData, primary_tag_id: tagId })}
+              />
+            </div>
+            
+            {/* Additional Tags */}
+            <div className="grid gap-2">
+              <Label htmlFor="tags">Additional Tags</Label>
+              <TagSelector
+                value={formData.tags}
+                onChange={(tags) => setFormData({ ...formData, tags })}
+              />
+            </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description || ""}
-              onChange={(e) => handleChange("description", e.target.value)}
-              placeholder="Enter a description"
-              rows={4}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="image">Image</Label>
-            <ImageUploader
-              value={formData.image_url || ""}
-              onChange={(url) => handleChange("image_url", url)}
-            />
-          </div>
-        </div>
-        
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit}>
-            {coe ? "Update" : "Create"} COE
-          </Button>
-        </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onClose()} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-[#00B86B] hover:bg-[#00A25F]" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

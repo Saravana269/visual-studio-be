@@ -38,6 +38,24 @@ const COEDetailView = () => {
     },
   });
 
+  const { data: tagDetail } = useQuery({
+    queryKey: ["coe-tag-detail", coe?.primary_tag_id],
+    queryFn: async () => {
+      if (!coe?.primary_tag_id) return null;
+      
+      const { data, error } = await supabase
+        .from("tags")
+        .select("id, label")
+        .eq("id", coe.primary_tag_id)
+        .single();
+      
+      if (error || !data) return null;
+      
+      return data;
+    },
+    enabled: !!coe?.primary_tag_id
+  });
+
   const { data: assignedElements = [] } = useQuery({
     queryKey: ["coe-elements", id],
     queryFn: async () => {
@@ -112,10 +130,20 @@ const COEDetailView = () => {
           )}
         </div>
 
-        {/* Tags Section */}
+        {/* Primary Tag Section */}
+        {tagDetail && (
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold">Primary Tag</h3>
+            <Badge variant="secondary" className="bg-blue-100">
+              {tagDetail.label}
+            </Badge>
+          </div>
+        )}
+
+        {/* Additional Tags Section */}
         {coe.tags && coe.tags.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Tags</h3>
+            <h3 className="text-lg font-semibold">Additional Tags</h3>
             <div className="flex flex-wrap gap-2">
               {coe.tags.map(tag => (
                 <Badge key={tag} variant="secondary">
@@ -156,7 +184,14 @@ const COEDetailView = () => {
                           {element.description}
                         </p>
                       )}
-                      {element.tags && (
+                      {element.primary_tag_id && (
+                        <div className="mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            Has primary tag
+                          </Badge>
+                        </div>
+                      )}
+                      {element.tags && element.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {element.tags.slice(0, 2).map(tag => (
                             <Badge key={tag} variant="outline" className="text-xs">
