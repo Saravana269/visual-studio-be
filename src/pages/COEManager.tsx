@@ -21,6 +21,13 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { CreateTagDialog } from "@/components/elements/CreateTagDialog";
+
+// Fixed PrimaryTagFilter component - now returns JSX
+const PrimaryTagFilter = () => {
+  // This is a placeholder component that will be implemented later
+  return <div></div>; // Return an empty div for now
+};
+
 const COEManager = () => {
   const {
     toast
@@ -260,7 +267,6 @@ const COEManager = () => {
   }
 
   // Filter by Primary Tag section
-  const PrimaryTagFilter = () => {};
   return <div className="space-y-6">
       {/* Updated header with integrated tag management row */}
       <COEHeader onCreateCOE={handleCreateCOE} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedTags={selectedTags} tagDetails={tagDetails} onTagSelect={handleTagSelect} onTagRemove={handleTagRemove} onTagClear={handleTagClear} onTagSearch={handleTagSearch} onAddTagClick={handleAddTag} onSettingsClick={handleManageTagsClick} />
