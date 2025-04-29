@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,12 +12,13 @@ import { COESearchControls } from "@/components/core-set/COESearchControls";
 import { COEDropZoneList } from "@/components/core-set/COEDropZoneList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
-
 const CoreSetDetails = () => {
   const navigate = useNavigate();
-  const { coreSet, isLoading: isLoadingCoreSet } = useCoreSetDetail();
+  const {
+    coreSet,
+    isLoading: isLoadingCoreSet
+  } = useCoreSetDetail();
   const [activeTab, setActiveTab] = useState<string>("assignment");
-  
   const {
     searchQuery,
     setSearchQuery,
@@ -46,16 +46,13 @@ const CoreSetDetails = () => {
     moveToGroup,
     toggleGroupCollapse
   } = useCOEAssignment(coreSet);
-  
   useEffect(() => {
     if (!isLoadingCoreSet && !coreSet) {
       navigate("/core-set");
     }
   }, [coreSet, isLoadingCoreSet, navigate]);
-  
   if (isLoadingCoreSet) {
-    return (
-      <div className="space-y-6 p-6">
+    return <div className="space-y-6 p-6">
         <div className="flex justify-between items-center">
           <Button variant="outline" className="gap-2" disabled>
             <ArrowLeft className="h-4 w-4" />
@@ -70,23 +67,17 @@ const CoreSetDetails = () => {
             <Skeleton className="h-32 w-32" />
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-  
   if (!coreSet) {
-    return (
-      <div className="p-6 text-center">
+    return <div className="p-6 text-center">
         <p>Core Set not found. It may have been deleted or you don't have permission to view it.</p>
         <Button className="mt-4" onClick={() => navigate("/core-set")}>
           Go to Core Sets
         </Button>
-      </div>
-    );
+      </div>;
   }
-  
-  return (
-    <div className="space-y-6 p-6">
+  return <div className="space-y-6 p-6">
       <div className="flex items-center">
         <Button onClick={() => navigate("/core-set")} variant="outline" className="gap-2">
           <ArrowLeft className="h-4 w-4" />
@@ -96,110 +87,51 @@ const CoreSetDetails = () => {
       
       <CoreSetDetailHeader coreSet={coreSet} />
       
-      <Separator />
+      
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-          <TabsTrigger value="assignment">COE Assignment</TabsTrigger>
-          <TabsTrigger value="groups">Group Management</TabsTrigger>
-        </TabsList>
+        
         
         <TabsContent value="assignment" className="space-y-4 pt-4">
-          <COESearchControls
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCount={selectedCOEs.size}
-            onSelectAll={selectAllVisible}
-            onClearSelection={clearSelection}
-          />
+          <COESearchControls searchQuery={searchQuery} onSearchChange={setSearchQuery} selectedCount={selectedCOEs.size} onSelectAll={selectAllVisible} onClearSelection={clearSelection} />
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {isLoading ? (
-              <>
+            {isLoading ? <>
                 <Skeleton className="h-64 w-full" />
                 <Skeleton className="h-64 w-full" />
-              </>
-            ) : (
-              <>
-                <COEDropZoneList
-                  zone="unassign"
-                  title="Available COEs"
-                  coes={filteredUnassigned}
-                  isOver={dragOverZone === "unassign"}
-                  selectedCOEs={selectedCOEs}
-                  onDragOver={handleDragOver("unassign")}
-                  onDrop={() => handleDrop("unassign")}
-                  onSelect={toggleCOESelection}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  coreSet={coreSet}
-                  refetch={refetch}
-                />
+              </> : <>
+                <COEDropZoneList zone="unassign" title="Available COEs" coes={filteredUnassigned} isOver={dragOverZone === "unassign"} selectedCOEs={selectedCOEs} onDragOver={handleDragOver("unassign")} onDrop={() => handleDrop("unassign")} onSelect={toggleCOESelection} onDragStart={handleDragStart} onDragEnd={handleDragEnd} coreSet={coreSet} refetch={refetch} />
                 
-                <COEDropZoneList
-                  zone="assign"
-                  title="Assigned COEs"
-                  coes={[]} // Not used when groups are provided
-                  isOver={dragOverZone === "assign" && !draggedCOE}
-                  selectedCOEs={selectedCOEs}
-                  onDragOver={handleDragOver("assign")}
-                  onDrop={() => handleDrop("assign")}
-                  onSelect={toggleCOESelection}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  coreSet={coreSet}
-                  refetch={refetch}
-                  // Group related props
-                  groups={groups}
-                  groupedCOEs={groupedAssignedCOEs}
-                  onToggleGroupCollapse={toggleGroupCollapse}
-                />
-              </>
-            )}
+                <COEDropZoneList zone="assign" title="Assigned COEs" coes={[]} // Not used when groups are provided
+            isOver={dragOverZone === "assign" && !draggedCOE} selectedCOEs={selectedCOEs} onDragOver={handleDragOver("assign")} onDrop={() => handleDrop("assign")} onSelect={toggleCOESelection} onDragStart={handleDragStart} onDragEnd={handleDragEnd} coreSet={coreSet} refetch={refetch}
+            // Group related props
+            groups={groups} groupedCOEs={groupedAssignedCOEs} onToggleGroupCollapse={toggleGroupCollapse} />
+              </>}
           </div>
         </TabsContent>
         
         <TabsContent value="groups" className="space-y-6 pt-4">
-          <GroupManagement
-            groups={groups}
-            onAddGroup={addGroup}
-            onUpdateGroup={updateGroup}
-            onRemoveGroup={removeGroup}
-          />
+          <GroupManagement groups={groups} onAddGroup={addGroup} onUpdateGroup={updateGroup} onRemoveGroup={removeGroup} />
           
-          {selectedCOEs.size > 0 && (
-            <div className="p-4 border rounded-md bg-muted/20">
+          {selectedCOEs.size > 0 && <div className="p-4 border rounded-md bg-muted/20">
               <h3 className="text-sm font-medium mb-2">Move Selected COEs to Group</h3>
               <div className="flex flex-wrap gap-2">
-                {groups.map(group => (
-                  <Button
-                    key={group.id}
-                    size="sm"
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    style={{
-                      borderColor: group.color,
-                      color: group.color
-                    }}
-                    onClick={() => {
-                      const selectedIds = Array.from(selectedCOEs);
-                      moveToGroup(selectedIds, group.id);
-                    }}
-                  >
-                    <div 
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: group.color }}
-                    />
+                {groups.map(group => <Button key={group.id} size="sm" variant="outline" className="flex items-center gap-2" style={{
+              borderColor: group.color,
+              color: group.color
+            }} onClick={() => {
+              const selectedIds = Array.from(selectedCOEs);
+              moveToGroup(selectedIds, group.id);
+            }}>
+                    <div className="w-2 h-2 rounded-full" style={{
+                backgroundColor: group.color
+              }} />
                     <span>{group.name}</span>
-                  </Button>
-                ))}
+                  </Button>)}
               </div>
-            </div>
-          )}
+            </div>}
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
-
 export default CoreSetDetails;
