@@ -126,7 +126,7 @@ export function TagManagementRow({
 
   return (
     <div className="space-y-4">
-      {/* Main row with search on left, tags in middle, buttons on right */}
+      {/* Second row with search input, horizontal tag list, and action buttons */}
       <div className="flex items-center gap-3 w-full">
         {/* Search input - fixed width but will shrink if needed */}
         <div className="relative min-w-[180px] max-w-[240px] flex-shrink">
@@ -142,37 +142,84 @@ export function TagManagementRow({
           />
         </div>
         
-        {/* Tag list with horizontal scrolling - takes remaining space */}
+        {/* Selected tags display section with horizontal scrolling */}
         <div className="flex-grow overflow-hidden">
-          <ScrollArea className="w-full">
-            <div className="flex items-center gap-2 py-1">
-              {isLoadingTags ? 
-                <div className="text-sm text-muted-foreground px-2">Loading tags...</div> 
-                : filteredTags.length > 0 ? 
-                  <>
-                    <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
-                    <div className="flex gap-2 flex-nowrap">
-                      {filteredTags.map(tag => (
-                        <Badge 
-                          key={tag.id} 
-                          onClick={() => handleTagClick(tag.id)} 
-                          className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1 whitespace-nowrap rounded-sm"
+          {(isSingleMode && selectedTag && selectedTagLabel) || 
+           (!isSingleMode && selectedTags && selectedTags.length > 0) ? (
+            <ScrollArea className="w-full">
+              <div className="flex items-center gap-2 py-1">
+                <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
+                <div className="flex gap-2 flex-nowrap">
+                  {isSingleMode && selectedTag && (
+                    <Badge 
+                      key={selectedTag} 
+                      className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
+                    >
+                      {selectedTagLabel || 'Unknown Tag'}
+                      {onTagClear && (
+                        <button 
+                          onClick={onTagClear}
+                          className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
                         >
-                          {tag.label}
-                        </Badge>
-                      ))}
-                    </div>
-                  </> 
-                : tagSearchQuery ? 
-                  <div className="text-sm text-muted-foreground px-2">No matching tags found</div> 
-                  : 
-                  <div className="text-sm text-muted-foreground px-2 flex items-center gap-1">
-                    <Tag size={16} /> Available tags will appear here
-                  </div>
-              }
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  )}
+                  {!isSingleMode && selectedTags && selectedTags.map(tagId => (
+                    <Badge 
+                      key={tagId} 
+                      className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
+                    >
+                      {tagDetails[tagId] || 'Unknown Tag'}
+                      {onTagRemove && (
+                        <button 
+                          onClick={() => onTagRemove(tagId)}
+                          className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          ) : (
+            <div className="flex items-center gap-2 py-1">
+              {/* Tag list with horizontal scrolling - takes remaining space */}
+              <ScrollArea className="w-full">
+                <div className="flex items-center gap-2 py-1">
+                  {isLoadingTags ? 
+                    <div className="text-sm text-muted-foreground px-2">Loading tags...</div> 
+                    : filteredTags.length > 0 ? 
+                      <>
+                        <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
+                        <div className="flex gap-2 flex-nowrap">
+                          {filteredTags.map(tag => (
+                            <Badge 
+                              key={tag.id} 
+                              onClick={() => handleTagClick(tag.id)} 
+                              className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1 whitespace-nowrap rounded-sm"
+                            >
+                              {tag.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </> 
+                    : tagSearchQuery ? 
+                      <div className="text-sm text-muted-foreground px-2">No matching tags found</div> 
+                      : 
+                      <div className="text-sm text-muted-foreground px-2 flex items-center gap-1">
+                        <Tag size={16} /> Available tags will appear here
+                      </div>
+                  }
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          )}
         </div>
         
         {/* Action buttons container with transparent background and border */}
@@ -200,43 +247,6 @@ export function TagManagementRow({
           </Button>
         </div>
       </div>
-
-      {/* Selected tag section - single mode */}
-      {isSingleMode && selectedTag && (
-        <div className="flex items-center gap-2">
-          <Badge className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1">
-            {selectedTagLabel || 'Unknown Tag'}
-            {onTagClear && (
-              <button onClick={onTagClear} className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5">
-                <X className="h-3 w-3" />
-              </button>
-            )}
-          </Badge>
-          <span className="text-sm text-muted-foreground">Showing elements with this tag only</span>
-        </div>
-      )}
-
-      {/* Selected tags section - multiple mode */}
-      {!isSingleMode && selectedTags && selectedTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedTags.map(tagId => (
-            <Badge 
-              key={tagId} 
-              className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1"
-            >
-              {tagDetails[tagId] || 'Unknown Tag'}
-              {onTagRemove && (
-                <button 
-                  onClick={() => onTagRemove(tagId)}
-                  className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </Badge>
-          ))}
-        </div>
-      )}
 
       <CreateTagDialog 
         open={isCreateTagDialogOpen} 
