@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCOEData, type COE } from "@/hooks/useCOEData"; // Import the COE type here
+import { useCOEData, type COE } from "@/hooks/useCOEData"; 
 import { useCOEManager } from "@/hooks/useCOEManager";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -76,9 +76,6 @@ const COEManager = () => {
     
     return matchesSearch && matchesAdditionalTags;
   }) : [];
-  
-  // Extract all tags from COEs
-  const allAdditionalTags = Array.isArray(coes) ? Array.from(new Set(coes.flatMap(coe => coe.tags || []))) : [];
   
   // COE CRUD operations
   const handleCreateCOE = () => {
@@ -217,7 +214,7 @@ const COEManager = () => {
         mode={tagDialogMode}
         tagSelections={tagSelections}
         onTagSelectionChange={handleTagSelectionChange}
-        onSave={() => handleSaveTags().then(() => {})} // Fix Promise<boolean> to Promise<void> conversion
+        onSave={() => handleSaveTags().then(() => {})} 
       />
 
       {/* Assign Tag Dialog */}
@@ -227,7 +224,7 @@ const COEManager = () => {
         coe={selectedCOE}
         selectedTag={selectedTagInDialog}
         onTagChange={setSelectedTagInDialog}
-        onSave={() => handleSaveTag().then(() => {})} // Fix Promise<boolean> to Promise<void> conversion
+        onSave={() => handleSaveTag().then(() => {})} 
         isSubmitting={isSubmittingTag}
       />
 
