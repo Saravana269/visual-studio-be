@@ -152,6 +152,7 @@ export type Database = {
       }
       component_type: {
         Row: {
+          component_type_head_id: string | null
           created_at: string | null
           field_name: string
           field_type: string
@@ -161,6 +162,7 @@ export type Database = {
           unit_type: string | null
         }
         Insert: {
+          component_type_head_id?: string | null
           created_at?: string | null
           field_name: string
           field_type: string
@@ -170,6 +172,7 @@ export type Database = {
           unit_type?: string | null
         }
         Update: {
+          component_type_head_id?: string | null
           created_at?: string | null
           field_name?: string
           field_type?: string
@@ -177,6 +180,32 @@ export type Database = {
           id?: string
           is_unit_required?: boolean | null
           unit_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "component_type_component_type_head_id_fkey"
+            columns: ["component_type_head_id"]
+            isOneToOne: false
+            referencedRelation: "component_type_head"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      component_type_head: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }

@@ -1,80 +1,17 @@
 
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { ElementsAssignment } from "@/components/coe/ElementsAssignment";
-import { useToast } from "@/hooks/use-toast";
-import type { COE } from "@/hooks/useCOEData";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCOEDetail } from "@/hooks/coe/useCOEDetail";
+import { COEDetailHeader } from "@/components/coe/detail/COEDetailHeader";
+import { AssignedElementsList } from "@/components/coe/detail/AssignedElementsList";
 
 const COEDetailView = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const { data: coe, isLoading } = useQuery({
-    queryKey: ["coe", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("class_of_elements")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-
-      if (error) {
-        toast({
-          title: "Error fetching COE",
-          description: error.message,
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      return data as COE;
-    },
-  });
-
-  const { data: tagDetail } = useQuery({
-    queryKey: ["coe-tag-detail", coe?.primary_tag_id],
-    queryFn: async () => {
-      if (!coe?.primary_tag_id) return null;
-      
-      const { data, error } = await supabase
-        .from("tags")
-        .select("id, label")
-        .eq("id", coe.primary_tag_id)
-        .single();
-      
-      if (error || !data) return null;
-      
-      return data;
-    },
-    enabled: !!coe?.primary_tag_id
-  });
-
-  const { data: assignedElements = [] } = useQuery({
-    queryKey: ["coe-elements", id],
-    queryFn: async () => {
-      if (!id) return [];
-      
-      const { data, error } = await supabase
-        .from("elements")
-        .select("*")
-        .contains("coe_ids", [id]);
-      
-      if (error) {
-        console.error("Error fetching assigned elements:", error);
-        return [];
-      }
-      
-      return data || [];
-    },
-    enabled: !!id
-  });
+  const { coe, tagDetail, assignedElements, isCOELoading, id } = useCOEDetail();
 
   // Add this function to handle assignment changes
   const handleAssignmentChange = () => {
@@ -82,7 +19,7 @@ const COEDetailView = () => {
     queryClient.invalidateQueries({ queryKey: ["coe-elements", id] });
   };
 
-  if (isLoading) {
+  if (isCOELoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00B86B]" />
@@ -113,46 +50,7 @@ const COEDetailView = () => {
       </Button>
 
       <div className="space-y-6">
-        {/* Header Section */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{coe.name}</h1>
-            {coe.description && (
-              <p className="text-muted-foreground">{coe.description}</p>
-            )}
-          </div>
-          {coe.image_url && (
-            <img 
-              src={coe.image_url} 
-              alt={coe.name}
-              className="w-32 h-32 object-cover rounded-lg"
-            />
-          )}
-        </div>
-
-        {/* Primary Tag Section */}
-        {tagDetail && (
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Primary Tag</h3>
-            <Badge variant="secondary" className="bg-blue-100">
-              {tagDetail.label}
-            </Badge>
-          </div>
-        )}
-
-        {/* Additional Tags Section */}
-        {coe.tags && coe.tags.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Additional Tags</h3>
-            <div className="flex flex-wrap gap-2">
-              {coe.tags.map(tag => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+        <COEDetailHeader coe={coe} tagDetail={tagDetail} />
 
         {/* Elements Assignment Section */}
         <div className="space-y-4">
@@ -165,52 +63,7 @@ const COEDetailView = () => {
           <h3 className="text-lg font-semibold">
             Assigned Elements ({assignedElements.length})
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {assignedElements.map((element) => (
-              <Card key={element.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {element.image_url && (
-                      <img 
-                        src={element.image_url} 
-                        alt={element.name}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    )}
-                    <div>
-                      <h4 className="font-medium">{element.name}</h4>
-                      {element.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {element.description}
-                        </p>
-                      )}
-                      {element.primary_tag_id && (
-                        <div className="mt-2">
-                          <Badge variant="outline" className="text-xs">
-                            Has primary tag
-                          </Badge>
-                        </div>
-                      )}
-                      {element.tags && element.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {element.tags.slice(0, 2).map(tag => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {assignedElements.length === 0 && (
-              <div className="col-span-full text-center py-8 border rounded-lg bg-muted">
-                <p className="text-muted-foreground">No elements assigned yet</p>
-              </div>
-            )}
-          </div>
+          <AssignedElementsList assignedElements={assignedElements} />
         </div>
       </div>
     </div>
