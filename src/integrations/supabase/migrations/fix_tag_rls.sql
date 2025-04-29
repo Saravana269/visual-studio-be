@@ -26,11 +26,12 @@ FOR INSERT
 TO authenticated 
 WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated users to read tags" 
+-- Modified policy to only allow users to see their own tags
+CREATE POLICY "Allow authenticated users to read their own tags" 
 ON public.tags 
 FOR SELECT 
 TO authenticated 
-USING (true);
+USING (created_by = auth.uid());
 
 CREATE POLICY "Allow users to update their own tags" 
 ON public.tags 
