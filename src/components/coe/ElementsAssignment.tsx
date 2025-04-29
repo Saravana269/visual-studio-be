@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +18,7 @@ interface Element {
   image_url: string | null;
   coe_ids: string[] | null;
   tags: string[] | null;
-  primary_tag_id?: string | null;
+  primary_tag_id: string | null; // Make sure this is defined
 }
 
 interface ElementsAssignmentProps {
@@ -302,7 +303,11 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
               {filteredUnassigned.map((element) => (
                 <DraggableCard
                   key={element.id}
-                  coe={element}
+                  coe={{
+                    ...element,
+                    primary_tag_id: element.primary_tag_id, // Ensure this property exists
+                    element_count: 0 // Add required property for COE type
+                  }}
                   isSelected={selectedElements.has(element.id)}
                   onClick={() => toggleElementSelection(element.id)}
                   onDragStart={() => handleDragStart(element)}
@@ -335,7 +340,11 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
               {localAssignedElements.map((element) => (
                 <DraggableCard
                   key={element.id}
-                  coe={element}
+                  coe={{
+                    ...element,
+                    primary_tag_id: element.primary_tag_id, // Ensure this property exists
+                    element_count: 0 // Add required property for COE type
+                  }}
                   isSelected={selectedElements.has(element.id)}
                   onClick={() => toggleElementSelection(element.id)}
                   onDragStart={() => handleDragStart(element)}
