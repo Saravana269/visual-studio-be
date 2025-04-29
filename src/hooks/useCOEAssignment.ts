@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useGroupManagement } from "@/hooks/useGroupManagement";
 import type { COE } from "@/hooks/useCOEData";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 
@@ -11,8 +12,23 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [draggedCOE, setDraggedCOE] = useState<COE | null>(null);
   const [dragOverZone, setDragOverZone] = useState<"assign" | "unassign" | null>(null);
+  const [dragOverGroupId, setDragOverGroupId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedCOEs, setSelectedCOEs] = useState<Set<string>>(new Set());
+  
+  // Initialize group management
+  const {
+    groups,
+    addGroup,
+    updateGroup,
+    removeGroup,
+    assignToGroup,
+    assignMultipleToGroup,
+    removeFromGroup,
+    getGroupForCOE,
+    getCOEsInGroup,
+    toggleGroupCollapse
+  } = useGroupManagement(coreSet?.id || null);
 
   const { data: coes = [], isLoading, refetch } = useQuery({
     queryKey: ["coes-for-coreset", coreSet?.id],
@@ -45,6 +61,12 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
     (coe) => !coe.coreSet_id || !coreSet || !coe.coreSet_id.includes(coreSet.id)
   );
 
+  // Create a grouped version of assigned COEs
+  const groupedAssignedCOEs = groups.reduce((acc, group) => {
+    acc[group.id] = getCOEsInGroup(group.id, assignedCOEs);
+    return acc;
+  }, {} as Record<string, COE[]>);
+
   const filteredUnassigned = searchQuery
     ? unassignedCOEs.filter(coe => 
         coe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,16 +86,24 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
     setDraggedCOE(null);
     setIsDragging(false);
     setDragOverZone(null);
+    setDragOverGroupId(null);
   }, []);
 
-  const handleDragOver = useCallback((zone: "assign" | "unassign") => (e: React.DragEvent) => {
+  const handleDragOver = useCallback((zone: "assign" | "unassign", groupId?: string) => (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setDragOverZone(zone);
+    
+    if (zone === "assign" && groupId) {
+      setDragOverGroupId(groupId);
+    } else {
+      setDragOverGroupId(null);
+    }
   }, []);
 
-  const handleDrop = useCallback(async (targetType: "assign" | "unassign") => {
+  const handleDrop = useCallback(async (targetType: "assign" | "unassign", groupId?: string) => {
     console.log("Drop in zone:", targetType);
+    console.log("Drop in group:", groupId);
     console.log("Dragged COE:", draggedCOE?.name);
     console.log("Selected COEs count:", selectedCOEs.size);
     
@@ -113,9 +143,19 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
         if (targetType === "assign" && !updatedCoreSetIds.includes(coreSet.id)) {
           updatedCoreSetIds = [...updatedCoreSetIds, coreSet.id];
           console.log(`Adding CoreSet ID ${coreSet.id} to COE ${coe.name}`);
+          
+          // Assign to the specified group (or default if not specified)
+          if (groupId) {
+            assignToGroup(coe.id, groupId);
+          } else {
+            assignToGroup(coe.id, "default");
+          }
         } else if (targetType === "unassign") {
           updatedCoreSetIds = updatedCoreSetIds.filter(id => id !== coreSet.id);
           console.log(`Removing CoreSet ID ${coreSet.id} from COE ${coe.name}`);
+          
+          // Remove from any group
+          removeFromGroup(coe.id);
         }
         
         const { error } = await supabase
@@ -146,7 +186,45 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
         variant: "destructive"
       });
     }
-  }, [coreSet, draggedCOE, selectedCOEs, coes, refetch, toast]);
+  }, [coreSet, draggedCOE, selectedCOEs, coes, refetch, toast, assignToGroup, removeFromGroup]);
+
+  const moveToGroup = useCallback(async (coeIds: string[], groupId: string) => {
+    if (!coreSet) return;
+    
+    try {
+      // First ensure all COEs are assigned to this CoreSet
+      for (const coeId of coeIds) {
+        const coe = coes.find(c => c.id === coeId);
+        if (!coe) continue;
+        
+        if (!coe.coreSet_id || !coe.coreSet_id.includes(coreSet.id)) {
+          const updatedCoreSetIds = [...(coe.coreSet_id || []), coreSet.id];
+          
+          await supabase
+            .from("class_of_elements")
+            .update({ coreSet_id: updatedCoreSetIds })
+            .eq("id", coeId);
+        }
+      }
+      
+      // Then assign them to the specified group
+      assignMultipleToGroup(coeIds, groupId);
+      
+      refetch();
+      
+      toast({
+        title: "COEs moved",
+        description: `Successfully moved ${coeIds.length} COEs to group`,
+      });
+    } catch (error: any) {
+      console.error("Error moving COEs to group:", error);
+      toast({
+        title: "Error",
+        description: `Failed to move COEs to group: ${error.message || "Unknown error"}`,
+        variant: "destructive"
+      });
+    }
+  }, [coreSet, coes, assignMultipleToGroup, refetch, toast]);
 
   const toggleCOESelection = useCallback((coeId: string) => {
     setSelectedCOEs(prev => {
@@ -177,12 +255,14 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
     setSearchQuery,
     draggedCOE,
     dragOverZone,
+    dragOverGroupId,
     isDragging,
     selectedCOEs,
     coes,
     isLoading,
     assignedCOEs,
     filteredUnassigned,
+    groupedAssignedCOEs,
     handleDragStart,
     handleDragEnd,
     handleDragOver,
@@ -190,6 +270,14 @@ export const useCOEAssignment = (coreSet: CoreSet | null) => {
     toggleCOESelection,
     selectAllVisible,
     clearSelection,
-    refetch
+    refetch,
+    // Group related
+    groups,
+    addGroup,
+    updateGroup,
+    removeGroup,
+    getGroupForCOE,
+    moveToGroup,
+    toggleGroupCollapse
   };
 };

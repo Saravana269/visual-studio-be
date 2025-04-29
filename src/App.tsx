@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -11,6 +12,7 @@ import ElementsManager from "./pages/ElementsManager";
 import COEManager from "./pages/COEManager";
 import COEDetailView from "./components/coe/COEDetailView";
 import CoreSetManager from "./pages/CoreSetManager";
+import CoreSetAssignment from "./pages/CoreSetAssignment"; // Import the new page
 import WidgetManager from "./pages/WidgetManager";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
@@ -94,6 +96,7 @@ function App() {
                 <Route path="/coe" element={<COEManager />} />
                 <Route path="/coe/:id" element={<COEDetailView />} />
                 <Route path="/core-set" element={<CoreSetManager />} />
+                <Route path="/core-set/:id/assignment" element={<CoreSetAssignment />} /> {/* Add new route */}
                 <Route path="/widgets" element={<WidgetManager />} />
                 <Route path="/settings" element={<Settings />} />
                 

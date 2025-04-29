@@ -2,12 +2,13 @@
 import { DraggableCard } from "./DraggableCard";
 import { DropZone } from "./DropZone";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { GroupedCOEDisplay } from "./GroupedCOEDisplay";
 import type { COE } from "@/hooks/useCOEData";
 import type { CoreSet } from "@/hooks/useCoreSetData";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MoveHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface COEDropZoneListProps {
   zone: "unassign" | "assign";
@@ -23,6 +24,12 @@ interface COEDropZoneListProps {
   onRemove?: (coe: COE) => Promise<void>;
   coreSet?: CoreSet;
   refetch: () => void;
+  // Group related props
+  groups?: any[];
+  groupedCOEs?: Record<string, COE[]>;
+  onDragOverGroup?: (groupId: string) => (e: React.DragEvent) => void;
+  onDropToGroup?: (groupId: string) => (e: React.DragEvent) => void;
+  onToggleGroupCollapse?: (groupId: string) => void;
 }
 
 export const COEDropZoneList = ({
@@ -38,7 +45,13 @@ export const COEDropZoneList = ({
   onDragEnd,
   onRemove,
   coreSet,
-  refetch
+  refetch,
+  // Group related props
+  groups,
+  groupedCOEs,
+  onDragOverGroup,
+  onDropToGroup,
+  onToggleGroupCollapse
 }: COEDropZoneListProps) => {
   const { toast } = useToast();
   
@@ -86,36 +99,49 @@ export const COEDropZoneList = ({
         </div>
       </div>
       
-      <div className="space-y-2 p-1">
-        {coes.map((coe) => (
-          <DraggableCard
-            key={coe.id}
-            coe={coe}
-            isSelected={selectedCOEs.has(coe.id)}
-            onSelect={(checked) => onSelect?.(coe.id)}
-            onDragStart={() => onDragStart?.(coe)}
-            onDragEnd={onDragEnd}
-            onRemove={zone === "assign" ? () => handleRemove(coe) : undefined}
-          />
-        ))}
-        
-        {coes.length === 0 && (
-          <div className={`text-center p-4 text-sm text-muted-foreground ${
-            zone === "assign" ? "flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted rounded-lg" : ""
-          }`}>
-            {zone === "assign" ? (
-              <>
-                <div className="mb-2 p-2 rounded-full bg-muted/30">
-                  <MoveHorizontal className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p>Drop COEs here to assign them</p>
-              </>
-            ) : (
-              "No COEs available"
-            )}
-          </div>
-        )}
-      </div>
+      {zone === "assign" && groups && groupedCOEs && onToggleGroupCollapse ? (
+        <GroupedCOEDisplay
+          groups={groups}
+          groupedCOEs={groupedCOEs}
+          selectedCOEs={selectedCOEs}
+          onSelect={(coeId) => onSelect?.(coeId)}
+          onDragStart={(coe) => onDragStart?.(coe)}
+          onDragEnd={onDragEnd}
+          onRemove={(coe) => handleRemove(coe)}
+          onToggleGroupCollapse={onToggleGroupCollapse}
+        />
+      ) : (
+        <div className="space-y-2 p-1">
+          {coes.map((coe) => (
+            <DraggableCard
+              key={coe.id}
+              coe={coe}
+              isSelected={selectedCOEs.has(coe.id)}
+              onSelect={(checked) => onSelect?.(coe.id)}
+              onDragStart={() => onDragStart?.(coe)}
+              onDragEnd={onDragEnd}
+              onRemove={zone === "assign" ? () => handleRemove(coe) : undefined}
+            />
+          ))}
+          
+          {coes.length === 0 && (
+            <div className={`text-center p-4 text-sm text-muted-foreground ${
+              zone === "assign" ? "flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted rounded-lg" : ""
+            }`}>
+              {zone === "assign" ? (
+                <>
+                  <div className="mb-2 p-2 rounded-full bg-muted/30">
+                    <MoveHorizontal className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <p>Drop COEs here to assign them</p>
+                </>
+              ) : (
+                "No COEs available"
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </DropZone>
   );
 };

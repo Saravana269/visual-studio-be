@@ -212,6 +212,7 @@ export type Database = {
       components: {
         Row: {
           component_id_code: string
+          component_type_head_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -224,6 +225,7 @@ export type Database = {
         }
         Insert: {
           component_id_code: string
+          component_type_head_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -236,6 +238,7 @@ export type Database = {
         }
         Update: {
           component_id_code?: string
+          component_type_head_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -266,6 +269,13 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendor_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_component_type_head"
+            columns: ["component_type_head_id"]
+            isOneToOne: false
+            referencedRelation: "component_type_head"
             referencedColumns: ["id"]
           },
         ]
