@@ -9,6 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bom: {
+        Row: {
+          category: string | null
+          components: number
+          created_at: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          components?: number
+          created_at?: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          components?: number
+          created_at?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bom_components: {
+        Row: {
+          added_at: string
+          bom_id: number
+          component_id: string
+          id: string
+          quantity: number
+        }
+        Insert: {
+          added_at?: string
+          bom_id: number
+          component_id: string
+          id?: string
+          quantity?: number
+        }
+        Update: {
+          added_at?: string
+          bom_id?: number
+          component_id?: string
+          id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bom_components_bom_id_fkey"
+            columns: ["bom_id"]
+            isOneToOne: false
+            referencedRelation: "bom"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bom_components_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_of_elements: {
         Row: {
           coreSet_id: string[] | null
