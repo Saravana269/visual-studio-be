@@ -2,9 +2,10 @@
 import { Widget } from "@/types/widget";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Tag, MoreVertical } from "lucide-react";
+import { Plus, Tag, MoreVertical, Layout } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface WidgetGridProps {
@@ -24,10 +25,18 @@ export function WidgetGrid({
   onViewDetails,
   onCreateClick
 }: WidgetGridProps) {
+  const navigate = useNavigate();
+  
   // Get tag labels from tag IDs
   const getTagLabels = (tagIds: string[] | null): string[] => {
     if (!tagIds) return [];
     return tagIds.map(id => tagDetails[id] || "Unknown Tag").filter(Boolean);
+  };
+
+  // Navigate to screens page
+  const handleManageScreens = (widget: Widget, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/widgets/${widget.id}/screens`);
   };
 
   if (isLoading) {
@@ -93,6 +102,9 @@ export function WidgetGrid({
                   onViewDetails(widget);
                 }}>
                   View Details
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => handleManageScreens(widget, e)}>
+                  <Layout size={14} className="mr-2" /> Manage Screens
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

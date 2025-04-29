@@ -1,14 +1,14 @@
-
 import { WidgetDetail } from "@/types/widget";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Tag } from "lucide-react";
+import { Plus, Tag, Layout } from "lucide-react";
 
 interface WidgetDetailDialogProps {
   isOpen: boolean;
@@ -26,6 +26,7 @@ export function WidgetDetailDialog({
   tagDetails
 }: WidgetDetailDialogProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Fetch widget details including screens
   const { data: widgetDetail, isLoading: isLoadingDetail } = useQuery({
@@ -71,6 +72,13 @@ export function WidgetDetailDialog({
   const getTagLabels = (tagIds: string[] | null): string[] => {
     if (!tagIds) return [];
     return tagIds.map(id => tagDetails[id] || "Unknown Tag").filter(Boolean);
+  };
+
+  const handleManageScreens = () => {
+    if (widgetDetail) {
+      onOpenChange(false);
+      navigate(`/widgets/${widgetDetail.id}/screens`);
+    }
   };
 
   return (
@@ -134,12 +142,25 @@ export function WidgetDetailDialog({
                         ))}
                       </TableBody>
                     </Table>
+                    <div className="p-4 flex justify-end">
+                      <Button 
+                        onClick={handleManageScreens} 
+                        className="bg-[#9b87f5] hover:bg-[#7E69AB] gap-2"
+                      >
+                        <Layout size={16} />
+                        Manage Screens
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center p-4">
                     <p className="text-muted-foreground">No screens have been added to this widget yet.</p>
-                    <Button className="mt-4 bg-[#9b87f5] hover:bg-[#7E69AB]">
-                      <Plus size={16} className="mr-2" /> Add Screen
+                    <Button 
+                      className="mt-4 bg-[#9b87f5] hover:bg-[#7E69AB] gap-2"
+                      onClick={handleManageScreens}
+                    >
+                      <Plus size={16} />
+                      Add Screens
                     </Button>
                   </div>
                 )}

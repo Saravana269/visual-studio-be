@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -14,6 +15,7 @@ import CoreSetManager from "./pages/CoreSetManager";
 import CoreSetAssignment from "./pages/CoreSetAssignment";
 import CoreSetDetails from "./pages/CoreSetDetails";
 import WidgetManager from "./pages/WidgetManager";
+import WidgetScreenManager from "./pages/WidgetScreenManager";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import AuthCallback from "./components/auth/AuthCallback";
@@ -99,6 +101,7 @@ function App() {
                 <Route path="/core-set/:id" element={<CoreSetDetails />} />
                 <Route path="/core-set/:id/assignment" element={<CoreSetAssignment />} />
                 <Route path="/widgets" element={<WidgetManager />} />
+                <Route path="/widgets/:id/screens" element={<WidgetScreenManager />} />
                 <Route path="/settings" element={<Settings />} />
                 
                 {/* Auth routes redirect to elements if already authenticated */}
