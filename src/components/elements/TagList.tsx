@@ -29,7 +29,7 @@ export function TagList({
   isSingleMode
 }: TagListProps) {
   return (
-    <div className="flex-grow overflow-hidden">
+    <div className="flex-grow overflow-hidden max-w-[400px]">
       <ScrollArea className="w-full">
         <div className="flex items-center gap-2 py-1">
           <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />

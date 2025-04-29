@@ -130,7 +130,7 @@ export function TagManagementRow({
   return (
     <div className="flex items-center justify-between gap-3 w-full">
       {/* Left section: Search input and tag list container */}
-      <div className="flex items-center gap-3 flex-grow">
+      <div className="flex items-center gap-3 flex-grow overflow-hidden">
         {/* Search input component */}
         <TagSearch 
           value={tagSearchQuery} 

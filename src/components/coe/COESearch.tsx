@@ -30,7 +30,7 @@ const COESearch = ({
   onSettingsClick
 }: COESearchProps) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 w-full">
       {/* First row - COE Search */}
       <div className="relative w-full md:w-64">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -43,17 +43,19 @@ const COESearch = ({
       </div>
       
       {/* Second row - Tag Management */}
-      <TagManagementRow
-        selectedTags={selectedTags}
-        tagDetails={tagDetails}
-        onTagSelect={onTagSelect}
-        onTagRemove={onTagRemove}
-        onTagClear={onTagClear}
-        onTagSearch={onTagSearch}
-        onAddTagClick={onAddTagClick}
-        onManageTagsClick={onSettingsClick}
-        entityType="COE"
-      />
+      <div className="w-full overflow-hidden">
+        <TagManagementRow
+          selectedTags={selectedTags}
+          tagDetails={tagDetails}
+          onTagSelect={onTagSelect}
+          onTagRemove={onTagRemove}
+          onTagClear={onTagClear}
+          onTagSearch={onTagSearch}
+          onAddTagClick={onAddTagClick}
+          onManageTagsClick={onSettingsClick}
+          entityType="COE"
+        />
+      </div>
     </div>
   );
 };
