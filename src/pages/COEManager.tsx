@@ -12,7 +12,6 @@ import COEEmptyState from "@/components/coe/COEEmptyState";
 import COEList from "@/components/coe/COEList";
 import COEHeader from "@/components/coe/COEHeader";
 import { TagManagementRow } from "@/components/elements/TagManagementRow";
-import COETagSearch from "@/components/coe/COETagSearch";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tag } from "lucide-react";
 import type { COE } from "@/hooks/useCOEData";
@@ -132,18 +131,34 @@ const COEManager = () => {
     setIsCreateModalOpen(true);
   };
 
-  const handleTagSelect = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+  const handleTagSelect = (tagId: string) => {
+    if (tagId) {
+      setSelectedTags((prev) =>
+        prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
+      );
+      setCurrentPage(1);
+    }
   };
+
+  const handleTagRemove = (tagId: string) => {
+    setSelectedTags((prev) => prev.filter((t) => t !== tagId));
+    setCurrentPage(1);
+  };
+
+  const handleTagClear = () => {
+    setSelectedTags([]);
+    setCurrentPage(1);
+  };
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handlePrimaryTagSelect = (tagId: string) => {
     setSelectedPrimaryTagId(selectedPrimaryTagId === tagId ? null : tagId);
+    setCurrentPage(1);
   };
 
-  const handleClearTag = (tag: string) => {
-    setSelectedTags((prev) => prev.filter((t) => t !== tag));
+  const handleTagSearch = (query: string) => {
+    setSearchQuery(query);
   };
 
   const handleManageTags = (coe: COE, action: 'add' | 'remove') => {
@@ -269,6 +284,14 @@ const COEManager = () => {
     });
   };
 
+  const handleManageTagsClick = () => {
+    // This would open a tag management dialog or navigate to a tag management page
+    toast({
+      title: "Feature coming soon",
+      description: "Tag management will be available in a future update."
+    });
+  };
+
   if (error) {
     return (
       <div className="p-8 text-center">
@@ -279,50 +302,59 @@ const COEManager = () => {
     );
   }
 
+  // Filter by Primary Tag section
+  const PrimaryTagFilter = () => (
+    <div className="mb-6">
+      <h3 className="text-sm font-medium mb-2">Filter by Primary Tag</h3>
+      <div className="relative">
+        <ScrollArea className="w-full pb-4">
+          <div className="flex items-center gap-2 py-1 flex-nowrap">
+            <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
+            {Object.entries(tagDetails).map(([tagId, tagLabel]) => (
+              <Badge 
+                key={tagId} 
+                variant={selectedPrimaryTagId === tagId ? "default" : "outline"}
+                className="cursor-pointer whitespace-nowrap"
+                onClick={() => handlePrimaryTagSelect(tagId)}
+              >
+                {tagLabel}
+              </Badge>
+            ))}
+            {selectedPrimaryTagId && (
+              <Badge 
+                variant="secondary" 
+                className="cursor-pointer whitespace-nowrap" 
+                onClick={() => setSelectedPrimaryTagId(null)}
+              >
+                Clear filter
+              </Badge>
+            )}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-      {/* Updated header with integrated tag search */}
+      {/* Updated header with integrated tag management row */}
       <COEHeader 
-        onCreateCOE={() => setIsCreateModalOpen(true)} 
+        onCreateCOE={handleCreateCOE} 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         selectedTags={selectedTags}
-        allTags={allAdditionalTags}
+        tagDetails={tagDetails}
         onTagSelect={handleTagSelect}
+        onTagRemove={handleTagRemove}
+        onTagClear={handleTagClear}
+        onTagSearch={handleTagSearch}
         onAddTagClick={handleAddTag}
+        onSettingsClick={handleManageTagsClick}
       />
       
       {/* Filter by Primary Tag section */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium mb-2">Filter by Primary Tag</h3>
-        <div className="relative">
-          <ScrollArea className="w-full pb-4">
-            <div className="flex items-center gap-2 py-1 flex-nowrap">
-              <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
-              {Object.entries(tagDetails).map(([tagId, tagLabel]) => (
-                <Badge 
-                  key={tagId} 
-                  variant={selectedPrimaryTagId === tagId ? "default" : "outline"}
-                  className="cursor-pointer whitespace-nowrap"
-                  onClick={() => handlePrimaryTagSelect(tagId)}
-                >
-                  {tagLabel}
-                </Badge>
-              ))}
-              {selectedPrimaryTagId && (
-                <Badge 
-                  variant="secondary" 
-                  className="cursor-pointer whitespace-nowrap" 
-                  onClick={() => setSelectedPrimaryTagId(null)}
-                >
-                  Clear filter
-                </Badge>
-              )}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </div>
-      </div>
+      <PrimaryTagFilter />
       
       {isLoading ? (
         <div className="flex justify-center">

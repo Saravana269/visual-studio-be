@@ -2,25 +2,31 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Settings } from "lucide-react";
-import COETagSearch from "./COETagSearch";
+import { Settings } from "lucide-react";
+import { TagManagementRow } from "@/components/elements/TagManagementRow";
 
 interface COESearchProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedTags: string[];
-  allTags: string[];
+  tagDetails: Record<string, string>;
   onTagSelect: (tag: string) => void;
-  onAddTagClick?: () => void;
+  onTagRemove?: (tag: string) => void;
+  onTagClear?: () => void;
+  onTagSearch: (query: string) => void;
+  onAddTagClick: () => void;
   onSettingsClick?: () => void;
 }
 
 const COESearch = ({ 
   searchQuery, 
-  setSearchQuery, 
-  selectedTags, 
-  allTags, 
+  setSearchQuery,
+  selectedTags,
+  tagDetails,
   onTagSelect,
+  onTagRemove,
+  onTagClear,
+  onTagSearch,
   onAddTagClick,
   onSettingsClick
 }: COESearchProps) => {
@@ -38,34 +44,17 @@ const COESearch = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          <COETagSearch
+          <TagManagementRow
             selectedTags={selectedTags}
-            allTags={allTags}
+            tagDetails={tagDetails}
             onTagSelect={onTagSelect}
+            onTagRemove={onTagRemove}
+            onTagClear={onTagClear}
+            onTagSearch={onTagSearch}
+            onAddTagClick={onAddTagClick}
+            onManageTagsClick={onSettingsClick}
           />
         </div>
-        
-        {onAddTagClick && (
-          <Button 
-            onClick={onAddTagClick}
-            size="sm" 
-            className="flex-shrink-0"
-            variant="outline"
-          >
-            <Plus size={16} /> Add Tag
-          </Button>
-        )}
-        
-        {onSettingsClick && (
-          <Button
-            onClick={onSettingsClick}
-            size="sm"
-            className="flex-shrink-0"
-            variant="outline"
-          >
-            <Settings size={16} />
-          </Button>
-        )}
       </div>
     </div>
   );
