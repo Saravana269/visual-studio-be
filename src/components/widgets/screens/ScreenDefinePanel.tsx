@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScreenStepper } from "./ScreenStepper";
 import { ScreenFieldEditor } from "./ScreenFieldEditor";
 import { ScreenFormData } from "@/types/screen";
@@ -52,43 +51,44 @@ export function ScreenDefinePanel({
   }, [formData, autosave, onSave]);
 
   return (
-    <Card className="h-full border-gray-800">
-      <CardHeader className="border-b border-gray-800">
-        <CardTitle className="text-xl">
-          {isEditing ? "Edit Screen" : "Define Screen"}
-        </CardTitle>
+    <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-[#00FF00]/20 p-4 border-b border-[#00FF00]/30">
+        <h2 className="text-xl font-medium text-[#00FF00]">Screen Define Area</h2>
         {lastSaved && (
           <p className="text-xs text-gray-400">
             Last saved: {lastSaved.toLocaleTimeString()}
           </p>
         )}
-      </CardHeader>
-      <CardContent className="p-4">
+      </div>
+      
+      <div className="flex-1 overflow-hidden flex flex-col">
         {totalSteps > 1 && (
-          <ScreenStepper totalSteps={totalSteps} currentStep={currentStep} />
+          <div className="px-6 pt-4">
+            <ScreenStepper totalSteps={totalSteps} currentStep={currentStep} />
+          </div>
         )}
         
-        <div className="space-y-6">
+        <div className="flex-1 overflow-auto p-6">
           <ScreenFieldEditor 
             formData={formData} 
             setFormData={setFormData} 
             onSave={() => onSave(formData)}
             autoSave={autosave} 
           />
-          
-          {!autosave && (
-            <div className="pt-4 flex justify-end">
-              <Button
-                onClick={() => onSave(formData)}
-                disabled={!formData.name || isLoading}
-                className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium"
-              >
-                {isLoading ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}
-              </Button>
-            </div>
-          )}
         </div>
-      </CardContent>
-    </Card>
+        
+        {!autosave && (
+          <div className="border-t border-gray-800 p-4 flex justify-end">
+            <Button
+              onClick={() => onSave(formData)}
+              disabled={!formData.name || isLoading}
+              className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium"
+            >
+              {isLoading ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

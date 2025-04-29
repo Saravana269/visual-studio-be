@@ -139,7 +139,7 @@ export default function WidgetScreenManager() {
           </div>
         </div>
       ) : (
-        <>
+        <div className="flex flex-col flex-1 min-h-0">
           {/* Main content */}
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-0">
             {/* Left panel */}
@@ -164,7 +164,7 @@ export default function WidgetScreenManager() {
 
           {/* Bottom navigation */}
           {screens.length > 0 && (
-            <div className="mt-6 border-t border-gray-800 pt-4">
+            <div className="mt-6">
               <ScreenCarouselNav
                 screens={screens}
                 activeScreenId={activeScreen?.id || null}
@@ -173,13 +173,13 @@ export default function WidgetScreenManager() {
               />
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Delete Dialog */}
       {isDeleteDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full border border-gray-800">
             <h3 className="text-xl font-semibold mb-4">Delete Screen</h3>
             <p className="text-gray-300 mb-6">
               Are you sure you want to delete this screen? This action cannot be undone.

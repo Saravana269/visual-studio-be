@@ -8,7 +8,7 @@ interface ScreenStepperProps {
 
 export function ScreenStepper({ totalSteps, currentStep }: ScreenStepperProps) {
   return (
-    <div className="flex items-center justify-center space-x-2 mb-6">
+    <div className="flex items-center justify-center space-x-3 mb-6">
       {Array.from({ length: totalSteps }).map((_, index) => {
         const isActive = index === currentStep;
         const isCompleted = index < currentStep;
@@ -23,7 +23,7 @@ export function ScreenStepper({ totalSteps, currentStep }: ScreenStepperProps) {
                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold
                 ${isActive ? "bg-[#00FF00] text-black" : 
                   isCompleted ? "bg-[#00FF00]/20 text-[#00FF00]" : 
-                  "bg-gray-800 text-gray-400"}
+                  "bg-black border border-gray-700 text-gray-400"}
               `}
             >
               {isCompleted ? <CheckIcon size={16} /> : index + 1}
@@ -31,8 +31,8 @@ export function ScreenStepper({ totalSteps, currentStep }: ScreenStepperProps) {
             
             {index !== totalSteps - 1 && (
               <div 
-                className={`h-[2px] flex-1 mx-2 
-                  ${index < currentStep ? "bg-[#00FF00]/50" : "bg-gray-800"}`}
+                className={`h-[2px] flex-1 mx-1
+                  ${index < currentStep ? "bg-[#00FF00]/30" : "bg-gray-700"}`}
               />
             )}
           </div>
