@@ -4,13 +4,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useScreenManager } from "@/hooks/widgets/useScreenManager";
 import { ScreenReviewPanel } from "@/components/widgets/screens/ScreenReviewPanel";
 import { ScreenDefinePanel } from "@/components/widgets/screens/ScreenDefinePanel";
 import { ScreenCarouselNav } from "@/components/widgets/screens/ScreenCarouselNav";
-import { ScreenFormDialog } from "@/components/widgets/screens/ScreenFormDialog";
 import { Widget } from "@/types/widget";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -51,19 +50,17 @@ export default function WidgetScreenManager() {
   const {
     screens,
     isLoading: isLoadingScreens,
+    isActionLoading,
     activeScreen,
     activeScreenIndex,
     goToScreen,
     formData,
     setFormData,
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
-    isEditDialogOpen,
-    setIsEditDialogOpen,
-    handleOpenCreateDialog,
-    handleOpenEditDialog,
-    handleCreateScreen,
-    handleUpdateScreen
+    handleCreateEmptyScreen,
+    handleInlineUpdate,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    handleDeleteScreen
   } = useScreenManager(id);
 
   // Handle back navigation
@@ -102,13 +99,26 @@ export default function WidgetScreenManager() {
           )}
         </div>
         
-        <Button
-          onClick={handleOpenCreateDialog}
-          className="bg-[#9b87f5] hover:bg-[#7E69AB]"
-        >
-          <Plus size={16} className="mr-2" />
-          Add Screen
-        </Button>
+        <div className="flex gap-2">
+          {activeScreen && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-red-500 border-red-500 hover:bg-red-500/10"
+            >
+              <Trash2 size={16} className="mr-2" />
+              Delete Screen
+            </Button>
+          )}
+          <Button
+            onClick={handleCreateEmptyScreen}
+            className="bg-[#9b87f5] hover:bg-[#7E69AB]"
+          >
+            <Plus size={16} className="mr-2" />
+            Add Screen
+          </Button>
+        </div>
       </div>
 
       {/* Empty state */}
@@ -120,7 +130,7 @@ export default function WidgetScreenManager() {
               No screens have been added to this widget yet. Get started by creating your first screen.
             </p>
             <Button
-              onClick={handleOpenCreateDialog}
+              onClick={handleCreateEmptyScreen}
               className="bg-[#9b87f5] hover:bg-[#7E69AB]"
             >
               <Plus size={16} className="mr-2" />
@@ -144,9 +154,10 @@ export default function WidgetScreenManager() {
                 currentStep={activeScreenIndex}
                 formData={formData}
                 setFormData={setFormData}
-                onSave={activeScreen ? handleOpenEditDialog : handleOpenCreateDialog}
+                onSave={handleInlineUpdate}
                 isEditing={!!activeScreen}
-                isLoading={false}
+                isLoading={isActionLoading}
+                autosave={true}
               />
             </div>
           </div>
@@ -158,33 +169,39 @@ export default function WidgetScreenManager() {
                 screens={screens}
                 activeScreenId={activeScreen?.id || null}
                 onScreenSelect={goToScreen}
-                onAddScreen={handleOpenCreateDialog}
+                onAddScreen={handleCreateEmptyScreen}
               />
             </div>
           )}
         </>
       )}
 
-      {/* Dialogs */}
-      <ScreenFormDialog
-        isOpen={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        formData={formData}
-        setFormData={setFormData}
-        onSave={handleCreateScreen}
-        isLoading={isLoading}
-        mode="create"
-      />
-      
-      <ScreenFormDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        formData={formData}
-        setFormData={setFormData}
-        onSave={handleUpdateScreen}
-        isLoading={isLoading}
-        mode="edit"
-      />
+      {/* Delete Dialog */}
+      {isDeleteDialogOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Delete Screen</h3>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this screen? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteScreen}
+                disabled={isActionLoading}
+              >
+                {isActionLoading ? "Deleting..." : "Delete Screen"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -150,6 +150,6 @@ export function useScreenActions({ widgetId, onSuccess }: UseScreenActionsProps)
     createScreen,
     updateScreen,
     deleteScreen,
-    isLoading
+    isActionLoading: isLoading
   };
 }

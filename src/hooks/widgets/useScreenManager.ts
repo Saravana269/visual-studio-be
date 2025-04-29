@@ -13,8 +13,7 @@ export function useScreenManager(widgetId: string | undefined) {
     framework_type: "Multiple Options",
   });
 
-  // Dialog states
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  // Dialog state for edit and delete operations only
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -22,7 +21,7 @@ export function useScreenManager(widgetId: string | undefined) {
   const { screens, isLoading, refetch } = useScreenData(widgetId);
   
   // Get screen actions
-  const { createScreen, updateScreen, deleteScreen } = useScreenActions({
+  const { createScreen, updateScreen, deleteScreen, isActionLoading } = useScreenActions({
     widgetId,
     onSuccess: refetch
   });
@@ -30,38 +29,20 @@ export function useScreenManager(widgetId: string | undefined) {
   // Screen navigation
   const navigation = useScreenNavigation({ screens });
 
-  // Handle opening create dialog
-  const handleOpenCreateDialog = () => {
-    setFormData({
-      name: "",
+  // Handle creating a new empty screen directly
+  const handleCreateEmptyScreen = async () => {
+    const emptyScreenData = {
+      name: "Untitled",
       description: "",
       framework_type: "Multiple Options",
-    });
-    setIsCreateDialogOpen(true);
-  };
-
-  // Handle opening edit dialog
-  const handleOpenEditDialog = () => {
-    if (!navigation.activeScreen) return;
+    };
     
-    setFormData({
-      name: navigation.activeScreen.name,
-      description: navigation.activeScreen.description || "",
-      framework_type: navigation.activeScreen.framework_type || "Multiple Options",
-      metadata: navigation.activeScreen.metadata
-    });
-    setIsEditDialogOpen(true);
-  };
-
-  // Handle creating a new screen
-  const handleCreateScreen = async () => {
-    const result = await createScreen(formData);
+    const result = await createScreen(emptyScreenData);
     if (result) {
-      setIsCreateDialogOpen(false);
-      // Navigate to the newly created screen after refetching data
+      // Refetch screens and navigate to the newly created screen
       await refetch();
       if (screens.length > 0) {
-        navigation.goToScreenByIndex(screens.length - 1);
+        navigation.goToScreenByIndex(screens.length);
       }
     }
   };
@@ -75,6 +56,23 @@ export function useScreenManager(widgetId: string | undefined) {
       setIsEditDialogOpen(false);
       await refetch();
     }
+  };
+
+  // Handle direct inline update of a screen
+  const handleInlineUpdate = async (updatedData: Partial<ScreenFormData>) => {
+    if (!navigation.activeScreen?.id) return;
+    
+    // Update only the specific fields that were changed
+    const updatedFormData = {
+      ...formData,
+      ...updatedData
+    };
+    
+    // Update component state immediately for responsiveness
+    setFormData(updatedFormData);
+    
+    // Send update to server
+    await updateScreen(navigation.activeScreen.id, updatedFormData);
   };
 
   // Handle deleting a screen
@@ -96,22 +94,40 @@ export function useScreenManager(widgetId: string | undefined) {
     }
   };
 
+  // Update form data when active screen changes
+  const updateFormDataFromScreen = () => {
+    if (!navigation.activeScreen) return;
+    
+    setFormData({
+      name: navigation.activeScreen.name,
+      description: navigation.activeScreen.description || "",
+      framework_type: navigation.activeScreen.framework_type || "Multiple Options",
+      metadata: navigation.activeScreen.metadata
+    });
+  };
+
+  // Initialize form data when active screen changes
+  useState(() => {
+    if (navigation.activeScreen) {
+      updateFormDataFromScreen();
+    }
+  });
+
   return {
     screens,
     isLoading,
+    isActionLoading,
     formData,
     setFormData,
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
     isEditDialogOpen,
     setIsEditDialogOpen,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
-    handleOpenCreateDialog,
-    handleOpenEditDialog,
-    handleCreateScreen,
+    handleCreateEmptyScreen,
     handleUpdateScreen,
+    handleInlineUpdate,
     handleDeleteScreen,
+    updateFormDataFromScreen,
     ...navigation
   };
 }
