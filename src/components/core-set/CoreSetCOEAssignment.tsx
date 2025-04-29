@@ -83,7 +83,7 @@ export const CoreSetCOEAssignment = ({ coreSet, open, onClose }: CoreSetCOEAssig
           <TabsContent value="assignment" className="space-y-4">
             <COESearchControls
               searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
+              onSearchChange={setSearchQuery}
               selectedCount={selectedCOEs.size}
               onSelectAll={selectAllVisible}
               onClearSelection={clearSelection}

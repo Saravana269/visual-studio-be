@@ -77,7 +77,7 @@ const CoreSetAssignment = () => {
         <TabsContent value="assignment" className="space-y-4 pt-4">
           <COESearchControls
             searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
+            onSearchChange={setSearchQuery}
             selectedCount={selectedCOEs.size}
             onSelectAll={selectAllVisible}
             onClearSelection={clearSelection}
@@ -137,7 +137,7 @@ const CoreSetAssignment = () => {
                     key={group.id}
                     size="sm"
                     variant="outline"
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-2"
                     style={{
                       borderColor: group.color,
                       color: group.color
