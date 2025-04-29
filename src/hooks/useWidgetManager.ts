@@ -36,12 +36,7 @@ export function useWidgetManager() {
   const { createWidget, updateWidget } = useWidgetActions({ refetch });
 
   // Get tag filtering functions
-  const { 
-    handleTagSelect: filterTagSelect, 
-    handleTagRemove: filterTagRemove, 
-    handleTagClear,
-    createSampleTags
-  } = useWidgetTagFiltering();
+  const { handleTagSelect: filterTagSelect, handleTagRemove: filterTagRemove, handleTagClear } = useWidgetTagFiltering();
 
   // Handle viewing widget details
   const handleViewDetails = (widget: Widget) => {
@@ -117,7 +112,6 @@ export function useWidgetManager() {
     handleEditClick,
     handleTagSelect,
     handleTagRemove,
-    handleTagClear,
-    createSampleTags
+    handleTagClear
   };
 }
