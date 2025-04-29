@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -347,7 +346,7 @@ const WidgetManager = () => {
           onTagRemove={handleTagRemove}
           onTagClear={handleTagClear}
           onAddTagClick={() => {}}
-          entityType="Widget"
+          entityType="widget"
         />
       </div>
 
