@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { GroupData } from "@/types/group";
 import { DraggableCard } from "@/components/core-set/DraggableCard";
@@ -32,7 +33,30 @@ export function GroupedCOEDisplay({
       const textColor = isDark(group.color) ? "text-white" : "text-gray-900";
       return <div key={group.id} className="border rounded-lg overflow-hidden transition-all duration-300">
             {/* Group Header */}
-            
+            <div 
+              className="flex justify-between items-center p-2 hover:bg-muted/30 cursor-pointer"
+              onClick={() => onToggleGroupCollapse(group.id)}
+              style={{ 
+                borderLeft: `4px solid ${group.color}`, 
+                backgroundColor: `${group.color}15`
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Badge
+                  className="rounded-sm"
+                  style={{ 
+                    backgroundColor: group.color,
+                    color: textColor
+                  }}
+                >
+                  {coes.length}
+                </Badge>
+                <span className="font-medium">{group.name}</span>
+              </div>
+              <Button variant="ghost" size="sm">
+                {group.collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </Button>
+            </div>
             
             {/* Group Content */}
             {!group.collapsed && <div className="p-2 space-y-2">
