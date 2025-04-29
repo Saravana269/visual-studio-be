@@ -1,19 +1,20 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query"; // Added missing import
+import { useQuery } from "@tanstack/react-query"; 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; // Added missing import
+import { Badge } from "@/components/ui/badge"; 
 import COEModal from "@/components/coe/COEModal";
 import COEEmptyState from "@/components/coe/COEEmptyState";
 import COEList from "@/components/coe/COEList";
 import COEHeader from "@/components/coe/COEHeader";
 import { TagManagementRow } from "@/components/elements/TagManagementRow";
 import COETagSearch from "@/components/coe/COETagSearch";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Tag } from "lucide-react";
 import type { COE } from "@/hooks/useCOEData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -303,26 +304,32 @@ const COEManager = () => {
 
       <div className="mb-6">
         <h3 className="text-sm font-medium mb-2">Filter by Primary Tag</h3>
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(tagDetails).map(([tagId, tagLabel]) => (
-            <Badge 
-              key={tagId} 
-              variant={selectedPrimaryTagId === tagId ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => handlePrimaryTagSelect(tagId)}
-            >
-              {tagLabel}
-            </Badge>
-          ))}
-          {selectedPrimaryTagId && (
-            <Badge 
-              variant="secondary" 
-              className="cursor-pointer" 
-              onClick={() => setSelectedPrimaryTagId(null)}
-            >
-              Clear filter
-            </Badge>
-          )}
+        <div className="relative">
+          <ScrollArea className="w-full pb-4">
+            <div className="flex items-center gap-2 py-1 flex-nowrap">
+              <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
+              {Object.entries(tagDetails).map(([tagId, tagLabel]) => (
+                <Badge 
+                  key={tagId} 
+                  variant={selectedPrimaryTagId === tagId ? "default" : "outline"}
+                  className="cursor-pointer whitespace-nowrap"
+                  onClick={() => handlePrimaryTagSelect(tagId)}
+                >
+                  {tagLabel}
+                </Badge>
+              ))}
+              {selectedPrimaryTagId && (
+                <Badge 
+                  variant="secondary" 
+                  className="cursor-pointer whitespace-nowrap" 
+                  onClick={() => setSelectedPrimaryTagId(null)}
+                >
+                  Clear filter
+                </Badge>
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </div>
       </div>
 
