@@ -1,4 +1,5 @@
 
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MoreVertical } from "lucide-react";
@@ -13,7 +14,9 @@ interface CoreSetListProps {
   onMapping: (coreSet: CoreSet) => void;
 }
 
-const CoreSetList = ({ coreSets, onEdit }: CoreSetListProps) => {
+const CoreSetList = ({ coreSets, onEdit, onView, onMapping }: CoreSetListProps) => {
+  const navigate = useNavigate();
+  
   const safeRenderString = (value: any): string => {
     if (value === null || value === undefined) return '';
     if (typeof value === 'string') return value;
@@ -26,6 +29,7 @@ const CoreSetList = ({ coreSets, onEdit }: CoreSetListProps) => {
         <Card 
           key={safeRenderString(coreSet.id)} 
           className="element-card relative flex flex-col overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => navigate(`/core-set/${coreSet.id}`)}
         >
           <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
             <DropdownMenu>
@@ -38,6 +42,12 @@ const CoreSetList = ({ coreSets, onEdit }: CoreSetListProps) => {
               <DropdownMenuContent align="end" className="w-[160px]">
                 <DropdownMenuItem onClick={() => onEdit(coreSet)}>
                   Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/core-set/${coreSet.id}`)}>
+                  View Details
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/core-set/${coreSet.id}/assignment`)}>
+                  Manage Assignments
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

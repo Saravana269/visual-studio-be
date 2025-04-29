@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CoreSetHeader from "@/components/core-set/CoreSetHeader";
 import CoreSetList from "@/components/core-set/CoreSetList";
 import { CoreSetModal } from "@/components/core-set/CoreSetModal";
@@ -11,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const CoreSetManager = () => {
   useAuth();
+  const navigate = useNavigate();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -34,6 +36,14 @@ const CoreSetManager = () => {
   const handleEdit = (coreSet: CoreSet) => {
     setSelectedCoreSet(coreSet);
     setIsCreateModalOpen(true);
+  };
+  
+  const handleView = (coreSet: CoreSet) => {
+    navigate(`/core-set/${coreSet.id}`);
+  };
+  
+  const handleMapping = (coreSet: CoreSet) => {
+    navigate(`/core-set/${coreSet.id}/assignment`);
   };
   
   const handleCloseModal = () => {
@@ -89,8 +99,8 @@ const CoreSetManager = () => {
       <CoreSetList
         coreSets={filteredCoreSets}
         onEdit={handleEdit}
-        onView={() => {}}
-        onMapping={() => {}}
+        onView={handleView}
+        onMapping={handleMapping}
       />
       
       <CoreSetModal
