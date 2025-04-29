@@ -233,6 +233,7 @@ export function useWidgetManager() {
     setViewMode,
     setIsDetailDialogOpen,
     setIsCreateDialogOpen,
+    setIsEditDialogOpen, // Make sure this is exported
     setWidgetFormData,
     
     // Handlers

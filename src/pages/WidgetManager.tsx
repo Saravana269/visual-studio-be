@@ -27,6 +27,7 @@ const WidgetManager = () => {
     setViewMode,
     setIsDetailDialogOpen,
     setIsCreateDialogOpen,
+    setIsEditDialogOpen, // Make sure this is exported from the hook
     setWidgetFormData,
     
     handleViewDetails,

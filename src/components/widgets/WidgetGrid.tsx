@@ -2,7 +2,7 @@
 import { Widget } from "@/types/widget";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tag } from "lucide-react";
+import { Plus, Tag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface WidgetGridProps {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -8,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 interface TagManagerProps {
   initialTags: string[];
   onChange: (tags: string[]) => void;
+  entityType?: string; // Make this prop optional
 }
 
-const TagManager: React.FC<TagManagerProps> = ({ initialTags = [], onChange }) => {
+const TagManager: React.FC<TagManagerProps> = ({ initialTags = [], onChange, entityType = 'element' }) => {
   const [tags, setTags] = useState<string[]>(initialTags);
   const [newTag, setNewTag] = useState<string>('');
 
