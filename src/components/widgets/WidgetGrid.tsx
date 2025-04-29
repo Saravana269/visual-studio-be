@@ -75,7 +75,7 @@ export function WidgetGrid({
           key={widget.id} 
           className="element-card relative flex flex-col overflow-hidden cursor-pointer" 
           onClick={(e) => {
-            if ((e.target as HTMLElement).closest('.element-card-menu')) {
+            if ((e.target as HTMLElement).closest('.element-card-menu, .screen-management-button')) {
               e.stopPropagation();
               return;
             }
@@ -145,6 +145,18 @@ export function WidgetGrid({
                 ))}
               </div>
             )}
+          </div>
+          
+          {/* Add direct access button for screen management */}
+          <div className="px-3 pb-3 mt-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full screen-management-button bg-[#1E1E1E] hover:bg-[#333333] border-[#444444] text-[#9b87f5] hover:text-[#7E69AB] flex items-center justify-center"
+              onClick={(e) => handleManageScreens(widget, e)}
+            >
+              <Layout size={14} className="mr-2" /> Manage Screens
+            </Button>
           </div>
         </Card>
       ))}
