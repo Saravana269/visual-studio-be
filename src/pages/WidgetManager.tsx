@@ -1,4 +1,5 @@
-import { Plus, ListFilter, LayoutGrid } from "lucide-react";
+
+import { Plus, ListFilter, LayoutGrid, Tags } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TagManagementRow } from "@/components/elements/TagManagementRow";
@@ -7,6 +8,7 @@ import { WidgetList } from "@/components/widgets/WidgetList";
 import { WidgetDetailDialog } from "@/components/widgets/WidgetDetailDialog";
 import { WidgetFormDialog } from "@/components/widgets/WidgetFormDialog";
 import { useWidgetManager } from "@/hooks/useWidgetManager";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const WidgetManager = () => {
   const {
@@ -26,7 +28,7 @@ const WidgetManager = () => {
     setViewMode,
     setIsDetailDialogOpen,
     setIsCreateDialogOpen,
-    setIsEditDialogOpen, // Make sure this is exported from the hook
+    setIsEditDialogOpen,
     setWidgetFormData,
     
     handleViewDetails,
@@ -35,22 +37,42 @@ const WidgetManager = () => {
     handleEditClick,
     handleTagSelect,
     handleTagRemove,
-    handleTagClear
+    handleTagClear,
+    createSampleTags
   } = useWidgetManager();
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Widget Manager</h1>
-        <Button 
-          onClick={() => {
-            setWidgetFormData({ name: "", description: "", tags: [] });
-            setIsCreateDialogOpen(true);
-          }}
-          className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
-        >
-          <Plus size={16} className="mr-2" /> New Widget
-        </Button>
+        <div className="flex gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline"
+                  onClick={createSampleTags}
+                  className="text-[#9b87f5] hover:text-white hover:bg-[#9b87f5] border-[#9b87f5]"
+                >
+                  <Tags size={16} className="mr-2" /> Sample Tags
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Create 5 sample tags for widgets
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          <Button 
+            onClick={() => {
+              setWidgetFormData({ name: "", description: "", tags: [] });
+              setIsCreateDialogOpen(true);
+            }}
+            className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
+          >
+            <Plus size={16} className="mr-2" /> New Widget
+          </Button>
+        </div>
       </div>
 
       {/* Search and filter options */}
