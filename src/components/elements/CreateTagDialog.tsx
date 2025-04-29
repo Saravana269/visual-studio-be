@@ -9,9 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
-
-// Define the allowed entity types
-type EntityType = "Element" | "COE";
+import { EntityType } from "./TagManagementRow";
 
 interface CreateTagDialogProps {
   open: boolean;

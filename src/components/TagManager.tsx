@@ -1,16 +1,18 @@
+
 import React, { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EntityType } from './elements/TagManagementRow';
 
 interface TagManagerProps {
   initialTags: string[];
   onChange: (tags: string[]) => void;
-  entityType?: string; // Make this prop optional
+  entityType?: EntityType;
 }
 
-const TagManager: React.FC<TagManagerProps> = ({ initialTags = [], onChange, entityType = 'element' }) => {
+const TagManager: React.FC<TagManagerProps> = ({ initialTags = [], onChange, entityType = "Element" }) => {
   const [tags, setTags] = useState<string[]>(initialTags);
   const [newTag, setNewTag] = useState<string>('');
 

@@ -9,13 +9,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CreateTagDialog } from "./CreateTagDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { EntityType } from "./TagManagementRow";
 
 interface TagSelectorProps {
   value: string | string[] | null;
   onChange: (value: any) => void;
+  entityType?: EntityType;
 }
 
-export function TagSelector({ value, onChange }: TagSelectorProps) {
+export function TagSelector({ value, onChange, entityType = "Element" }: TagSelectorProps) {
   const [inputValue, setInputValue] = useState("");
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
   const { session } = useAuth();
@@ -36,7 +38,7 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
         const { data: tagsData, error: tagsError } = await supabase
           .from("tags")
           .select("id, label")
-          .eq("entity_type", "Element");
+          .eq("entity_type", entityType);
         
         if (tagsError) {
           console.error("Error fetching tags:", tagsError);
@@ -113,6 +115,7 @@ export function TagSelector({ value, onChange }: TagSelectorProps) {
         open={isCreateTagDialogOpen}
         onClose={() => setIsCreateTagDialogOpen(false)}
         onTagCreated={handleTagCreated}
+        entityType={entityType}
       />
     </div>
   );
