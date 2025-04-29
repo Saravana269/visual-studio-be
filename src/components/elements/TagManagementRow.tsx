@@ -22,6 +22,7 @@ interface TagManagementRowProps {
   onTagClear?: () => void;
   onAddTagClick: () => void;
   onManageTagsClick?: () => void;
+  entityType?: string;
 }
 
 export function TagManagementRow({
@@ -33,7 +34,8 @@ export function TagManagementRow({
   onTagRemove,
   onTagClear,
   onAddTagClick,
-  onManageTagsClick
+  onManageTagsClick,
+  entityType = "Element"
 }: TagManagementRowProps) {
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
   const [tagSearchQuery, setTagSearchQuery] = useState("");
@@ -50,14 +52,14 @@ export function TagManagementRow({
     isLoading: isLoadingTags,
     refetch
   } = useQuery({
-    queryKey: ["available-tags", userId],
+    queryKey: ["available-tags", userId, entityType],
     queryFn: async () => {
       try {
         // Fetch tags from the tags table
         const { data: tagsData, error: tagsError } = await supabase
           .from("tags")
           .select("id, label")
-          .eq("entity_type", "Element");
+          .eq("entity_type", entityType);
           
         if (tagsError) {
           toast({
@@ -124,68 +126,68 @@ export function TagManagementRow({
   const selectedTagLabel = isSingleMode && selectedTag && tagDetails[selectedTag];
 
   return (
-    <div className="flex items-center gap-3 w-full">
-      {/* Search input - fixed width but will shrink if needed */}
-      <div className="relative min-w-[180px] max-w-[240px] flex-shrink">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input 
-          placeholder="Search tags..." 
-          className="pl-9" 
-          value={tagSearchQuery} 
-          onChange={e => {
-            setTagSearchQuery(e.target.value);
-            onTagSearch(e.target.value);
-          }} 
-        />
-      </div>
-      
-      {/* Selected tags display section with horizontal scrolling */}
-      <div className="flex-grow overflow-hidden">
-        {(isSingleMode && selectedTag && selectedTagLabel) || 
-         (!isSingleMode && selectedTags && selectedTags.length > 0) ? (
-          <ScrollArea className="w-full">
-            <div className="flex items-center gap-2 py-1">
-              <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
-              <div className="flex gap-2 flex-nowrap">
-                {isSingleMode && selectedTag && (
-                  <Badge 
-                    key={selectedTag} 
-                    className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
-                  >
-                    {selectedTagLabel || 'Unknown Tag'}
-                    {onTagClear && (
-                      <button 
-                        onClick={onTagClear}
-                        className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </Badge>
-                )}
-                {!isSingleMode && selectedTags && selectedTags.map(tagId => (
-                  <Badge 
-                    key={tagId} 
-                    className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
-                  >
-                    {tagDetails[tagId] || 'Unknown Tag'}
-                    {onTagRemove && (
-                      <button 
-                        onClick={() => onTagRemove(tagId)}
-                        className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </Badge>
-                ))}
+    <div className="flex items-center justify-between gap-3 w-full">
+      {/* Left section: Search input and selected/available tags with horizontal scrolling */}
+      <div className="flex items-center gap-3 flex-grow overflow-hidden">
+        {/* Search input - fixed width but will shrink if needed */}
+        <div className="relative min-w-[180px] max-w-[240px] flex-shrink-0">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search tags..." 
+            className="pl-9" 
+            value={tagSearchQuery} 
+            onChange={e => {
+              setTagSearchQuery(e.target.value);
+              onTagSearch(e.target.value);
+            }} 
+          />
+        </div>
+        
+        {/* Selected/Available tags with horizontal scrolling */}
+        <div className="flex-grow overflow-hidden">
+          {(isSingleMode && selectedTag && selectedTagLabel) || 
+           (!isSingleMode && selectedTags && selectedTags.length > 0) ? (
+            <ScrollArea className="w-full">
+              <div className="flex items-center gap-2 py-1">
+                <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
+                <div className="flex gap-2 flex-nowrap">
+                  {isSingleMode && selectedTag && (
+                    <Badge 
+                      key={selectedTag} 
+                      className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
+                    >
+                      {selectedTagLabel || 'Unknown Tag'}
+                      {onTagClear && (
+                        <button 
+                          onClick={onTagClear}
+                          className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  )}
+                  {!isSingleMode && selectedTags && selectedTags.map(tagId => (
+                    <Badge 
+                      key={tagId} 
+                      className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
+                    >
+                      {tagDetails[tagId] || 'Unknown Tag'}
+                      {onTagRemove && (
+                        <button 
+                          onClick={() => onTagRemove(tagId)}
+                          className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        ) : (
-          <div className="flex items-center gap-2 py-1">
-            {/* Available tags with horizontal scrolling */}
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          ) : (
             <ScrollArea className="w-full">
               <div className="flex items-center gap-2 py-1">
                 {isLoadingTags ? 
@@ -215,11 +217,11 @@ export function TagManagementRow({
               </div>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
-      {/* Action buttons container with transparent background and border */}
+      {/* Right section: Action buttons container */}
       <div className="flex items-center border border-[#FFA130] rounded-md px-3 py-1 flex-shrink-0 bg-[#FFA13010]">
         <Button 
           onClick={() => setIsCreateTagDialogOpen(true)} 
@@ -248,6 +250,7 @@ export function TagManagementRow({
         open={isCreateTagDialogOpen} 
         onClose={() => setIsCreateTagDialogOpen(false)} 
         onTagCreated={handleTagCreated} 
+        entityType={entityType}
       />
     </div>
   );

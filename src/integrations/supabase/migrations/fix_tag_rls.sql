@@ -16,6 +16,7 @@ ALTER TABLE public.tags ENABLE ROW LEVEL SECURITY;
 -- Drop existing policies if they exist to avoid errors
 DROP POLICY IF EXISTS "Allow authenticated users to create tags" ON public.tags;
 DROP POLICY IF EXISTS "Allow authenticated users to read tags" ON public.tags;
+DROP POLICY IF EXISTS "Allow authenticated users to read their own tags" ON public.tags;
 DROP POLICY IF EXISTS "Allow users to update their own tags" ON public.tags;
 DROP POLICY IF EXISTS "Allow users to delete their own tags" ON public.tags;
 
