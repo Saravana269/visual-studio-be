@@ -43,7 +43,7 @@ export default function WidgetScreenManager() {
     enabled: !!id
   });
 
-  // Get screen manager hooks
+  // Get screen manager hooks with all the refactored functionality
   const {
     screens,
     isLoading: isLoadingScreens,

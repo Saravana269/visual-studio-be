@@ -1,117 +1,52 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useScreenData } from "./useScreenData";
-import { useScreenActions } from "./useScreenActions";
 import { useScreenNavigation } from "./useScreenNavigation";
+import { useScreenFormState } from "./useScreenFormState";
+import { useScreenDialogState } from "./useScreenDialogState";
+import { useScreenOperations } from "./useScreenOperations";
 import { ScreenFormData } from "@/types/screen";
 
 export function useScreenManager(widgetId: string | undefined) {
-  // Screen form data state
-  const [formData, setFormData] = useState<ScreenFormData>({
-    name: "",
-    description: "",
-    framework_type: "Multiple Options",
-  });
-
-  // Dialog state for edit and delete operations only
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
   // Get screen data
   const { screens, isLoading, refetch } = useScreenData(widgetId);
   
-  // Get screen actions
-  const { createScreen, updateScreen, deleteScreen, isActionLoading } = useScreenActions({
-    widgetId,
-    onSuccess: refetch
-  });
-  
-  // Screen navigation
+  // Get screen navigation
   const navigation = useScreenNavigation({ screens });
-
-  // Handle creating a new empty screen directly
-  const handleCreateEmptyScreen = async () => {
-    const emptyScreenData = {
-      name: "Untitled",
-      description: "",
-      framework_type: "Multiple Options",
-    };
-    
-    const result = await createScreen(emptyScreenData);
-    if (result) {
-      // Refetch screens and navigate to the newly created screen
-      await refetch();
-      if (screens.length > 0) {
-        navigation.goToScreenByIndex(screens.length);
-      }
-    }
-  };
-
-  // Handle updating a screen
-  const handleUpdateScreen = async () => {
-    if (!navigation.activeScreen?.id) return;
-    
-    const success = await updateScreen(navigation.activeScreen.id, formData);
-    if (success) {
-      setIsEditDialogOpen(false);
-      await refetch();
-    }
-  };
+  
+  // Get form state management
+  const { formData, setFormData, updateFormDataFromScreen, handleInlineUpdate: inlineUpdate } = useScreenFormState();
+  
+  // Get dialog state
+  const { isEditDialogOpen, setIsEditDialogOpen, isDeleteDialogOpen, setIsDeleteDialogOpen } = useScreenDialogState();
+  
+  // Screen operations
+  const { 
+    isActionLoading,
+    handleCreateEmptyScreen,
+    handleUpdateScreen,
+    handleDeleteScreen,
+    updateScreen
+  } = useScreenOperations({
+    widgetId,
+    refetch,
+    formData,
+    activeScreenId: navigation.activeScreenId,
+    goToScreenByIndex: navigation.goToScreenByIndex,
+    setIsDeleteDialogOpen
+  });
 
   // Handle direct inline update of a screen
   const handleInlineUpdate = async (updatedData: Partial<ScreenFormData>) => {
-    if (!navigation.activeScreen?.id) return;
-    
-    // Update only the specific fields that were changed
-    const updatedFormData = {
-      ...formData,
-      ...updatedData
-    };
-    
-    // Update component state immediately for responsiveness
-    setFormData(updatedFormData);
-    
-    // Send update to server
-    await updateScreen(navigation.activeScreen.id, updatedFormData);
-  };
-
-  // Handle deleting a screen
-  const handleDeleteScreen = async () => {
-    if (!navigation.activeScreen?.id) return;
-    
-    const success = await deleteScreen(navigation.activeScreen.id);
-    if (success) {
-      setIsDeleteDialogOpen(false);
-      await refetch();
-      // Navigate to previous or first screen
-      if (screens.length > 0) {
-        if (navigation.activeScreenIndex > 0) {
-          navigation.goToScreenByIndex(navigation.activeScreenIndex - 1);
-        } else {
-          navigation.goToScreenByIndex(0);
-        }
-      }
-    }
-  };
-
-  // Update form data when active screen changes
-  const updateFormDataFromScreen = () => {
-    if (!navigation.activeScreen) return;
-    
-    setFormData({
-      name: navigation.activeScreen.name,
-      description: navigation.activeScreen.description || "",
-      framework_type: navigation.activeScreen.framework_type || "Multiple Options",
-      metadata: navigation.activeScreen.metadata
-    });
+    await inlineUpdate(updateScreen, navigation.activeScreen?.id, updatedData);
   };
 
   // Initialize form data when active screen changes
-  useState(() => {
+  useEffect(() => {
     if (navigation.activeScreen) {
-      updateFormDataFromScreen();
+      updateFormDataFromScreen(navigation.activeScreen);
     }
-  });
+  }, [navigation.activeScreen]);
 
   return {
     screens,
@@ -126,7 +61,7 @@ export function useScreenManager(widgetId: string | undefined) {
     handleCreateEmptyScreen,
     handleUpdateScreen,
     handleInlineUpdate,
-    handleDeleteScreen,
+    handleDeleteScreen: () => handleDeleteScreen(screens, navigation.activeScreenIndex),
     updateFormDataFromScreen,
     ...navigation
   };
