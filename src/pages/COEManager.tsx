@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCOEData } from "@/hooks/useCOEData";
+import { useCOEData, type COE } from "@/hooks/useCOEData"; // Import the COE type here
 import { useCOEManager } from "@/hooks/useCOEManager";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -217,7 +217,7 @@ const COEManager = () => {
         mode={tagDialogMode}
         tagSelections={tagSelections}
         onTagSelectionChange={handleTagSelectionChange}
-        onSave={handleSaveTags}
+        onSave={() => handleSaveTags().then(() => {})} // Fix Promise<boolean> to Promise<void> conversion
       />
 
       {/* Assign Tag Dialog */}
@@ -227,7 +227,7 @@ const COEManager = () => {
         coe={selectedCOE}
         selectedTag={selectedTagInDialog}
         onTagChange={setSelectedTagInDialog}
-        onSave={handleSaveTag}
+        onSave={() => handleSaveTag().then(() => {})} // Fix Promise<boolean> to Promise<void> conversion
         isSubmitting={isSubmittingTag}
       />
 
