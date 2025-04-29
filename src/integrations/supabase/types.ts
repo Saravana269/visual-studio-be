@@ -155,19 +155,28 @@ export type Database = {
           created_at: string | null
           field_name: string
           field_type: string
+          field_value: string | null
           id: string
+          is_unit_required: boolean | null
+          unit_type: string | null
         }
         Insert: {
           created_at?: string | null
           field_name: string
           field_type: string
+          field_value?: string | null
           id?: string
+          is_unit_required?: boolean | null
+          unit_type?: string | null
         }
         Update: {
           created_at?: string | null
           field_name?: string
           field_type?: string
+          field_value?: string | null
           id?: string
+          is_unit_required?: boolean | null
+          unit_type?: string | null
         }
         Relationships: []
       }

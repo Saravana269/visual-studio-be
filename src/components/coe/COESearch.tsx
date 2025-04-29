@@ -2,6 +2,7 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { TagManagementRow } from "@/components/elements/TagManagementRow";
+import type { EntityType } from "@/components/elements/TagManagementRow";
 
 interface COESearchProps {
   searchQuery: string;

@@ -1,19 +1,16 @@
 
-import { Search, Plus, Settings, Tag, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { CreateTagDialog } from "./CreateTagDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Separator } from "@/components/ui/separator";
+import { CreateTagDialog } from "./CreateTagDialog";
+import { TagSearch } from "./TagSearch";
+import { TagList } from "./TagList";
+import { TagActions } from "./TagActions";
 
 // Define the allowed entity types
-type EntityType = "Element" | "COE";
+export type EntityType = "Element" | "COE";
 
 interface TagManagementRowProps {
   selectedTag?: string | null;
@@ -125,126 +122,43 @@ export function TagManagementRow({
     });
   };
 
-  // Get the selected tag label
-  const selectedTagLabel = isSingleMode && selectedTag && tagDetails[selectedTag];
+  const handleSearchChange = (value: string) => {
+    setTagSearchQuery(value);
+    onTagSearch(value);
+  };
 
   return (
     <div className="flex items-center justify-between gap-3 w-full">
       {/* Left section: Search input and tag list container */}
       <div className="flex items-center gap-3 flex-grow">
-        {/* Search input with fixed width */}
-        <div className="relative min-w-[180px] max-w-[240px] flex-shrink-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search tags..." 
-            className="pl-9" 
-            value={tagSearchQuery} 
-            onChange={e => {
-              setTagSearchQuery(e.target.value);
-              onTagSearch(e.target.value);
-            }} 
-          />
-        </div>
+        {/* Search input component */}
+        <TagSearch 
+          value={tagSearchQuery} 
+          onChange={handleSearchChange} 
+        />
         
-        {/* Dedicated scrollable container ONLY for tags */}
-        <div className="flex-grow overflow-hidden">
-          <ScrollArea className="w-full">
-            <div className="flex items-center gap-2 py-1">
-              <Tag size={16} className="text-muted-foreground ml-1 flex-shrink-0" />
-              
-              <div className="flex gap-2 flex-nowrap">
-                {/* Selected tags display */}
-                {isSingleMode && selectedTag && selectedTagLabel && (
-                  <Badge 
-                    key={selectedTag} 
-                    className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
-                  >
-                    {selectedTagLabel || 'Unknown Tag'}
-                    {onTagClear && (
-                      <button 
-                        onClick={onTagClear}
-                        className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </Badge>
-                )}
-                
-                {/* Multiple selected tags display */}
-                {!isSingleMode && selectedTags && selectedTags.map(tagId => (
-                  <Badge 
-                    key={tagId} 
-                    className="bg-[#FFA130] hover:bg-[#FFA130] text-white flex items-center gap-1 px-3 py-1 whitespace-nowrap"
-                  >
-                    {tagDetails[tagId] || 'Unknown Tag'}
-                    {onTagRemove && (
-                      <button 
-                        onClick={() => onTagRemove(tagId)}
-                        className="ml-1 hover:bg-[#E58A00] rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </Badge>
-                ))}
-                
-                {/* Available tags display */}
-                {(!isSingleMode || !selectedTag) && (!selectedTags || selectedTags.length === 0) && (
-                  <>
-                    {isLoadingTags ? (
-                      <div className="text-sm text-muted-foreground px-2">Loading tags...</div> 
-                    ) : filteredTags.length > 0 ? (
-                      filteredTags.map(tag => (
-                        <Badge 
-                          key={tag.id} 
-                          onClick={() => handleTagClick(tag.id)} 
-                          className="bg-[#F4E4D8] hover:bg-[#F8C9A8] text-[#8B4A2B] cursor-pointer transition-colors px-3 py-1 whitespace-nowrap rounded-sm"
-                        >
-                          {tag.label}
-                        </Badge>
-                      ))
-                    ) : tagSearchQuery ? (
-                      <div className="text-sm text-muted-foreground px-2">No matching tags found</div> 
-                    ) : (
-                      <div className="text-sm text-muted-foreground px-2 flex items-center gap-1">
-                        Available tags will appear here
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </div>
+        {/* Tag list component */}
+        <TagList 
+          selectedTag={selectedTag}
+          selectedTags={selectedTags}
+          tagDetails={tagDetails}
+          filteredTags={filteredTags}
+          onTagClick={handleTagClick}
+          onTagRemove={onTagRemove}
+          onTagClear={onTagClear}
+          isLoadingTags={isLoadingTags}
+          tagSearchQuery={tagSearchQuery}
+          isSingleMode={isSingleMode}
+        />
       </div>
       
-      {/* Right section: Fixed action buttons */}
-      <div className="flex items-center border border-[#FFA130] rounded-md px-3 py-1 flex-shrink-0 bg-[#FFA13010]">
-        <Button 
-          onClick={() => setIsCreateTagDialogOpen(true)} 
-          className="flex items-center gap-2 bg-transparent hover:bg-[#FFA13033] text-[#FFA130] whitespace-nowrap" 
-          size="sm" 
-          variant="ghost"
-        >
-          <Plus size={16} />
-          Tag
-        </Button>
-        
-        {/* Divider between buttons */}
-        <Separator className="mx-2 h-6 bg-[#FFA13030]" orientation="vertical" />
-        
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onManageTagsClick} 
-          className="flex items-center justify-center w-9 h-9 flex-shrink-0 text-[#FFA130] hover:bg-[#FFA13033] bg-transparent"
-        >
-          <Settings size={18} />
-        </Button>
-      </div>
+      {/* Right section: Action buttons */}
+      <TagActions 
+        onAddTagClick={() => setIsCreateTagDialogOpen(true)}
+        onManageTagsClick={onManageTagsClick}
+      />
 
+      {/* Create Tag Dialog */}
       <CreateTagDialog 
         open={isCreateTagDialogOpen} 
         onClose={() => setIsCreateTagDialogOpen(false)} 
