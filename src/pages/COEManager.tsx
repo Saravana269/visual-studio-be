@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query"; // Added missing import
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge"; // Added missing import
 import COEModal from "@/components/coe/COEModal";
 import COEEmptyState from "@/components/coe/COEEmptyState";
 import COEList from "@/components/coe/COEList";

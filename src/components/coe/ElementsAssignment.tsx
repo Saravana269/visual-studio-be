@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +17,7 @@ interface Element {
   image_url: string | null;
   coe_ids: string[] | null;
   tags: string[] | null;
+  primary_tag_id?: string | null;
 }
 
 interface ElementsAssignmentProps {
@@ -32,7 +32,6 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
   const [draggedElement, setDraggedElement] = useState<Element | null>(null);
   const [selectedElements, setSelectedElements] = useState<Set<string>>(new Set());
   
-  // Fetch all elements
   const { data: elements = [], isLoading, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
@@ -49,11 +48,9 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     },
   });
   
-  // Store elements locally for immediate UI updates
   const [localAssignedElements, setLocalAssignedElements] = useState<Element[]>([]);
   const [localUnassignedElements, setLocalUnassignedElements] = useState<Element[]>([]);
   
-  // Sync local state when data changes
   useEffect(() => {
     if (elements && elements.length > 0) {
       const assigned = elements.filter(
@@ -69,7 +66,6 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     }
   }, [elements, coeId]);
   
-  // Filter elements based on search query
   const filteredUnassigned = searchQuery
     ? localUnassignedElements.filter(element => 
         element.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -78,7 +74,6 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
       )
     : localUnassignedElements;
   
-  // Handle drag events
   const handleDragStart = (element: Element) => {
     setDraggedElement(element);
   };
@@ -87,18 +82,15 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     e.preventDefault();
   };
   
-  // Handle dropping elements to assign them to the COE
   const handleDrop = async (e: React.DragEvent, targetType: "assign" | "unassign") => {
     e.preventDefault();
     
     const elementsToUpdate: Element[] = [];
     
-    // If element is being dragged, add it to the array
     if (draggedElement) {
       elementsToUpdate.push(draggedElement);
     }
     
-    // Add all selected elements
     if (selectedElements.size > 0) {
       elements
         .filter(element => selectedElements.has(element.id))
@@ -112,7 +104,6 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     if (elementsToUpdate.length === 0) return;
     
     try {
-      // Update each element's coe_ids and update local state immediately
       const updatedElements: Element[] = [];
       
       for (const element of elementsToUpdate) {
@@ -129,23 +120,19 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
           .update({ coe_ids: updatedCoeIds })
           .eq("id", element.id);
         
-        // Store updated element for local state update
         updatedElements.push({
           ...element,
           coe_ids: updatedCoeIds
         });
       }
       
-      // Immediately update local state for UI refresh
       setLocalAssignedElements(prev => {
-        // Remove elements that were unassigned
         const remaining = prev.filter(element => 
           !updatedElements.some(updated => 
             updated.id === element.id && targetType === "unassign"
           )
         );
         
-        // Add newly assigned elements
         const newlyAssigned = updatedElements.filter(element => 
           targetType === "assign" && element.coe_ids?.includes(coeId)
         );
@@ -154,14 +141,12 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
       });
       
       setLocalUnassignedElements(prev => {
-        // Remove elements that were assigned
         const remaining = prev.filter(element => 
           !updatedElements.some(updated => 
             updated.id === element.id && targetType === "assign"
           )
         );
         
-        // Add newly unassigned elements
         const newlyUnassigned = updatedElements.filter(element => 
           targetType === "unassign" && (!element.coe_ids || !element.coe_ids.includes(coeId))
         );
@@ -169,18 +154,14 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
         return [...remaining, ...newlyUnassigned];
       });
       
-      // Clear selection and dragged element
       setSelectedElements(new Set());
       setDraggedElement(null);
       
-      // Invalidate queries to ensure data consistency across components
       queryClient.invalidateQueries({ queryKey: ["elements"] });
       queryClient.invalidateQueries({ queryKey: ["coe-elements", coeId] });
       
-      // Notify parent of change
       onAssignmentChange();
       
-      // Show success toast
       toast({
         title: `${elementsToUpdate.length} element${elementsToUpdate.length !== 1 ? 's' : ''} ${targetType === "assign" ? "assigned" : "unassigned"}`,
         description: `Successfully ${targetType === "assign" ? "added to" : "removed from"} this COE`
@@ -195,7 +176,6 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     }
   };
   
-  // Handle clicking on an element to select/deselect it
   const toggleElementSelection = (elementId: string) => {
     const newSelected = new Set(selectedElements);
     if (newSelected.has(elementId)) {
@@ -206,14 +186,12 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     setSelectedElements(newSelected);
   };
   
-  // Handle selecting all visible elements
   const selectAllVisible = () => {
     const newSelected = new Set(selectedElements);
     filteredUnassigned.forEach(element => newSelected.add(element.id));
     setSelectedElements(newSelected);
   };
   
-  // Handle deselecting all elements
   const clearSelection = () => {
     setSelectedElements(new Set());
   };
@@ -222,13 +200,11 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
     setDraggedElement(null);
   };
   
-  // Handle assigning selected elements via button
   const handleAssignSelected = async () => {
     try {
       const elementsToAssign = elements.filter(element => selectedElements.has(element.id));
       const updatedElements: Element[] = [];
       
-      // Update each element's coe_ids
       for (const element of elementsToAssign) {
         const updatedCoeIds = [...(element.coe_ids || []), coeId];
         await supabase
@@ -236,14 +212,12 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
           .update({ coe_ids: updatedCoeIds })
           .eq("id", element.id);
         
-        // Store updated element
         updatedElements.push({
           ...element,
           coe_ids: updatedCoeIds
         });
       }
       
-      // Immediately update local state for UI refresh
       setLocalAssignedElements(prev => {
         const newAssigned = [...prev];
         updatedElements.forEach(element => {
@@ -258,17 +232,13 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
         prev.filter(element => !selectedElements.has(element.id))
       );
       
-      // Clear selection
       setSelectedElements(new Set());
       
-      // Invalidate queries to ensure data consistency
       queryClient.invalidateQueries({ queryKey: ["elements"] });
       queryClient.invalidateQueries({ queryKey: ["coe-elements", coeId] });
       
-      // Notify parent of change
       onAssignmentChange();
       
-      // Show success toast
       toast({
         title: `${selectedElements.size} elements assigned`,
         description: "Successfully added to this COE"
@@ -317,7 +287,6 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
       </div>
       
       <div className="grid grid-cols-2 gap-4">
-        {/* Unassigned Elements */}
         <DropZone
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, "unassign")}
@@ -348,7 +317,6 @@ export const ElementsAssignment = ({ coeId, onAssignmentChange }: ElementsAssign
           )}
         </DropZone>
         
-        {/* Assigned Elements Drop Zone */}
         <DropZone
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, "assign")}
