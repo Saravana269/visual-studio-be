@@ -1,28 +1,18 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Plus, Search, X, ChevronRight, ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ElementList } from "@/components/elements/ElementList";
 import { ElementFormDialog } from "@/components/elements/ElementFormDialog";
 import { ElementSidebar } from "@/components/elements/ElementSidebar";
-import { TagManagementRow } from "@/components/elements/TagManagementRow";
+import { ElementSearch } from "@/components/elements/ElementSearch";
+import { ElementPagination } from "@/components/elements/ElementPagination";
+import { AssignTagDialog } from "@/components/elements/AssignTagDialog";
+import { CreateTagDialog } from "@/components/elements/CreateTagDialog";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogHeader,
-  DialogFooter,
-  DialogDescription
-} from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { CreateTagDialog } from "@/components/elements/CreateTagDialog";
 
 export interface Element {
   id: string;
@@ -32,12 +22,6 @@ export interface Element {
   properties?: Record<string, unknown>;
   primary_tag_id?: string;
   coe_ids?: string[];
-}
-
-interface Tag {
-  id: string;
-  label: string;
-  entity_type: string;
 }
 
 const ITEMS_PER_PAGE = 4;
@@ -60,7 +44,8 @@ const ElementsManager = () => {
   const [isCreateTagDialogOpen, setIsCreateTagDialogOpen] = useState(false);
   const [isSubmittingTag, setIsSubmittingTag] = useState(false);
   
-  const { data: elements = [], isLoading, error, refetch } = useQuery({
+  // Fetch elements data
+  const { data: elements = [], isLoading, refetch } = useQuery({
     queryKey: ["elements"],
     queryFn: async () => {
       try {
@@ -86,6 +71,7 @@ const ElementsManager = () => {
     },
   });
 
+  // Fetch tags data
   const { data: availableTags = [], refetch: refetchTags } = useQuery({
     queryKey: ["element-tags", userId],
     queryFn: async () => {
@@ -104,7 +90,7 @@ const ElementsManager = () => {
           return [];
         }
         
-        return data as Tag[];
+        return data;
       } catch (error: any) {
         console.error("Error fetching tags:", error);
         return [];
@@ -113,6 +99,7 @@ const ElementsManager = () => {
     enabled: !isChecking
   });
 
+  // Fetch tag details
   const { data: tagDetails = {} } = useQuery({
     queryKey: ["tag-details"],
     queryFn: async () => {
@@ -137,6 +124,7 @@ const ElementsManager = () => {
     }
   });
 
+  // Filter and paginate elements
   const filteredElements = elements?.filter((element) => {
     const matchesSearch = element.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (element.description && element.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -155,14 +143,10 @@ const ElementsManager = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
+  // Element form handlers
   const handleOpenForm = (element?: Element) => {
     setSelectedElement(element || null);
     setIsFormOpen(true);
-  };
-
-  const handleViewDetails = (element: Element) => {
-    setSelectedElement(element);
-    setSidePanelOpen(true);
   };
 
   const handleCloseForm = (shouldRefresh: boolean = false) => {
@@ -173,11 +157,18 @@ const ElementsManager = () => {
     }
   };
 
+  // Sidebar handlers
+  const handleViewDetails = (element: Element) => {
+    setSelectedElement(element);
+    setSidePanelOpen(true);
+  };
+
   const handleCloseSidebar = () => {
     setSidePanelOpen(false);
     setSelectedElement(null);
   };
 
+  // Tag handlers
   const handleTagSelect = (tagId: string) => {
     setSelectedTagId(selectedTagId === tagId ? null : tagId);
     setCurrentPage(1);
@@ -203,12 +194,16 @@ const ElementsManager = () => {
     setIsTagDialogOpen(true);
   };
 
+  const handleTagInDialogSelect = (tagId: string | null) => {
+    setSelectedTagInDialog(tagId);
+  };
+
   const handleSaveTag = async () => {
     if (!selectedElement) return;
     setIsSubmittingTag(true);
     
     try {
-      const tagValue = selectedTagInDialog === "" ? null : selectedTagInDialog;
+      const tagValue = selectedTagInDialog === null ? null : selectedTagInDialog;
       
       console.log("Updating element tag with value:", tagValue);
       
@@ -255,37 +250,23 @@ const ElementsManager = () => {
     });
   };
 
-  const selectedTagLabel = selectedTagId ? tagDetails[selectedTagId] : null;
-
   return (
     <div className="flex">
       <div className="flex-1">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search elements..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Button onClick={() => handleOpenForm()} className="flex items-center gap-2 bg-[#00B86B] hover:bg-[#00A25F]">
-            <Plus size={16} /> Add Element
-          </Button>
-        </div>
+        {/* Search and filter section */}
+        <ElementSearch 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedTagId={selectedTagId}
+          tagDetails={tagDetails}
+          onAddElementClick={() => handleOpenForm()}
+          onTagSelect={handleTagSelect}
+          onTagClear={handleClearTagFilter}
+          onTagSearch={handleTagSearch}
+          onAddTagClick={handleAddTag}
+        />
 
-        <div className="mb-6">
-          <TagManagementRow
-            selectedTag={selectedTagId}
-            tagDetails={tagDetails}
-            onTagSelect={handleTagSelect}
-            onTagClear={handleClearTagFilter}
-            onTagSearch={handleTagSearch}
-            onAddTagClick={handleAddTag}
-          />
-        </div>
-
+        {/* Elements list or loading indicator */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-[#00B86B]" />
@@ -300,32 +281,15 @@ const ElementsManager = () => {
               onAssignTag={handleAssignTag}
             />
             
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft size={16} />
-                </Button>
-                <span className="text-sm">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight size={16} />
-                </Button>
-              </div>
-            )}
+            <ElementPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         )}
 
+        {/* Modals and sidebars */}
         {isFormOpen && (
           <ElementFormDialog
             element={selectedElement}
@@ -343,63 +307,16 @@ const ElementsManager = () => {
           />
         )}
         
-        <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>
-                Assign Tag to {selectedElement?.name || ''}
-              </DialogTitle>
-              <DialogDescription>
-                Select a tag to assign to this element. Only one tag can be assigned at a time.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="py-4">
-              <Input
-                placeholder="Filter tags..."
-                className="mb-4"
-                onChange={(e) => {
-                  // Filter tags in the dialog (can be implemented if needed)
-                }}
-              />
-              
-              <RadioGroup
-                value={selectedTagInDialog || ''}
-                onValueChange={(val) => setSelectedTagInDialog(val)}
-                className="space-y-3 max-h-[300px] overflow-y-auto"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem id="tag-none" value="" />
-                  <Label htmlFor="tag-none">No tag (clear assignment)</Label>
-                </div>
-                
-                {availableTags.map((tag) => (
-                  <div key={tag.id} className="flex items-center space-x-2">
-                    <RadioGroupItem id={`tag-${tag.id}`} value={tag.id} />
-                    <Label htmlFor={`tag-${tag.id}`}>{tag.label}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-            
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsTagDialogOpen(false)}
-                disabled={isSubmittingTag}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSaveTag}
-                className="bg-[#00B86B] hover:bg-[#00A25F]"
-                disabled={isSubmittingTag}
-              >
-                {isSubmittingTag ? "Saving..." : "Assign Tag"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <AssignTagDialog
+          open={isTagDialogOpen}
+          onClose={() => setIsTagDialogOpen(false)}
+          element={selectedElement}
+          availableTags={availableTags}
+          selectedTagId={selectedTagInDialog}
+          onTagSelect={handleTagInDialogSelect}
+          onSaveTag={handleSaveTag}
+          isSubmitting={isSubmittingTag}
+        />
         
         <CreateTagDialog
           open={isCreateTagDialogOpen}
