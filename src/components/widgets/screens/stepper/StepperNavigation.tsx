@@ -36,9 +36,7 @@ export function StepperNavigation({
         
         {currentStep === totalSteps}
         
-        {currentStep < totalSteps && <Button onClick={onNext} disabled={isLoading || isNextDisabled} className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
-            {isLoading ? "Saving..." : "Next"}
-          </Button>}
+        {currentStep < totalSteps}
       </div>
     </div>;
 }
