@@ -28,7 +28,17 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
 
   // Render framework-specific content
   const renderFrameworkContent = () => {
-    switch (frameworkType) {
+    // If no framework type is specified, show empty state
+    if (!screen.framework_type) {
+      return (
+        <div className="text-gray-500 text-center py-8">
+          <p>No framework type selected for this screen.</p>
+          <p className="mt-2">Choose a framework type in the define area to add content.</p>
+        </div>
+      );
+    }
+    
+    switch (screen.framework_type) {
       case "Multiple Options":
         return (
           <div className="space-y-2 mt-4">
@@ -45,6 +55,9 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
                   </div>
                 </div>
               ))}
+              {(metadata.options || []).length === 0 && (
+                <div className="text-gray-500 italic">No options added yet</div>
+              )}
             </div>
           </div>
         );
@@ -65,6 +78,9 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
                   </div>
                 </div>
               ))}
+              {(metadata.options || []).length === 0 && (
+                <div className="text-gray-500 italic">No options added yet</div>
+              )}
             </div>
           </div>
         );
@@ -163,11 +179,13 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
       </div>
       <ScrollArea className="flex-1">
         <div className="p-6">
-          <div className="mb-3">
-            <Badge className="bg-[#00FF00]/20 text-[#00FF00] border-[#00FF00]/30">
-              {frameworkType}
-            </Badge>
-          </div>
+          {screen.framework_type && (
+            <div className="mb-3">
+              <Badge className="bg-[#00FF00]/20 text-[#00FF00] border-[#00FF00]/30">
+                {frameworkType}
+              </Badge>
+            </div>
+          )}
           
           <h3 className="text-xl font-semibold mb-2">{screen.name}</h3>
           
@@ -178,7 +196,7 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
           {/* Render framework-specific content */}
           {renderFrameworkContent()}
           
-          {(!metadata || Object.keys(metadata).length === 0) && (
+          {(!screen.framework_type && (!metadata || Object.keys(metadata).length === 0)) && (
             <div className="text-gray-500 text-center py-8">
               <p>No content has been added to this screen.</p>
               <p className="mt-2">Edit in the define area to add content.</p>

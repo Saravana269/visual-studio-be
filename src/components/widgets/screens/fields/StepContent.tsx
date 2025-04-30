@@ -60,6 +60,9 @@ export function StepContent({
       case "COE Manager":
         newMetadata = { coe_id: null };
         break;
+      default:
+        newMetadata = {};
+        break;
     }
     
     // Update form data with new framework type and clean metadata

@@ -7,14 +7,12 @@ export function useScreenFormState() {
   // Framework type actions
   const { getFrameworkTypeByScreenId } = useFrameworkTypeActions();
   
-  // Screen form data state with standardized metadata
+  // Screen form data state with standardized metadata - now with null default framework_type
   const [formData, setFormData] = useState<ScreenFormData>({
     name: "",
     description: "",
-    framework_type: "Multiple Options",
-    metadata: {
-      options: []
-    }
+    framework_type: null,
+    metadata: {}
   });
 
   // Update form data when active screen changes
@@ -33,20 +31,23 @@ export function useScreenFormState() {
     // Fall back to screen.metadata if no framework data found
     const metadata = Object.keys(metadataFromFramework).length > 0 
       ? metadataFromFramework 
-      : standardizeMetadata(activeScreen.framework_type || "Multiple Options", activeScreen.metadata);
+      : standardizeMetadata(activeScreen.framework_type || null, activeScreen.metadata);
     
     setFormData({
       name: activeScreen.name,
       description: activeScreen.description || "",
-      framework_type: activeScreen.framework_type || "Multiple Options",
+      framework_type: activeScreen.framework_type || null,
       metadata: metadata
     });
   };
 
   // Standardize metadata based on framework type
-  const standardizeMetadata = (frameworkType: string, oldMetadata: any = {}) => {
+  const standardizeMetadata = (frameworkType: string | null, oldMetadata: any = {}) => {
     // Initialize metadata with default empty object if undefined
     const metadata = oldMetadata || {};
+    
+    // If framework type is null, return empty object
+    if (!frameworkType) return {};
     
     switch (frameworkType) {
       case "Multiple Options":
@@ -91,7 +92,7 @@ export function useScreenFormState() {
   };
 
   // Convert screen metadata to framework property values
-  const metadataToPropertyValues = (frameworkType: string, metadata: any = {}) => {
+  const metadataToPropertyValues = (frameworkType: string | null, metadata: any = {}) => {
     // Return the standardized metadata as property values
     return standardizeMetadata(frameworkType, metadata);
   };

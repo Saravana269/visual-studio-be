@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FrameworkFields } from "../FrameworkFields";
 
 interface FrameworkTypeStepProps {
-  frameworkType: string;
+  frameworkType: string | null;
   metadata: Record<string, any>;
   onFrameworkChange: (value: string) => void;
   onMetadataUpdate: (updates: Record<string, any>) => void;
@@ -33,7 +33,7 @@ export function FrameworkTypeStep({
       <div className="space-y-2">
         <Label htmlFor="framework-type" className="text-xl">Framework Type</Label>
         <Select 
-          value={frameworkType} 
+          value={frameworkType || ""} 
           onValueChange={onFrameworkChange}
         >
           <SelectTrigger className="bg-gray-950 border-gray-800 text-lg">

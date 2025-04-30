@@ -3,7 +3,7 @@ export interface ScreenField {
   field_name: string;
   information?: string;
   field_options?: string[];
-  framework_type?: string;
+  framework_type?: string | null;
 }
 
 export interface Screen {
@@ -25,7 +25,7 @@ export interface ScreenExtended extends Screen {
 export interface ScreenFormData {
   name: string;
   description: string;
-  framework_type: string;
+  framework_type: string | null;
   metadata?: Record<string, any>;
 }
 
