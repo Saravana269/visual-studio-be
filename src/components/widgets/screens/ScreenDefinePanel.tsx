@@ -1,10 +1,12 @@
 
-import { Button } from "@/components/ui/button";
 import { ScreenStepper } from "./ScreenStepper";
 import { ScreenFieldEditor } from "./ScreenFieldEditor";
 import { ScreenFormData } from "@/types/screen";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { StepperHeader } from "./stepper/StepperHeader";
+import { StepperNavigation } from "./stepper/StepperNavigation";
+import { validateStep } from "./stepper/StepValidator";
 
 interface ScreenDefinePanelProps {
   totalSteps: number;
@@ -75,43 +77,18 @@ export function ScreenDefinePanel({
 
   // Validate the current step
   const validateCurrentStep = (): boolean => {
-    let isValid = true;
-    const errors: string[] = [];
+    const errors = validateStep(stepperStep, formData);
     
-    switch (stepperStep) {
-      case 1: // Screen Name
-        if (!formData.name?.trim()) {
-          isValid = false;
-          errors.push("Screen name is required");
-        }
-        break;
-        
-      case 2: // Description
-        if (!formData.description?.trim()) {
-          isValid = false;
-          errors.push("Description is required");
-        }
-        break;
-        
-      case 3: // Framework Type
-        // Framework type is optional
-        break;
-
-      case 4: // Output
-        // No validation needed for the output step
-        break;
-    }
-    
-    // Show errors if validation fails
-    if (!isValid) {
+    if (errors.length > 0) {
       toast({
         title: "Validation Error",
-        description: errors.join(", "),
+        description: errors.map(error => error.message).join(", "),
         variant: "destructive"
       });
+      return false;
     }
     
-    return isValid;
+    return true;
   };
 
   // Function to go to the next step with validation and saving
@@ -197,15 +174,9 @@ export function ScreenDefinePanel({
     onSave(formData);
   };
 
-  return <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
-      <div className="bg-[#00FF00]/20 p-4 border-b border-[#00FF00]/30">
-        <h2 className="text-xl font-medium text-[#00FF00]">Screen Define Area</h2>
-        {lastSaved && (
-          <div className="text-sm text-gray-400 mt-1">
-            Last saved: {lastSaved.toLocaleTimeString()}
-          </div>
-        )}
-      </div>
+  return (
+    <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
+      <StepperHeader lastSaved={lastSaved} />
       
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="px-6 pt-4">
@@ -226,34 +197,18 @@ export function ScreenDefinePanel({
           />
         </div>
         
-        <div className="border-t border-gray-800 p-4 flex justify-between">
-          <Button 
-            onClick={goToPrevStep} 
-            disabled={stepperStep === 1 || isStepSaving} 
-            className="bg-gray-800 hover:bg-gray-700 text-white">
-            Previous
-          </Button>
-          
-          <div>
-            {(stepperStep === steps.length) && (
-              <Button 
-                onClick={handleFinalSave} 
-                disabled={!formData.name || isLoading || isStepSaving} 
-                className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
-                {isLoading || isStepSaving ? "Saving..." : isEditing ? "Update Framework" : "Save Framework"}
-              </Button>
-            )}
-            
-            {stepperStep < steps.length && (
-              <Button 
-                onClick={goToNextStep}
-                disabled={isStepSaving}
-                className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
-                {isStepSaving ? "Saving..." : "Next"}
-              </Button>
-            )}
-          </div>
-        </div>
+        <StepperNavigation 
+          currentStep={stepperStep}
+          totalSteps={steps.length}
+          onPrevious={goToPrevStep}
+          onNext={goToNextStep}
+          onSave={handleFinalSave}
+          isPreviousDisabled={stepperStep === 1 || isStepSaving}
+          isNextDisabled={!formData.name || isLoading || isStepSaving}
+          isLoading={isLoading || isStepSaving}
+          isEditing={isEditing}
+        />
       </div>
-    </div>;
+    </div>
+  );
 }
