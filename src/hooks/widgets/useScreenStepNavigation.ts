@@ -32,7 +32,7 @@ export function useScreenStepNavigation({
   }, [activeScreenId]);
 
   // Handle updating a screen by step
-  const handleStepSave = async (step: number, data: Partial<ScreenFormData>, createFramework: boolean = false) => {
+  const handleStepSave = async (step: number, data: Partial<ScreenFormData>, createFramework: boolean = false): Promise<boolean> => {
     setIsStepSaving(true);
     
     try {
@@ -42,18 +42,11 @@ export function useScreenStepNavigation({
         // If this is step 1 and we're creating a new screen, update the current screen ID
         if (step === 1 && !currentScreenId && result.screenId) {
           setCurrentScreenId(result.screenId);
-          
-          // Return the new screen ID for any additional processing by the caller
-          return {
-            success: true,
-            screenId: result.screenId
-          };
         }
-        
-        return { success: true };
+        return true;
       }
       
-      return { success: false };
+      return false;
     } catch (error) {
       console.error("Error in step save:", error);
       toast({
@@ -61,7 +54,7 @@ export function useScreenStepNavigation({
         description: "Failed to save this step. Please try again.",
         variant: "destructive"
       });
-      return { success: false };
+      return false;
     } finally {
       setIsStepSaving(false);
     }

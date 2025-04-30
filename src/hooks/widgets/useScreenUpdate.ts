@@ -22,13 +22,14 @@ export function useScreenUpdate({
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   // Handle updating a screen
-  const handleUpdateScreen = async (activeScreenId: string | null, formData: ScreenFormData) => {
-    if (!activeScreenId) return;
+  const handleUpdateScreen = async (activeScreenId: string | null, formData: ScreenFormData): Promise<boolean> => {
+    if (!activeScreenId) return false;
     
     setIsUpdating(true);
     
     try {
-      await updateScreen(activeScreenId, formData);
+      const result = await updateScreen(activeScreenId, formData);
+      return result;
     } catch (error) {
       console.error("Error updating screen:", error);
       toast({
@@ -36,6 +37,7 @@ export function useScreenUpdate({
         description: "Failed to update the screen",
         variant: "destructive"
       });
+      return false;
     } finally {
       setIsUpdating(false);
     }
