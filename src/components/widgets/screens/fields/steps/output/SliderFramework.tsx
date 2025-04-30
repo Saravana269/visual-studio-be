@@ -11,32 +11,32 @@ interface SliderFrameworkProps {
 
 export const SliderFramework = ({ min, max, step, onConnect }: SliderFrameworkProps) => {
   return (
-    <div className="space-y-4">
-      <h4 className="text-lg font-medium">Slider Configuration</h4>
-      <div className="grid grid-cols-3 gap-4">
-        <div className="p-3 border border-gray-800 rounded-md">
+    <div className="space-y-3">
+      <h4 className="text-base font-medium">Slider Configuration</h4>
+      <div className="grid grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1">
+        <div className="p-2 border border-gray-800 rounded-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Min Value</p>
-              <p className="text-xl font-medium">{min || 0}</p>
+              <p className="text-xs text-gray-400">Min Value</p>
+              <p className="text-sm font-medium">{min || 0}</p>
             </div>
             <ConnectButton value={min || 0} context="min_value" onConnect={onConnect} />
           </div>
         </div>
-        <div className="p-3 border border-gray-800 rounded-md">
+        <div className="p-2 border border-gray-800 rounded-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Max Value</p>
-              <p className="text-xl font-medium">{max || 100}</p>
+              <p className="text-xs text-gray-400">Max Value</p>
+              <p className="text-sm font-medium">{max || 100}</p>
             </div>
             <ConnectButton value={max || 100} context="max_value" onConnect={onConnect} />
           </div>
         </div>
-        <div className="p-3 border border-gray-800 rounded-md">
+        <div className="p-2 border border-gray-800 rounded-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Step</p>
-              <p className="text-xl font-medium">{step || 1}</p>
+              <p className="text-xs text-gray-400">Step</p>
+              <p className="text-sm font-medium">{step || 1}</p>
             </div>
             <ConnectButton value={step || 1} context="step_value" onConnect={onConnect} />
           </div>

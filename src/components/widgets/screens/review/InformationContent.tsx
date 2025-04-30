@@ -12,9 +12,9 @@ export function InformationContent({ metadata, onConnect }: InformationContentPr
   const text = metadata.text || "No information text provided.";
   
   return (
-    <div className="p-4 mt-4 border border-[#00FF00]/20 rounded bg-black/30">
+    <div className="p-2 mt-4 border border-[#00FF00]/20 rounded bg-black/30 max-h-60 overflow-y-auto">
       <div className="flex justify-between">
-        <p className="text-gray-300 whitespace-pre-wrap pr-3">{text}</p>
+        <p className="text-gray-300 whitespace-pre-wrap pr-3 text-sm">{text}</p>
         {onConnect && text !== "No information text provided." && (
           <TooltipProvider>
             <Tooltip delayDuration={300}>

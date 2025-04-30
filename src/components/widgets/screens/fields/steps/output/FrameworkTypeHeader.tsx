@@ -2,15 +2,16 @@
 import React from "react";
 
 interface FrameworkTypeHeaderProps {
-  frameworkType: string | null;
+  frameworkType: string;
 }
 
 export const FrameworkTypeHeader = ({ frameworkType }: FrameworkTypeHeaderProps) => {
   return (
     <div className="mb-4">
-      <span className="bg-[#00FF00]/20 text-[#00FF00] border border-[#00FF00]/30 px-2 py-1 rounded text-sm">
-        {frameworkType}
-      </span>
+      <h3 className="text-base font-medium text-[#00FF00]">Framework Type: {frameworkType}</h3>
+      <p className="text-xs text-gray-400 mt-1">
+        This is the preview for the {frameworkType} framework. You can connect values to other components.
+      </p>
     </div>
   );
 };

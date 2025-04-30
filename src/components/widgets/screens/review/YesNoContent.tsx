@@ -10,13 +10,13 @@ interface YesNoContentProps {
 export function YesNoContent({ onConnect }: YesNoContentProps) {
   return (
     <div className="space-y-2 mt-4">
-      <h4 className="text-sm font-medium text-gray-400">Options:</h4>
-      <div className="flex space-x-4">
-        <div className="p-3 rounded border border-[#00FF00]/20 bg-black/30 flex-1">
+      <h4 className="text-xs font-medium text-gray-400">Options:</h4>
+      <div className="flex space-x-2 max-h-60 overflow-y-auto">
+        <div className="p-2 rounded border border-[#00FF00]/20 bg-black/30 flex-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded-full mr-3 border border-[#00FF00]/50"></div>
-              Yes
+              <div className="w-3 h-3 rounded-full mr-2 border border-[#00FF00]/50"></div>
+              <span className="text-sm">Yes</span>
             </div>
             {onConnect && (
               <TooltipProvider>
@@ -39,11 +39,11 @@ export function YesNoContent({ onConnect }: YesNoContentProps) {
             )}
           </div>
         </div>
-        <div className="p-3 rounded border border-[#00FF00]/20 bg-black/30 flex-1">
+        <div className="p-2 rounded border border-[#00FF00]/20 bg-black/30 flex-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded-full mr-3 border border-[#00FF00]/50"></div>
-              No
+              <div className="w-3 h-3 rounded-full mr-2 border border-[#00FF00]/50"></div>
+              <span className="text-sm">No</span>
             </div>
             {onConnect && (
               <TooltipProvider>

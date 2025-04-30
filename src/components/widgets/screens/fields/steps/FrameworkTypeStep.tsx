@@ -29,26 +29,26 @@ export function FrameworkTypeStep({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="framework-type" className="text-xl">Framework Type</Label>
+        <Label htmlFor="framework-type" className="text-base">Framework Type</Label>
         <Select 
           value={frameworkType || ""} 
           onValueChange={onFrameworkChange}
         >
-          <SelectTrigger className="bg-gray-950 border-gray-800 text-lg">
+          <SelectTrigger className="bg-gray-950 border-gray-800 text-sm">
             <SelectValue placeholder="Select framework type" />
           </SelectTrigger>
           <SelectContent className="bg-gray-950 border-gray-800">
             {frameworkTypes.map(type => (
-              <SelectItem key={type} value={type}>{type}</SelectItem>
+              <SelectItem key={type} value={type} className="text-sm">{type}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
       
       {frameworkType && (
-        <div className="mt-4">
+        <div className="mt-4 max-h-[400px] overflow-y-auto pr-1">
           <FrameworkFields 
             frameworkType={frameworkType}
             frameworkConfig={metadata || {}}

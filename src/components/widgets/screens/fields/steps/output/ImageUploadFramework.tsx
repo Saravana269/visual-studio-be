@@ -9,9 +9,9 @@ interface ImageUploadFrameworkProps {
 
 export const ImageUploadFramework = ({ imageUrl, onConnect }: ImageUploadFrameworkProps) => {
   return (
-    <div className="space-y-4">
-      <h4 className="text-lg font-medium">Image Upload Configuration</h4>
-      <div className="relative">
+    <div className="space-y-3">
+      <h4 className="text-base font-medium">Image Upload Configuration</h4>
+      <div className="max-h-60 overflow-y-auto">
         {imageUrl ? (
           <div className="w-full max-w-md">
             <div className="flex items-start justify-between">
@@ -28,7 +28,7 @@ export const ImageUploadFramework = ({ imageUrl, onConnect }: ImageUploadFramewo
             </div>
           </div>
         ) : (
-          <p className="text-gray-500">No default image set</p>
+          <p className="text-gray-500 text-sm">No default image set</p>
         )}
       </div>
     </div>
