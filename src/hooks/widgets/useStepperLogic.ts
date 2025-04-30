@@ -37,13 +37,13 @@ export function useStepperLogic({
     return true;
   };
 
-  // Function to go to the next step with validation and saving
-  const goToNextStep = async () => {
+  // Save current step data without advancing to the next step
+  const saveCurrentStep = async (createFramework: boolean = false): Promise<boolean> => {
     // Validate the current step
     const isValid = validateCurrentStep();
     
     if (!isValid) {
-      return;
+      return false;
     }
     
     // Prepare data to save based on current step
@@ -76,17 +76,12 @@ export function useStepperLogic({
         break;
     }
     
-    // If valid, save the current step and proceed to the next
+    // Save the current step without advancing
     setIsStepSaving(true);
     
     try {
-      // Special handling for framework type step (3) - create new framework record
-      const shouldCreateFramework = stepperStep === 3;
-      const success = await onStepSave(stepperStep, dataToSave, shouldCreateFramework);
-      
-      if (success && stepperStep < steps.length) {
-        setStepperStep(stepperStep + 1);
-      }
+      const success = await onStepSave(stepperStep, dataToSave, createFramework);
+      return success;
     } catch (error) {
       console.error("Error saving step:", error);
       toast({
@@ -94,8 +89,20 @@ export function useStepperLogic({
         description: "Failed to save this step.",
         variant: "destructive"
       });
+      return false;
     } finally {
       setIsStepSaving(false);
+    }
+  };
+
+  // Function to go to the next step with validation and saving
+  const goToNextStep = async () => {
+    // Save the current step
+    const success = await saveCurrentStep(stepperStep === 3); // Create framework when on step 3
+    
+    // If save was successful and we're not at the last step, advance to next step
+    if (success && stepperStep < steps.length) {
+      setStepperStep(stepperStep + 1);
     }
   };
 
@@ -110,6 +117,7 @@ export function useStepperLogic({
     currentStep: stepperStep,
     isStepSaving,
     validateCurrentStep,
+    saveCurrentStep,
     goToNextStep,
     goToPrevStep
   };

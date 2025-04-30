@@ -6,6 +6,7 @@ import { ScreenFormData } from "@/types/screen";
 import { StepperHeader } from "./stepper/StepperHeader";
 import { StepperNavigation } from "./stepper/StepperNavigation";
 import { useStepperLogic } from "@/hooks/widgets/useStepperLogic";
+import { useToast } from "@/hooks/use-toast";
 
 interface ScreenDefinePanelContentProps {
   steps: { id: number; label: string }[];
@@ -30,17 +31,31 @@ export function ScreenDefinePanelContent({
   isLoading,
   autosave = false
 }: ScreenDefinePanelContentProps) {
+  const { toast } = useToast();
   const { 
     currentStep, 
     isStepSaving, 
     goToNextStep, 
     goToPrevStep,
-    validateCurrentStep
+    validateCurrentStep,
+    saveCurrentStep
   } = useStepperLogic({
     steps,
     formData,
     onStepSave
   });
+
+  // Function to handle updating the framework without advancing to the next step
+  const handleUpdateFramework = async () => {
+    const success = await saveCurrentStep(true);
+    
+    if (success) {
+      toast({
+        title: "Success",
+        description: "Framework updated successfully",
+      });
+    }
+  };
 
   // Function to handle final save with validation
   const handleFinalSave = () => {
@@ -84,7 +99,8 @@ export function ScreenDefinePanelContent({
           onPrevious={goToPrevStep}
           onNext={goToNextStep}
           onSave={handleFinalSave}
-          isPreviousDisabled={currentStep === 1 || isStepSaving}
+          onUpdateFramework={currentStep === 3 ? handleUpdateFramework : undefined}
+          isPreviousDisabled={currentStep === 1 || isStepSaving || isLoading}
           isNextDisabled={!formData.name || isLoading || isStepSaving}
           isLoading={isLoading || isStepSaving}
           isEditing={isEditing}
