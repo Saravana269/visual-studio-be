@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Link2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MultipleOptionsContentProps {
   metadata: Record<string, any>;
@@ -15,38 +16,42 @@ export function MultipleOptionsContent({
   return (
     <div className="space-y-2 mt-2">
       <h4 className="text-xs font-medium text-gray-400">Options:</h4>
-      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-        {(metadata.options || []).map((option: string, index: number) => (
-          <div key={index} className="p-2 rounded border border-[#00FF00]/20 bg-black/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-4 h-4 rounded mr-2 border border-[#00FF00]/50"></div>
-                <span className="text-sm">{option}</span>
+      
+      {/* Only the options list is scrollable */}
+      <ScrollArea className="h-[200px]">
+        <div className="space-y-2 pr-1">
+          {(metadata.options || []).map((option: string, index: number) => (
+            <div key={index} className="p-2 rounded border border-[#00FF00]/20 bg-black/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 rounded mr-2 border border-[#00FF00]/50"></div>
+                  <span className="text-sm">{option}</span>
+                </div>
+                {onConnect && (
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 rounded-full bg-[#00FF00]/10 hover:bg-[#00FF00]/20 border border-[#00FF00]/30"
+                          onClick={() => onConnect(option, index)}
+                        >
+                          <Link2 className="h-3.5 w-3.5 text-[#00FF00]" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p className="text-xs">Connect</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
-              {onConnect && (
-                <TooltipProvider>
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 rounded-full bg-[#00FF00]/10 hover:bg-[#00FF00]/20 border border-[#00FF00]/30"
-                        onClick={() => onConnect(option, index)}
-                      >
-                        <Link2 className="h-3.5 w-3.5 text-[#00FF00]" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">Connect</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
             </div>
-          </div>
-        ))}
-        {(metadata.options || []).length === 0 && <div className="text-gray-500 italic text-sm">No options added yet</div>}
-      </div>
+          ))}
+          {(metadata.options || []).length === 0 && <div className="text-gray-500 italic text-sm">No options added yet</div>}
+        </div>
+      </ScrollArea>
     </div>
   );
 }

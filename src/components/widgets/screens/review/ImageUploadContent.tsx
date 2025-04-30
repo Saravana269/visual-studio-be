@@ -12,7 +12,7 @@ export function ImageUploadContent({ metadata, onConnect }: ImageUploadContentPr
   return (
     <div className="mt-4">
       <h4 className="text-xs font-medium text-gray-400 mb-2">Image Upload:</h4>
-      <div className="max-h-60 overflow-y-auto">
+      <div className="max-h-[200px] overflow-y-auto">
         {metadata.image_url ? (
           <div className="p-1 border border-[#00FF00]/20 rounded bg-black/30 relative">
             <img 

@@ -22,14 +22,19 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
 
   return (
     <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
+      {/* Fixed header */}
       <div className="bg-[#00FF00] p-4 border-b border-[#00FF00]/30">
         <h2 className="text-black text-lg font-medium">Screen Review Area</h2>
       </div>
-      <ScrollArea className="flex-1">
-        <div className="p-6">
-          <FrameworkContent screen={screen} />
-        </div>
-      </ScrollArea>
+      
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="p-6">
+            <FrameworkContent screen={screen} />
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }
