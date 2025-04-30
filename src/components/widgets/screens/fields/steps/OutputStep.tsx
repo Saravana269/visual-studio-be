@@ -91,7 +91,7 @@ export function OutputStep({ frameworkType, metadata, onConnect }: OutputStepPro
   };
 
   return (
-    <div className="h-[350px] flex flex-col">
+    <div>
       <FrameworkPreviewContainer>
         <FrameworkTypeHeader frameworkType={frameworkType} />
         {renderFrameworkContent()}

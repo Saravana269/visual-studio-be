@@ -30,7 +30,7 @@ export function FrameworkTypeStep({
   ];
 
   return (
-    <div className="space-y-4 h-[350px] flex flex-col">
+    <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="framework-type" className="text-sm">Framework Type</Label>
         <Select 
@@ -49,14 +49,12 @@ export function FrameworkTypeStep({
       </div>
       
       {frameworkType && (
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full pr-3">
-            <FrameworkFields 
-              frameworkType={frameworkType}
-              frameworkConfig={metadata || {}}
-              onUpdateMetadata={onMetadataUpdate}
-            />
-          </ScrollArea>
+        <div className="mt-4">
+          <FrameworkFields 
+            frameworkType={frameworkType}
+            frameworkConfig={metadata || {}}
+            onUpdateMetadata={onMetadataUpdate}
+          />
         </div>
       )}
     </div>

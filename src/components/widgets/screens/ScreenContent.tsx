@@ -31,15 +31,15 @@ export function ScreenContent({
 }: ScreenContentProps) {
   return (
     <div className="flex flex-col h-full">
-      {/* Main content - fixed height with row layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-0">
+      {/* Main content area - fixed height with row layout */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 overflow-hidden">
         {/* Left panel */}
-        <div className="lg:col-span-2 flex flex-col h-full">
+        <div className="lg:col-span-2 h-full">
           <ScreenReviewPanel screen={activeScreen} />
         </div>
         
         {/* Right panel */}
-        <div className="lg:col-span-3 flex flex-col h-full">
+        <div className="lg:col-span-3 h-full">
           <ScreenDefinePanel
             totalSteps={4}
             currentStep={activeScreenIndex}

@@ -29,7 +29,7 @@ export function StepperNavigation({
   showOnlyUpdateFramework = false
 }: StepperNavigationProps) {
   return (
-    <div className="border-t border-gray-800 p-4 flex justify-between">
+    <div className="border-t border-gray-800 p-4 flex justify-between bg-gray-950">
       {!showOnlyUpdateFramework && (
         <Button 
           onClick={onPrevious} 

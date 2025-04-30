@@ -44,16 +44,18 @@ export function ScreenDefinePanel({
   });
 
   return (
-    <ScreenDefinePanelContent
-      steps={steps}
-      formData={formData}
-      setFormData={setFormData}
-      onSave={onSave}
-      onStepSave={onStepSave}
-      lastSaved={lastSaved}
-      isEditing={isEditing}
-      isLoading={isLoading}
-      autosave={autosave}
-    />
+    <div className="h-full overflow-hidden border border-gray-800 rounded-lg">
+      <ScreenDefinePanelContent
+        steps={steps}
+        formData={formData}
+        setFormData={setFormData}
+        onSave={onSave}
+        onStepSave={onStepSave}
+        lastSaved={lastSaved}
+        isEditing={isEditing}
+        isLoading={isLoading}
+        autosave={autosave}
+      />
+    </div>
   );
 }

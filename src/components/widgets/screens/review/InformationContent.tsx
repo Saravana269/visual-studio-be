@@ -15,7 +15,7 @@ export function InformationContent({ metadata, onConnect }: InformationContentPr
   return (
     <div className="mt-4 border border-[#00FF00]/20 rounded bg-black/30">
       <div className="flex justify-between p-2">
-        <ScrollArea className="h-[200px] w-full pr-3">
+        <ScrollArea className="h-[180px] w-full pr-3">
           <p className="text-gray-300 whitespace-pre-wrap text-sm">{text}</p>
         </ScrollArea>
         {onConnect && text !== "No information text provided." && (
