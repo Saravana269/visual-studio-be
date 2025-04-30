@@ -27,7 +27,8 @@ export function useScreenFormState() {
 
   // Standardize metadata based on framework type
   const standardizeMetadata = (frameworkType: string, oldMetadata: any = {}) => {
-    const metadata = { ...oldMetadata } || {};
+    // Initialize metadata with default empty object if undefined
+    const metadata = oldMetadata || {};
     
     switch (frameworkType) {
       case "Multiple Options":
