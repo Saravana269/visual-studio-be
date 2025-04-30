@@ -870,6 +870,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_component_to_bom: {
+        Args: { p_component_id: string; p_user_id: string }
+        Returns: {
+          bom_component_id: string
+          bom_id: number
+          component_id: string
+          quantity: number
+        }[]
+      }
       generate_component_id_code: {
         Args: {
           p_menu_code: string
@@ -889,6 +898,10 @@ export type Database = {
         Returns: {
           value: string
         }[]
+      }
+      is_component_in_bom: {
+        Args: { p_component_id: string; p_user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

@@ -46,7 +46,7 @@ export function ScreenContent({
             onSave={onUpdateScreen}
             isEditing={!!activeScreen}
             isLoading={isActionLoading}
-            autosave={true}
+            autosave={false} // Set autosave to false to disable automatic saving
           />
         </div>
       </div>

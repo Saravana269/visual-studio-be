@@ -24,11 +24,12 @@ export function ScreenDefinePanel({
   onSave,
   isEditing,
   isLoading,
-  autosave = true
+  autosave = false // Changed default to false to disable autosave by default
 }: ScreenDefinePanelProps) {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [stepperStep, setStepperStep] = useState<number>(1);
+  const [lastNotification, setLastNotification] = useState<Date | null>(null);
   
   // Steps for the stepper
   const steps = [
@@ -38,18 +39,28 @@ export function ScreenDefinePanel({
     { id: 4, label: "Preview" }
   ];
 
-  // Handle autosave
+  // Handle autosave with improved notification handling
   useEffect(() => {
     if (!autosave) return;
 
     // Clear any existing timeout
     if (saveTimeout) clearTimeout(saveTimeout);
 
-    // Set a new timeout
+    // Set a new timeout with increased delay (5 seconds)
     const timeout = setTimeout(() => {
       onSave(formData);
-      setLastSaved(new Date());
-    }, 1500); // 1.5 seconds after changes
+      
+      // Update last saved timestamp
+      const now = new Date();
+      setLastSaved(now);
+      
+      // Only show notification if it's been more than 10 seconds since the last one
+      if (!lastNotification || (now.getTime() - lastNotification.getTime() > 10000)) {
+        // In a real implementation, this would trigger a toast notification
+        // but we're just updating the timestamp to track notification frequency
+        setLastNotification(now);
+      }
+    }, 5000); // Increased from 1500 to 5000 ms (5 seconds)
 
     setSaveTimeout(timeout);
 
@@ -57,7 +68,7 @@ export function ScreenDefinePanel({
     return () => {
       if (saveTimeout) clearTimeout(saveTimeout);
     };
-  }, [formData, autosave, onSave]);
+  }, [formData, autosave, onSave, lastNotification]);
 
   // Function to go to the next step
   const goToNextStep = () => {
