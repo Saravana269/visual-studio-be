@@ -3,6 +3,7 @@ import React from "react";
 import { ScreenNameStep } from "./steps/ScreenNameStep";
 import { DescriptionStep } from "./steps/DescriptionStep";
 import { FrameworkTypeStep } from "./steps/FrameworkTypeStep";
+import { OutputStep } from "./steps/OutputStep";
 import { ScreenFormData } from "@/types/screen";
 import { useToast } from "@/hooks/use-toast";
 
@@ -118,6 +119,13 @@ export function StepContent({
           metadata={formData.metadata || {}}
           onFrameworkChange={handleFrameworkChange}
           onMetadataUpdate={updateMetadata}
+        />
+      );
+    case 4:
+      return (
+        <OutputStep 
+          frameworkType={formData.framework_type}
+          metadata={formData.metadata || {}}
         />
       );
     default:

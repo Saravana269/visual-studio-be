@@ -36,11 +36,12 @@ export function ScreenDefinePanel({
   const [lastNotification, setLastNotification] = useState<Date | null>(null);
   const [isStepSaving, setIsStepSaving] = useState<boolean>(false);
   
-  // Steps for the stepper - reduced to 3 steps
+  // Steps for the stepper - updated to 4 steps
   const steps = [
     { id: 1, label: "Screen Name" },
     { id: 2, label: "Description" },
-    { id: 3, label: "Framework Type" }
+    { id: 3, label: "Framework Type" },
+    { id: 4, label: "Output" }
   ];
 
   // Handle autosave with improved notification handling
@@ -95,6 +96,10 @@ export function ScreenDefinePanel({
       case 3: // Framework Type
         // Framework type is optional
         break;
+
+      case 4: // Output
+        // No validation needed for the output step
+        break;
     }
     
     // Show errors if validation fails
@@ -134,6 +139,16 @@ export function ScreenDefinePanel({
         dataToSave = { 
           framework_type: formData.framework_type,
           metadata: formData.metadata 
+        };
+        break;
+
+      case 4: // Output
+        // Just save everything in the final step
+        dataToSave = { 
+          name: formData.name,
+          description: formData.description,
+          framework_type: formData.framework_type,
+          metadata: formData.metadata
         };
         break;
     }
@@ -225,7 +240,7 @@ export function ScreenDefinePanel({
                 onClick={handleFinalSave} 
                 disabled={!formData.name || isLoading || isStepSaving} 
                 className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
-                {isLoading || isStepSaving ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}
+                {isLoading || isStepSaving ? "Saving..." : isEditing ? "Update Framework" : "Save Framework"}
               </Button>
             )}
             
