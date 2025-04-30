@@ -26,6 +26,7 @@ export function useScreenManager(widgetId: string | undefined) {
     handleCreateEmptyScreen,
     handleUpdateScreen,
     handleDeleteScreen,
+    handleStepSave,
     updateScreen
   } = useScreenOperations({
     widgetId,
@@ -62,6 +63,7 @@ export function useScreenManager(widgetId: string | undefined) {
     handleUpdateScreen,
     handleInlineUpdate,
     handleDeleteScreen: () => handleDeleteScreen(screens, navigation.activeScreenIndex),
+    handleStepSave,
     updateFormDataFromScreen,
     ...navigation
   };

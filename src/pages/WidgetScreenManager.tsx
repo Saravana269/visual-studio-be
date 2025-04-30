@@ -59,6 +59,8 @@ export default function WidgetScreenManager() {
     formData,
     setFormData,
     handleCreateEmptyScreen,
+    handleUpdateScreen,
+    handleStepSave,
     handleInlineUpdate,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
@@ -142,7 +144,8 @@ export default function WidgetScreenManager() {
           setFormData={setFormData}
           onScreenSelect={goToScreen}
           onAddScreen={handleCreateEmptyScreen}
-          onUpdateScreen={handleInlineUpdate}
+          onUpdateScreen={handleUpdateScreen}
+          onStepSave={handleStepSave}
           isActionLoading={isActionLoading}
         />
       )}

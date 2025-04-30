@@ -13,6 +13,7 @@ interface ScreenContentProps {
   onScreenSelect: (screenId: string) => void;
   onAddScreen: () => void;
   onUpdateScreen: (data: ScreenFormData) => void;
+  onStepSave: (step: number, data: Partial<ScreenFormData>, createFramework?: boolean) => Promise<boolean>;
   isActionLoading: boolean;
 }
 
@@ -25,6 +26,7 @@ export function ScreenContent({
   onScreenSelect,
   onAddScreen,
   onUpdateScreen,
+  onStepSave,
   isActionLoading
 }: ScreenContentProps) {
   return (
@@ -39,14 +41,15 @@ export function ScreenContent({
         {/* Right panel */}
         <div className="lg:col-span-3 h-full">
           <ScreenDefinePanel
-            totalSteps={4} // Fixed at 4 steps as per requirement
+            totalSteps={3} // Updated to 3 steps as per requirement
             currentStep={activeScreenIndex}
             formData={formData}
             setFormData={setFormData}
             onSave={onUpdateScreen}
+            onStepSave={onStepSave}
             isEditing={!!activeScreen}
             isLoading={isActionLoading}
-            autosave={false} // Set autosave to false to disable automatic saving
+            autosave={false}
           />
         </div>
       </div>

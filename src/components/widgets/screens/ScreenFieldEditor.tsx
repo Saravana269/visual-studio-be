@@ -131,17 +131,17 @@ export function ScreenFieldEditor({
           </div>
         );
         
-      case 3: // Framework type step
+      case 3: // Framework type step (renamed from "Response Type")
         return (
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="framework-type" className="text-xl">Response Type</Label>
+              <Label htmlFor="framework-type" className="text-xl">Framework Type</Label>
               <Select 
                 value={formData.framework_type} 
                 onValueChange={handleFrameworkChange}
               >
                 <SelectTrigger className="bg-gray-950 border-gray-800 text-lg">
-                  <SelectValue placeholder="Select response type" />
+                  <SelectValue placeholder="Select framework type" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-950 border-gray-800">
                   {frameworkTypes.map(type => (
@@ -160,26 +160,6 @@ export function ScreenFieldEditor({
                 />
               </div>
             )}
-          </div>
-        );
-        
-      case 4: // Preview step
-        return (
-          <div className="flex flex-col space-y-4">
-            <div className="p-4 border border-dashed border-gray-700 rounded-lg bg-black/20">
-              <h2 className="text-xl font-semibold mb-4">Screen Preview</h2>
-              
-              <div className="mb-3">
-                <h3 className="text-lg font-medium">{formData.name || "Untitled Screen"}</h3>
-                {formData.description && (
-                  <p className="text-gray-400 mt-1">{formData.description}</p>
-                )}
-              </div>
-              
-              <div className="bg-gray-900 p-4 rounded-md border border-gray-800">
-                {renderFrameworkPreview()}
-              </div>
-            </div>
           </div>
         );
         
@@ -211,13 +191,13 @@ export function ScreenFieldEditor({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="framework-type">Response Type</Label>
+              <Label htmlFor="framework-type">Framework Type</Label>
               <Select 
                 value={formData.framework_type} 
                 onValueChange={handleFrameworkChange}
               >
                 <SelectTrigger className="bg-gray-950 border-gray-800">
-                  <SelectValue placeholder="Select response type" />
+                  <SelectValue placeholder="Select framework type" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-950 border-gray-800">
                   {frameworkTypes.map(type => (
@@ -235,108 +215,6 @@ export function ScreenFieldEditor({
               />
             )}
           </div>
-        );
-    }
-  };
-
-  // Render framework preview based on type
-  const renderFrameworkPreview = () => {
-    const metadata = formData.metadata || {};
-    
-    switch (formData.framework_type) {
-      case "Multiple Options":
-        return (
-          <div className="space-y-2">
-            <p className="font-medium text-white mb-2">Select options:</p>
-            {(metadata.options || []).length > 0 ? (
-              (metadata.options || []).map((option: string, index: number) => (
-                <div key={index} className="flex items-center space-x-2 p-2 border border-gray-700 rounded-md">
-                  <input type="checkbox" className="w-4 h-4" />
-                  <span>{option}</span>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">No options defined</p>
-            )}
-          </div>
-        );
-        
-      case "Radio Button":
-        return (
-          <div className="space-y-2">
-            <p className="font-medium text-white mb-2">Select one:</p>
-            {(metadata.options || []).length > 0 ? (
-              (metadata.options || []).map((option: string, index: number) => (
-                <div key={index} className="flex items-center space-x-2 p-2 border border-gray-700 rounded-md">
-                  <input type="radio" name="radio-preview" className="w-4 h-4" />
-                  <span>{option}</span>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">No options defined</p>
-            )}
-          </div>
-        );
-        
-      case "Slider":
-        return (
-          <div className="space-y-4">
-            <p className="font-medium text-white">Adjust value:</p>
-            <div>
-              <input 
-                type="range" 
-                min={metadata.min || 0} 
-                max={metadata.max || 100} 
-                step={metadata.step || 1}
-                className="w-full" 
-                defaultValue={(metadata.min + metadata.max) / 2}
-              />
-              <div className="flex justify-between text-sm text-gray-400 mt-1">
-                <span>{metadata.min || 0}</span>
-                <span>{metadata.max || 100}</span>
-              </div>
-            </div>
-          </div>
-        );
-        
-      case "Yes / No":
-        return (
-          <div className="flex space-x-4">
-            <div className="flex items-center space-x-2 p-2 border border-gray-700 rounded-md">
-              <input type="radio" name="yn-preview" className="w-4 h-4" />
-              <span>Yes</span>
-            </div>
-            <div className="flex items-center space-x-2 p-2 border border-gray-700 rounded-md">
-              <input type="radio" name="yn-preview" className="w-4 h-4" />
-              <span>No</span>
-            </div>
-          </div>
-        );
-        
-      case "Information":
-        return (
-          <div className="p-3 bg-gray-800/50 rounded-md">
-            <p className="text-gray-300 whitespace-pre-wrap">{metadata.text || "Information text will appear here"}</p>
-          </div>
-        );
-        
-      case "Image Upload":
-        return (
-          <div className="text-center p-6 border border-dashed border-gray-700 rounded-md">
-            <p className="text-gray-400">Drop image here or click to upload</p>
-          </div>
-        );
-        
-      case "COE Manager":
-        return (
-          <div className="p-3 bg-gray-800/50 rounded-md">
-            <p className="text-gray-400">Class of Elements selector will appear here</p>
-          </div>
-        );
-        
-      default:
-        return (
-          <p className="text-gray-400">Select a framework type to see preview</p>
         );
     }
   };

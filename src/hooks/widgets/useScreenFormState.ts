@@ -1,8 +1,12 @@
 
 import { useState } from "react";
 import { ScreenFormData } from "@/types/screen";
+import { useFrameworkTypeActions } from "./useFrameworkTypeActions";
 
 export function useScreenFormState() {
+  // Framework type actions
+  const { getFrameworkTypeByScreenId } = useFrameworkTypeActions();
+  
   // Screen form data state with standardized metadata
   const [formData, setFormData] = useState<ScreenFormData>({
     name: "",
@@ -14,14 +18,28 @@ export function useScreenFormState() {
   });
 
   // Update form data when active screen changes
-  const updateFormDataFromScreen = (activeScreen: any) => {
+  const updateFormDataFromScreen = async (activeScreen: any) => {
     if (!activeScreen) return;
+    
+    // Try to get framework type data from framework_types table
+    let metadataFromFramework = {};
+    if (activeScreen.framework_id) {
+      const frameworkData = await getFrameworkTypeByScreenId(activeScreen.id);
+      if (frameworkData) {
+        metadataFromFramework = frameworkData.property_values || {};
+      }
+    }
+    
+    // Fall back to screen.metadata if no framework data found
+    const metadata = Object.keys(metadataFromFramework).length > 0 
+      ? metadataFromFramework 
+      : standardizeMetadata(activeScreen.framework_type || "Multiple Options", activeScreen.metadata);
     
     setFormData({
       name: activeScreen.name,
       description: activeScreen.description || "",
       framework_type: activeScreen.framework_type || "Multiple Options",
-      metadata: standardizeMetadata(activeScreen.framework_type, activeScreen.metadata)
+      metadata: metadata
     });
   };
 
@@ -72,11 +90,18 @@ export function useScreenFormState() {
     }
   };
 
+  // Convert screen metadata to framework property values
+  const metadataToPropertyValues = (frameworkType: string, metadata: any = {}) => {
+    // Return the standardized metadata as property values
+    return standardizeMetadata(frameworkType, metadata);
+  };
+
   // Handle direct inline update of a screen
   const handleInlineUpdate = async (
-    updateScreen: (id: string, data: Partial<ScreenFormData>) => Promise<boolean>, 
+    updateScreen: (id: string, data: Partial<ScreenFormData>, createFramework?: boolean) => Promise<boolean>, 
     screenId: string | undefined, 
-    updatedData: Partial<ScreenFormData>
+    updatedData: Partial<ScreenFormData>,
+    createFramework: boolean = false
   ) => {
     if (!screenId) return;
     
@@ -98,13 +123,14 @@ export function useScreenFormState() {
     setFormData(updatedFormData);
     
     // Send update to server
-    await updateScreen(screenId, updatedFormData);
+    await updateScreen(screenId, updatedFormData, createFramework);
   };
 
   return {
     formData,
     setFormData,
     updateFormDataFromScreen,
-    handleInlineUpdate
+    handleInlineUpdate,
+    metadataToPropertyValues
   };
 }

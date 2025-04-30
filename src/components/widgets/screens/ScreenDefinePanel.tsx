@@ -11,6 +11,7 @@ interface ScreenDefinePanelProps {
   formData: ScreenFormData;
   setFormData: React.Dispatch<React.SetStateAction<ScreenFormData>>;
   onSave: (data: ScreenFormData) => void;
+  onStepSave: (step: number, data: Partial<ScreenFormData>, createFramework?: boolean) => Promise<boolean>;
   isEditing: boolean;
   isLoading: boolean;
   autosave?: boolean;
@@ -22,21 +23,22 @@ export function ScreenDefinePanel({
   formData,
   setFormData,
   onSave,
+  onStepSave,
   isEditing,
   isLoading,
-  autosave = false // Changed default to false to disable autosave by default
+  autosave = false
 }: ScreenDefinePanelProps) {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [stepperStep, setStepperStep] = useState<number>(1);
   const [lastNotification, setLastNotification] = useState<Date | null>(null);
+  const [isStepSaving, setIsStepSaving] = useState<boolean>(false);
   
-  // Steps for the stepper
+  // Steps for the stepper - reduced to 3 steps
   const steps = [
     { id: 1, label: "Screen Name" },
     { id: 2, label: "Description" },
-    { id: 3, label: "Response Type" },
-    { id: 4, label: "Preview" }
+    { id: 3, label: "Framework Type" }
   ];
 
   // Handle autosave with improved notification handling
@@ -56,11 +58,9 @@ export function ScreenDefinePanel({
       
       // Only show notification if it's been more than 10 seconds since the last one
       if (!lastNotification || (now.getTime() - lastNotification.getTime() > 10000)) {
-        // In a real implementation, this would trigger a toast notification
-        // but we're just updating the timestamp to track notification frequency
         setLastNotification(now);
       }
-    }, 5000); // Increased from 1500 to 5000 ms (5 seconds)
+    }, 5000);
 
     setSaveTimeout(timeout);
 
@@ -70,10 +70,57 @@ export function ScreenDefinePanel({
     };
   }, [formData, autosave, onSave, lastNotification]);
 
-  // Function to go to the next step
-  const goToNextStep = () => {
-    if (stepperStep < steps.length) {
-      setStepperStep(stepperStep + 1);
+  // Function to go to the next step with validation and saving
+  const goToNextStep = async () => {
+    // Validation for the current step
+    let isValid = true;
+    let dataToSave: Partial<ScreenFormData> = {};
+    
+    // Validate and prepare data based on current step
+    switch (stepperStep) {
+      case 1: // Screen Name
+        if (!formData.name?.trim()) {
+          isValid = false;
+          // You could add toast notification here
+        } else {
+          dataToSave = { name: formData.name };
+        }
+        break;
+        
+      case 2: // Description
+        dataToSave = { description: formData.description };
+        break;
+        
+      case 3: // Framework Type
+        if (!formData.framework_type) {
+          isValid = false;
+        } else {
+          dataToSave = { 
+            framework_type: formData.framework_type,
+            metadata: formData.metadata 
+          };
+        }
+        break;
+    }
+    
+    // If valid, save the current step and proceed to the next
+    if (isValid) {
+      setIsStepSaving(true);
+      
+      try {
+        // Special handling for framework type step (3) - create new framework record
+        const shouldCreateFramework = stepperStep === 3;
+        const success = await onStepSave(stepperStep, dataToSave, shouldCreateFramework);
+        
+        if (success && stepperStep < steps.length) {
+          setStepperStep(stepperStep + 1);
+          setLastSaved(new Date());
+        }
+      } catch (error) {
+        console.error("Error saving step:", error);
+      } finally {
+        setIsStepSaving(false);
+      }
     }
   };
 
@@ -116,26 +163,27 @@ export function ScreenDefinePanel({
         <div className="border-t border-gray-800 p-4 flex justify-between">
           <Button 
             onClick={goToPrevStep} 
-            disabled={stepperStep === 1} 
+            disabled={stepperStep === 1 || isStepSaving} 
             className="bg-gray-800 hover:bg-gray-700 text-white">
             Previous
           </Button>
           
           <div>
-            {(!autosave && stepperStep === steps.length) && (
+            {(stepperStep === steps.length) && (
               <Button 
                 onClick={() => onSave(formData)} 
-                disabled={!formData.name || isLoading} 
+                disabled={!formData.name || isLoading || isStepSaving} 
                 className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
-                {isLoading ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}
+                {isLoading || isStepSaving ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}
               </Button>
             )}
             
             {stepperStep < steps.length && (
               <Button 
-                onClick={goToNextStep} 
+                onClick={goToNextStep}
+                disabled={isStepSaving}
                 className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
-                Next
+                {isStepSaving ? "Saving..." : "Next"}
               </Button>
             )}
           </div>

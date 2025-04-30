@@ -452,26 +452,37 @@ export type Database = {
       framework_types: {
         Row: {
           created_at: string | null
+          framework_Type: string
           id: string
-          name: string
           property_values: Json | null
+          screen_id: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          framework_Type: string
           id?: string
-          name: string
           property_values?: Json | null
+          screen_id?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          framework_Type?: string
           id?: string
-          name?: string
           property_values?: Json | null
+          screen_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "framework_types_screen_id_fkey"
+            columns: ["screen_id"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manufacturer_details: {
         Row: {
@@ -644,6 +655,7 @@ export type Database = {
           field_type: string
           field_value: string | null
           id: string
+          is_template: boolean | null
           is_unit_required: boolean | null
           unit_type: string | null
         }
@@ -654,6 +666,7 @@ export type Database = {
           field_type: string
           field_value?: string | null
           id?: string
+          is_template?: boolean | null
           is_unit_required?: boolean | null
           unit_type?: string | null
         }
@@ -664,6 +677,7 @@ export type Database = {
           field_type?: string
           field_value?: string | null
           id?: string
+          is_template?: boolean | null
           is_unit_required?: boolean | null
           unit_type?: string | null
         }

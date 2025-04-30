@@ -1,6 +1,8 @@
 
+import { useState, useEffect } from "react";
 import { ScreenFormData } from "@/types/screen";
 import { useScreenActions } from "./useScreenActions";
+import { useToast } from "@/hooks/use-toast";
 
 interface UseScreenOperationsProps {
   widgetId: string | undefined;
@@ -20,10 +22,20 @@ export function useScreenOperations({
   setIsDeleteDialogOpen
 }: UseScreenOperationsProps) {
   // Get screen actions
-  const { createScreen, updateScreen, deleteScreen, isActionLoading } = useScreenActions({
+  const { createScreen, updateScreen, updateScreenByStep, deleteScreen, isActionLoading } = useScreenActions({
     widgetId,
     onSuccess: refetch
   });
+  
+  const { toast } = useToast();
+  const [currentScreenId, setCurrentScreenId] = useState<string | null>(activeScreenId);
+  
+  // Track the step-by-step screen creation
+  useEffect(() => {
+    if (activeScreenId !== currentScreenId) {
+      setCurrentScreenId(activeScreenId);
+    }
+  }, [activeScreenId]);
 
   // Handle creating a new empty screen directly
   const handleCreateEmptyScreen = async () => {
@@ -50,6 +62,40 @@ export function useScreenOperations({
     await updateScreen(activeScreenId, formData);
   };
 
+  // Handle updating a screen by step
+  const handleStepSave = async (step: number, data: Partial<ScreenFormData>, createFramework: boolean = false) => {
+    try {
+      const result = await updateScreenByStep(currentScreenId, step, data, createFramework);
+      
+      if (result.success) {
+        // If this is step 1 and we're creating a new screen, update the current screen ID
+        if (step === 1 && !currentScreenId && result.screenId) {
+          setCurrentScreenId(result.screenId);
+          
+          // Also refetch to update the list and navigate to the new screen
+          const screens = await refetch();
+          if (screens?.length > 0) {
+            const newScreenIndex = screens.findIndex((s: any) => s.id === result.screenId);
+            if (newScreenIndex >= 0) {
+              goToScreenByIndex(newScreenIndex);
+            }
+          }
+        }
+        
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error in step save:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save this step. Please try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   // Handle deleting a screen
   const handleDeleteScreen = async (screens: any[], activeScreenIndex: number) => {
     if (!activeScreenId) return;
@@ -71,9 +117,11 @@ export function useScreenOperations({
   
   return {
     isActionLoading,
+    currentScreenId,
     handleCreateEmptyScreen,
     handleUpdateScreen,
     handleDeleteScreen,
+    handleStepSave,
     updateScreen
   };
 }
