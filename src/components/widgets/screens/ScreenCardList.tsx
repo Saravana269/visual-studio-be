@@ -13,6 +13,24 @@ interface ScreenCardListProps {
 }
 
 export function ScreenCardList({ screens, isLoading, onScreenSelect, onAddScreen }: ScreenCardListProps) {
+  // Mapping of framework types to display badges with appropriate colors
+  const frameworkColorMap: Record<string, string> = {
+    "Multiple Options": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    "Radio Button": "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    "Yes / No": "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    "Slider": "bg-green-500/20 text-green-400 border-green-500/30",
+    "Information": "bg-gray-500/20 text-gray-400 border-gray-500/30",
+    "Image Upload": "bg-pink-500/20 text-pink-400 border-pink-500/30",
+    "COE Manager": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+  };
+
+  // Get badge style based on framework type
+  const getBadgeStyle = (frameworkType: string | null | undefined) => {
+    return frameworkType && frameworkColorMap[frameworkType] 
+      ? frameworkColorMap[frameworkType]
+      : "bg-[#00FF00]/20 text-[#00FF00] border-[#00FF00]/30";
+  };
+  
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -49,7 +67,7 @@ export function ScreenCardList({ screens, isLoading, onScreenSelect, onAddScreen
             )}
             
             {screen.framework_type && (
-              <Badge className="bg-[#00FF00]/20 text-[#00FF00] border-[#00FF00]/30 text-xs">
+              <Badge className={getBadgeStyle(screen.framework_type)}>
                 {screen.framework_type}
               </Badge>
             )}

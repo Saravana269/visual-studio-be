@@ -28,3 +28,26 @@ export interface ScreenFormData {
   framework_type: string;
   metadata?: Record<string, any>;
 }
+
+// Standardized metadata types based on framework type
+export interface ScreenMetadata {
+  // For Multiple Options and Radio Button
+  options?: string[];
+  
+  // For Slider
+  min?: number;
+  max?: number;
+  step?: number;
+  
+  // For Yes/No
+  value?: string | null;
+  
+  // For Information
+  text?: string;
+  
+  // For Image Upload
+  image_url?: string;
+  
+  // For COE Manager
+  coe_id?: string | null;
+}

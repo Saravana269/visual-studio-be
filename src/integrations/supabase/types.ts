@@ -9,64 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      bom: {
-        Row: {
-          category: string | null
-          components: number
-          created_at: string
-          id: number
-          user_id: string
-        }
-        Insert: {
-          category?: string | null
-          components?: number
-          created_at?: string
-          id?: number
-          user_id: string
-        }
-        Update: {
-          category?: string | null
-          components?: number
-          created_at?: string
-          id?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
       bom_components: {
         Row: {
-          added_at: string
-          bom_id: number
+          added_at: string | null
           component_id: string
           id: string
-          quantity: number
+          name: string
+          specific_details: Json | null
         }
         Insert: {
-          added_at?: string
-          bom_id: number
+          added_at?: string | null
           component_id: string
           id?: string
-          quantity?: number
+          name: string
+          specific_details?: Json | null
         }
         Update: {
-          added_at?: string
-          bom_id?: number
+          added_at?: string | null
           component_id?: string
           id?: string
-          quantity?: number
+          name?: string
+          specific_details?: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "bom_components_bom_id_fkey"
-            columns: ["bom_id"]
-            isOneToOne: false
-            referencedRelation: "bom"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "bom_components_component_id_fkey"
             columns: ["component_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "components"
             referencedColumns: ["id"]
           },
@@ -873,9 +842,9 @@ export type Database = {
       add_component_to_bom: {
         Args: { p_component_id: string; p_user_id: string }
         Returns: {
-          bom_component_id: string
-          bom_id: number
+          id: string
           component_id: string
+          user_id: string
           quantity: number
         }[]
       }

@@ -6,41 +6,43 @@ import { OptionsList } from "./OptionsList";
 
 interface FrameworkFieldsProps {
   frameworkType: string;
-  fieldOptions: string[];
-  rangeMin: number;
-  rangeMax: number;
-  rangeStep: number;
+  frameworkConfig: Record<string, any>;
   onUpdateMetadata: (updates: Record<string, any>) => void;
 }
 
 export function FrameworkFields({
   frameworkType,
-  fieldOptions = [],
-  rangeMin = 0,
-  rangeMax = 100,
-  rangeStep = 1,
+  frameworkConfig = {},
   onUpdateMetadata
 }: FrameworkFieldsProps) {
+  // Extract configuration values with fallbacks
+  const options = frameworkConfig.options || [];
+  const minValue = frameworkConfig.min || 0;
+  const maxValue = frameworkConfig.max || 100;
+  const stepValue = frameworkConfig.step || 1;
+  const infoText = frameworkConfig.text || "";
+  const imageUrl = frameworkConfig.image_url || "";
+  const coeId = frameworkConfig.coe_id || "";
+
   // Handle adding and removing options via the child component
   const handleOptionsChange = (updatedOptions: string[]) => {
-    onUpdateMetadata({ field_options: updatedOptions });
+    onUpdateMetadata({ options: updatedOptions });
   };
 
   switch (frameworkType) {
     case "Multiple Options":
-    case "Single Choice":
+    case "Radio Button":
       return (
         <div className="space-y-2">
           <Label>Options</Label>
           <OptionsList 
-            options={fieldOptions} 
+            options={options} 
             onChange={handleOptionsChange} 
           />
         </div>
       );
       
     case "Slider":
-    case "Range Selector":
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
@@ -49,8 +51,8 @@ export function FrameworkFields({
               <Input
                 id="range-min"
                 type="number"
-                value={rangeMin}
-                onChange={(e) => onUpdateMetadata({ range_min: Number(e.target.value) })}
+                value={minValue}
+                onChange={(e) => onUpdateMetadata({ min: Number(e.target.value) })}
                 className="bg-gray-950 border-gray-800"
               />
             </div>
@@ -59,8 +61,8 @@ export function FrameworkFields({
               <Input
                 id="range-max"
                 type="number"
-                value={rangeMax}
-                onChange={(e) => onUpdateMetadata({ range_max: Number(e.target.value) })}
+                value={maxValue}
+                onChange={(e) => onUpdateMetadata({ max: Number(e.target.value) })}
                 className="bg-gray-950 border-gray-800"
               />
             </div>
@@ -69,28 +71,34 @@ export function FrameworkFields({
               <Input
                 id="range-step"
                 type="number"
-                value={rangeStep}
-                onChange={(e) => onUpdateMetadata({ range_step: Number(e.target.value) })}
+                value={stepValue}
+                onChange={(e) => onUpdateMetadata({ step: Number(e.target.value) })}
                 className="bg-gray-950 border-gray-800"
               />
             </div>
           </div>
         </div>
       );
+    
+    case "Information":
+      return (
+        <div className="space-y-2">
+          <Label htmlFor="info-text">Information Text</Label>
+          <textarea
+            id="info-text"
+            value={infoText}
+            onChange={(e) => onUpdateMetadata({ text: e.target.value })}
+            className="w-full h-32 p-2 bg-gray-950 border border-gray-800 rounded-md text-white"
+            placeholder="Enter information text here..."
+          />
+        </div>
+      );
       
-    case "Yes/No":
+    case "Yes / No":
       return (
         <div className="space-y-2">
           <Label>Default values are Yes/No</Label>
           <p className="text-sm text-gray-400">This framework type presents a simple Yes/No choice to the user.</p>
-        </div>
-      );
-      
-    case "Text Input":
-      return (
-        <div className="space-y-2">
-          <Label>Text Input Configuration</Label>
-          <p className="text-sm text-gray-400">Users will be presented with a text field to enter their response.</p>
         </div>
       );
       
@@ -102,7 +110,7 @@ export function FrameworkFields({
         </div>
       );
       
-    case "Class of Elements":
+    case "COE Manager":
       return (
         <div className="space-y-2">
           <Label>Class of Elements Selection</Label>
