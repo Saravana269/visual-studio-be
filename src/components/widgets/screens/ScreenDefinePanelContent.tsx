@@ -38,7 +38,8 @@ export function ScreenDefinePanelContent({
     goToNextStep, 
     goToPrevStep,
     validateCurrentStep,
-    saveCurrentStep
+    saveCurrentStep,
+    goToStep
   } = useStepperLogic({
     steps,
     formData,
@@ -47,7 +48,8 @@ export function ScreenDefinePanelContent({
 
   // Function to handle updating the framework without advancing to the next step
   const handleUpdateFramework = async () => {
-    const success = await saveCurrentStep(true);
+    // Save current step with createFramework=true and navigate to step 4 after success
+    const success = await saveCurrentStep(true, 4);
     
     if (success) {
       toast({
@@ -104,6 +106,7 @@ export function ScreenDefinePanelContent({
           isNextDisabled={!formData.name || isLoading || isStepSaving}
           isLoading={isLoading || isStepSaving}
           isEditing={isEditing}
+          showOnlyUpdateFramework={currentStep === 3} // Show only Update Framework button on step 3
         />
       </div>
     </div>

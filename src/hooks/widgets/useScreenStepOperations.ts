@@ -13,7 +13,7 @@ interface UseScreenStepOperationsProps {
 export function useScreenStepOperations({ widgetId, onSuccess }: UseScreenStepOperationsProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const { createFrameworkType } = useFrameworkTypeActions({ onSuccess });
+  const { createFrameworkType, updateFrameworkType, getFrameworkTypeByScreenId } = useFrameworkTypeActions({ onSuccess });
 
   // Create or update screen for specific step
   const updateScreenByStep = async (
@@ -63,18 +63,53 @@ export function useScreenStepOperations({ widgetId, onSuccess }: UseScreenStepOp
         return { success: true, screenId };
       }
       
-      // Step 3: Update framework type and create framework record
+      // Step 3: Update framework type and create/update framework record
       if (step === 3 && screenId && screenData.framework_type) {
-        if (createFramework) {
-          // Create framework type record
-          const frameworkData = await createFrameworkType(
-            screenId,
-            screenData.framework_type,
-            screenData.metadata || {}
-          );
+        // First, get the current screen details to check for existing framework_id
+        const { data: screenDetails, error: screenError } = await supabase
+          .from("screens")
+          .select("framework_id")
+          .eq("id", screenId)
+          .maybeSingle();
           
-          if (!frameworkData) throw new Error("Failed to create framework type");
-          return { success: true, screenId, frameworkId: frameworkData.id };
+        if (screenError) throw screenError;
+        
+        if (createFramework) {
+          if (screenDetails?.framework_id) {
+            // If framework already exists, update it
+            const success = await updateFrameworkType(
+              screenDetails.framework_id,
+              screenData.framework_type,
+              screenData.metadata || {},
+              screenId
+            );
+            
+            if (!success) throw new Error("Failed to update framework type");
+            
+            // Also update the screen metadata
+            const { error: updateError } = await supabase
+              .from("screens")
+              .update({ 
+                framework_type: screenData.framework_type,
+                metadata: screenData.metadata || null,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", screenId);
+              
+            if (updateError) throw updateError;
+            
+            return { success: true, screenId, frameworkId: screenDetails.framework_id };
+          } else {
+            // Create new framework type record if none exists
+            const frameworkData = await createFrameworkType(
+              screenId,
+              screenData.framework_type,
+              screenData.metadata || {}
+            );
+            
+            if (!frameworkData) throw new Error("Failed to create framework type");
+            return { success: true, screenId, frameworkId: frameworkData.id };
+          }
         } else {
           // Just update framework type on screen
           const { error } = await supabase

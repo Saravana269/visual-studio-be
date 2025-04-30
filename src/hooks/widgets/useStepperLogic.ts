@@ -37,8 +37,8 @@ export function useStepperLogic({
     return true;
   };
 
-  // Save current step data without advancing to the next step
-  const saveCurrentStep = async (createFramework: boolean = false): Promise<boolean> => {
+  // Save current step data with option to navigate to specific step after saving
+  const saveCurrentStep = async (createFramework: boolean = false, navigateToStepAfter?: number): Promise<boolean> => {
     // Validate the current step
     const isValid = validateCurrentStep();
     
@@ -81,6 +81,12 @@ export function useStepperLogic({
     
     try {
       const success = await onStepSave(stepperStep, dataToSave, createFramework);
+      
+      // If save was successful and a target step is specified, navigate to that step
+      if (success && navigateToStepAfter !== undefined) {
+        setStepperStep(navigateToStepAfter);
+      }
+      
       return success;
     } catch (error) {
       console.error("Error saving step:", error);
@@ -113,12 +119,20 @@ export function useStepperLogic({
     }
   };
 
+  // New function to navigate directly to a step
+  const goToStep = (step: number) => {
+    if (step >= 1 && step <= steps.length) {
+      setStepperStep(step);
+    }
+  };
+
   return {
     currentStep: stepperStep,
     isStepSaving,
     validateCurrentStep,
     saveCurrentStep,
     goToNextStep,
-    goToPrevStep
+    goToPrevStep,
+    goToStep
   };
 }
