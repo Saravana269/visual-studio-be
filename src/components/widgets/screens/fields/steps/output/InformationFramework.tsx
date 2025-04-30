@@ -9,8 +9,8 @@ interface InformationFrameworkProps {
 
 export const InformationFramework = ({ text, onConnect }: InformationFrameworkProps) => {
   return (
-    <div className="space-y-3">
-      <h4 className="text-base font-medium">Information Content</h4>
+    <div className="space-y-2">
+      <h4 className="text-sm font-medium">Information Content</h4>
       <div className="max-h-60 overflow-y-auto">
         <div className="p-3 border border-gray-800 rounded-md">
           <div className="flex items-start justify-between">
@@ -25,4 +25,4 @@ export const InformationFramework = ({ text, onConnect }: InformationFrameworkPr
       </div>
     </div>
   );
-};
+}

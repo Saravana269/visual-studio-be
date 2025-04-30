@@ -1,19 +1,19 @@
 
-import React from "react";
-
+import { format } from "date-fns";
 interface StepperHeaderProps {
   lastSaved: Date | null;
 }
 
 export function StepperHeader({ lastSaved }: StepperHeaderProps) {
   return (
-    <div className="bg-[#00FF00]/20 p-4 border-b border-[#00FF00]/30">
-      <h2 className="text-xl font-medium text-[#00FF00]">Screen Define Area</h2>
-      {lastSaved && (
-        <div className="text-sm text-gray-400 mt-1">
-          Last saved: {lastSaved.toLocaleTimeString()}
+    <div className="px-6 py-3 border-b border-gray-800">
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-gray-400">
+          {lastSaved && (
+            <span>Last saved: {format(lastSaved, "MMM d, yyyy HH:mm")}</span>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

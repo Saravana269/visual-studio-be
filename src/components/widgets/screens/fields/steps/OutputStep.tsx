@@ -9,6 +9,7 @@ import { InformationFramework } from "./output/InformationFramework";
 import { ImageUploadFramework } from "./output/ImageUploadFramework";
 import { COEManagerFramework } from "./output/COEManagerFramework";
 import { FrameworkPreviewContainer } from "./output/FrameworkPreviewContainer";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OutputStepProps {
   frameworkType: string | null;
@@ -91,9 +92,11 @@ export function OutputStep({ frameworkType, metadata, onConnect }: OutputStepPro
   };
 
   return (
-    <FrameworkPreviewContainer>
-      <FrameworkTypeHeader frameworkType={frameworkType} />
-      {renderFrameworkContent()}
-    </FrameworkPreviewContainer>
+    <ScrollArea className="h-[350px] pr-3">
+      <FrameworkPreviewContainer>
+        <FrameworkTypeHeader frameworkType={frameworkType} />
+        {renderFrameworkContent()}
+      </FrameworkPreviewContainer>
+    </ScrollArea>
   );
 }

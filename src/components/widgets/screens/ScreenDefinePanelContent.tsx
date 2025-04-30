@@ -74,7 +74,9 @@ export function ScreenDefinePanelContent({
 
   return (
     <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
-      <StepperHeader lastSaved={lastSaved} />
+      <div className="bg-[#00FF00] p-4 border-b border-[#00FF00]/30">
+        <h2 className="text-black text-lg font-medium">Screen Define Area</h2>
+      </div>
       
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="px-6 pt-4">
@@ -85,7 +87,7 @@ export function ScreenDefinePanelContent({
           />
         </div>
         
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-5">
           <ScreenFieldEditor 
             formData={formData} 
             setFormData={setFormData} 

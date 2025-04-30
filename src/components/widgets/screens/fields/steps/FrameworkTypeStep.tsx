@@ -3,6 +3,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FrameworkFields } from "../FrameworkFields";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FrameworkTypeStepProps {
   frameworkType: string | null;
@@ -29,9 +30,9 @@ export function FrameworkTypeStep({
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="framework-type" className="text-base">Framework Type</Label>
+        <Label htmlFor="framework-type" className="text-sm">Framework Type</Label>
         <Select 
           value={frameworkType || ""} 
           onValueChange={onFrameworkChange}
@@ -48,13 +49,13 @@ export function FrameworkTypeStep({
       </div>
       
       {frameworkType && (
-        <div className="mt-4 max-h-[400px] overflow-y-auto pr-1">
+        <ScrollArea className="mt-4 h-[350px] pr-3">
           <FrameworkFields 
             frameworkType={frameworkType}
             frameworkConfig={metadata || {}}
             onUpdateMetadata={onMetadataUpdate}
           />
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

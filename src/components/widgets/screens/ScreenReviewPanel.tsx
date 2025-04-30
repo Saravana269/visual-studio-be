@@ -12,8 +12,8 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
   if (!screen) {
     return (
       <div className="flex flex-col h-full border-2 border-dashed border-gray-700 rounded-lg overflow-hidden">
-        <div className="bg-[#00FF00]/20 p-4 border-b border-[#00FF00]/30">
-          <h2 className="text-xl font-medium text-[#00FF00]">Screen Review Area</h2>
+        <div className="bg-[#00FF00] p-4 border-b border-[#00FF00]/30">
+          <h2 className="text-black text-lg font-medium">Screen Review Area</h2>
         </div>
         <EmptyScreenPreview />
       </div>
@@ -22,8 +22,8 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
 
   return (
     <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
-      <div className="bg-[#00FF00]/20 p-4 border-b border-[#00FF00]/30">
-        <h2 className="text-xl font-medium text-[#00FF00]">Screen Review Area</h2>
+      <div className="bg-[#00FF00] p-4 border-b border-[#00FF00]/30">
+        <h2 className="text-black text-lg font-medium">Screen Review Area</h2>
       </div>
       <ScrollArea className="flex-1">
         <div className="p-6">
