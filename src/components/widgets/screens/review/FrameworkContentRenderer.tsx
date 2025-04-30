@@ -7,6 +7,7 @@ import { SliderContent } from "./SliderContent";
 import { InformationContent } from "./InformationContent";
 import { ImageUploadContent } from "./ImageUploadContent";
 import { COEManagerContent } from "./COEManagerContent";
+import { useToast } from "@/hooks/use-toast";
 
 interface FrameworkContentRendererProps {
   screen: Screen;
@@ -14,6 +15,18 @@ interface FrameworkContentRendererProps {
 
 export function FrameworkContentRenderer({ screen }: FrameworkContentRendererProps) {
   const metadata = screen.metadata || {};
+  const { toast } = useToast();
+  
+  // Handle connection of framework values in the review panel
+  const handleConnect = (value: any, context?: string) => {
+    toast({
+      title: "Connection Initiated",
+      description: `Connecting ${context || value} from ${screen.framework_type}`,
+    });
+    
+    // In the future, this will handle the actual connection logic
+    console.log("Connect (Review):", { frameworkType: screen.framework_type, value, context });
+  };
   
   // If no framework type is specified, show empty state
   if (!screen.framework_type) {
@@ -28,25 +41,45 @@ export function FrameworkContentRenderer({ screen }: FrameworkContentRendererPro
   // Render framework-specific content based on the type
   switch (screen.framework_type) {
     case "Multiple Options":
-      return <MultipleOptionsContent metadata={metadata} />;
+      return <MultipleOptionsContent 
+        metadata={metadata} 
+        onConnect={(option, index) => handleConnect(option, `option_${index}`)} 
+      />;
       
     case "Radio Button":
-      return <RadioButtonContent metadata={metadata} />;
+      return <RadioButtonContent 
+        metadata={metadata} 
+        onConnect={(option, index) => handleConnect(option, `option_${index}`)} 
+      />;
       
     case "Yes / No":
-      return <YesNoContent />;
+      return <YesNoContent 
+        onConnect={(option) => handleConnect(option, `${option}_option`)} 
+      />;
       
     case "Slider":
-      return <SliderContent metadata={metadata} />;
+      return <SliderContent 
+        metadata={metadata} 
+        onConnect={(value, type) => handleConnect(value, `${type}_value`)} 
+      />;
       
     case "Information":
-      return <InformationContent metadata={metadata} />;
+      return <InformationContent 
+        metadata={metadata} 
+        onConnect={(text) => handleConnect(text, 'info_text')} 
+      />;
       
     case "Image Upload":
-      return <ImageUploadContent metadata={metadata} />;
+      return <ImageUploadContent 
+        metadata={metadata} 
+        onConnect={(url) => handleConnect(url, 'image_url')} 
+      />;
       
     case "COE Manager":
-      return <COEManagerContent metadata={metadata} />;
+      return <COEManagerContent 
+        metadata={metadata} 
+        onConnect={(coeId) => handleConnect(coeId, 'coe_id')} 
+      />;
       
     default:
       return (

@@ -6,6 +6,7 @@ import { FrameworkTypeStep } from "./steps/FrameworkTypeStep";
 import { OutputStep } from "./steps/OutputStep";
 import { ScreenFormData } from "@/types/screen";
 import { useStepContentHandlers } from "@/hooks/widgets/useStepContentHandlers";
+import { useToast } from "@/hooks/use-toast";
 
 interface StepContentProps {
   currentStep: number;
@@ -22,6 +23,8 @@ export function StepContent({
   onSave,
   autoSave = false
 }: StepContentProps) {
+  const { toast } = useToast();
+  
   // Extract handlers to a separate hook
   const { handleFormChange, handleFrameworkChange, updateMetadata } = useStepContentHandlers({
     formData,
@@ -29,6 +32,17 @@ export function StepContent({
     onSave,
     autoSave
   });
+
+  // Handle connection of framework values
+  const handleConnect = (frameworkType: string, value: any, context?: string) => {
+    toast({
+      title: "Connection Initiated",
+      description: `Connecting ${context || value} from ${frameworkType}`,
+    });
+    
+    // In the future, this will handle the actual connection logic
+    console.log("Connect:", { frameworkType, value, context });
+  };
 
   // Render appropriate step based on currentStep
   switch (currentStep) {
@@ -60,6 +74,7 @@ export function StepContent({
         <OutputStep 
           frameworkType={formData.framework_type}
           metadata={formData.metadata || {}}
+          onConnect={handleConnect}
         />
       );
     default:
