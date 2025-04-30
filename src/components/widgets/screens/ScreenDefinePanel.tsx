@@ -2,7 +2,7 @@
 import { ScreenStepper } from "./ScreenStepper";
 import { ScreenFieldEditor } from "./ScreenFieldEditor";
 import { ScreenFormData } from "@/types/screen";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { StepperHeader } from "./stepper/StepperHeader";
 import { StepperNavigation } from "./stepper/StepperNavigation";
