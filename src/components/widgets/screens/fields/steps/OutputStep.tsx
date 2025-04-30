@@ -91,7 +91,7 @@ export function OutputStep({ frameworkType, metadata, onConnect }: OutputStepPro
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       <FrameworkPreviewContainer>
         <FrameworkTypeHeader frameworkType={frameworkType} />
         {renderFrameworkContent()}

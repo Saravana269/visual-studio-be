@@ -14,9 +14,9 @@ export const OptionsFramework = ({ options, onConnect }: OptionsFrameworkProps) 
       <h4 className="text-sm font-medium">Options</h4>
       
       {/* Only the options list is scrollable */}
-      <ScrollArea className="h-[180px]">
-        <div className="pr-1">
-          {options && options.length > 0 ? (
+      {options && options.length > 0 ? (
+        <ScrollArea className="h-[180px]">
+          <div className="pr-1">
             <ul className="space-y-2">
               {options.map((option: string, index: number) => (
                 <li key={index} className="text-gray-300 flex items-center justify-between text-sm p-1.5 border border-gray-800 rounded">
@@ -25,11 +25,11 @@ export const OptionsFramework = ({ options, onConnect }: OptionsFrameworkProps) 
                 </li>
               ))}
             </ul>
-          ) : (
-            <p className="text-gray-500 text-sm">No options defined</p>
-          )}
-        </div>
-      </ScrollArea>
+          </div>
+        </ScrollArea>
+      ) : (
+        <p className="text-gray-500 text-sm">No options defined</p>
+      )}
     </div>
   );
 }

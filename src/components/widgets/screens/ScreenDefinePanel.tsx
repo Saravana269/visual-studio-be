@@ -44,7 +44,7 @@ export function ScreenDefinePanel({
   });
 
   return (
-    <div className="h-full overflow-hidden border border-gray-800 rounded-lg">
+    <div className="h-full overflow-hidden border border-gray-800 rounded-lg flex flex-col">
       <ScreenDefinePanelContent
         steps={steps}
         formData={formData}

@@ -74,12 +74,13 @@ export function ScreenDefinePanelContent({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="bg-[#00FF00] p-4 border-b border-[#00FF00]/30">
+      {/* Fixed header */}
+      <div className="bg-[#00FF00] p-4 border-b border-[#00FF00]/30 flex-shrink-0">
         <h2 className="text-black text-lg font-medium">Screen Define Area</h2>
       </div>
       
       {/* Fixed stepper area */}
-      <div className="px-6 pt-4">
+      <div className="px-6 pt-4 flex-shrink-0">
         <ScreenStepper 
           totalSteps={steps.length} 
           currentStep={currentStep - 1}
@@ -88,32 +89,32 @@ export function ScreenDefinePanelContent({
       </div>
       
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-auto">
-        <div className="px-6 pb-4">
-          <ScreenFieldEditor 
-            formData={formData} 
-            setFormData={setFormData} 
-            onSave={() => onSave(formData)} 
-            autoSave={autosave} 
-            currentStepperStep={currentStep}
-          />
-        </div>
+      <div className="flex-1 overflow-auto px-6 pb-4">
+        <ScreenFieldEditor 
+          formData={formData} 
+          setFormData={setFormData} 
+          onSave={() => onSave(formData)} 
+          autoSave={autosave} 
+          currentStepperStep={currentStep}
+        />
       </div>
       
       {/* Fixed navigation footer */}
-      <StepperNavigation 
-        currentStep={currentStep}
-        totalSteps={steps.length}
-        onPrevious={goToPrevStep}
-        onNext={goToNextStep}
-        onSave={handleFinalSave}
-        onUpdateFramework={currentStep === 3 ? handleUpdateFramework : undefined}
-        isPreviousDisabled={currentStep === 1 || isStepSaving || isLoading}
-        isNextDisabled={!formData.name || isLoading || isStepSaving}
-        isLoading={isLoading || isStepSaving}
-        isEditing={isEditing}
-        showOnlyUpdateFramework={currentStep === 3} // Show only Update Framework button on step 3
-      />
+      <div className="flex-shrink-0">
+        <StepperNavigation 
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          onPrevious={goToPrevStep}
+          onNext={goToNextStep}
+          onSave={handleFinalSave}
+          onUpdateFramework={currentStep === 3 ? handleUpdateFramework : undefined}
+          isPreviousDisabled={currentStep === 1 || isStepSaving || isLoading}
+          isNextDisabled={!formData.name || isLoading || isStepSaving}
+          isLoading={isLoading || isStepSaving}
+          isEditing={isEditing}
+          showOnlyUpdateFramework={currentStep === 3} // Show only Update Framework button on step 3
+        />
+      </div>
     </div>
   );
 }

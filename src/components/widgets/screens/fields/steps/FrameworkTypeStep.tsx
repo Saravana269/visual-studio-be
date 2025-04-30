@@ -3,7 +3,6 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FrameworkFields } from "../FrameworkFields";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FrameworkTypeStepProps {
   frameworkType: string | null;

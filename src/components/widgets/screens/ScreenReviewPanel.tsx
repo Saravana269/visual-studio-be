@@ -27,7 +27,7 @@ export function ScreenReviewPanel({ screen }: ScreenReviewPanelProps) {
         <h2 className="text-black text-lg font-medium">Screen Review Area</h2>
       </div>
       
-      {/* Scrollable content */}
+      {/* Scrollable content area */}
       <div className="flex-1 overflow-auto">
         <div className="p-6">
           <FrameworkContent screen={screen} />
