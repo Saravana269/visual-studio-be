@@ -1,8 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { ScreenStepper } from "./ScreenStepper";
 import { ScreenFieldEditor } from "./ScreenFieldEditor";
 import { ScreenFormData } from "@/types/screen";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ScreenDefinePanelProps {
   totalSteps: number;
@@ -27,6 +29,7 @@ export function ScreenDefinePanel({
   isLoading,
   autosave = false
 }: ScreenDefinePanelProps) {
+  const { toast } = useToast();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [stepperStep, setStepperStep] = useState<number>(1);
@@ -69,21 +72,58 @@ export function ScreenDefinePanel({
     };
   }, [formData, autosave, onSave, lastNotification]);
 
-  // Function to go to the next step with validation and saving
-  const goToNextStep = async () => {
-    // Validation for the current step
+  // Validate the current step
+  const validateCurrentStep = (): boolean => {
     let isValid = true;
-    let dataToSave: Partial<ScreenFormData> = {};
+    const errors: string[] = [];
     
-    // Validate and prepare data based on current step
     switch (stepperStep) {
       case 1: // Screen Name
         if (!formData.name?.trim()) {
           isValid = false;
-          // You could add toast notification here
-        } else {
-          dataToSave = { name: formData.name };
+          errors.push("Screen name is required");
         }
+        break;
+        
+      case 2: // Description
+        if (!formData.description?.trim()) {
+          isValid = false;
+          errors.push("Description is required");
+        }
+        break;
+        
+      case 3: // Framework Type
+        // Framework type is optional
+        break;
+    }
+    
+    // Show errors if validation fails
+    if (!isValid) {
+      toast({
+        title: "Validation Error",
+        description: errors.join(", "),
+        variant: "destructive"
+      });
+    }
+    
+    return isValid;
+  };
+
+  // Function to go to the next step with validation and saving
+  const goToNextStep = async () => {
+    // Validate the current step
+    const isValid = validateCurrentStep();
+    
+    if (!isValid) {
+      return;
+    }
+    
+    // Prepare data to save based on current step
+    let dataToSave: Partial<ScreenFormData> = {};
+    
+    switch (stepperStep) {
+      case 1: // Screen Name
+        dataToSave = { name: formData.name };
         break;
         
       case 2: // Description
@@ -91,35 +131,34 @@ export function ScreenDefinePanel({
         break;
         
       case 3: // Framework Type
-        if (!formData.framework_type) {
-          isValid = false;
-        } else {
-          dataToSave = { 
-            framework_type: formData.framework_type,
-            metadata: formData.metadata 
-          };
-        }
+        dataToSave = { 
+          framework_type: formData.framework_type,
+          metadata: formData.metadata 
+        };
         break;
     }
     
     // If valid, save the current step and proceed to the next
-    if (isValid) {
-      setIsStepSaving(true);
+    setIsStepSaving(true);
+    
+    try {
+      // Special handling for framework type step (3) - create new framework record
+      const shouldCreateFramework = stepperStep === 3;
+      const success = await onStepSave(stepperStep, dataToSave, shouldCreateFramework);
       
-      try {
-        // Special handling for framework type step (3) - create new framework record
-        const shouldCreateFramework = stepperStep === 3;
-        const success = await onStepSave(stepperStep, dataToSave, shouldCreateFramework);
-        
-        if (success && stepperStep < steps.length) {
-          setStepperStep(stepperStep + 1);
-          setLastSaved(new Date());
-        }
-      } catch (error) {
-        console.error("Error saving step:", error);
-      } finally {
-        setIsStepSaving(false);
+      if (success && stepperStep < steps.length) {
+        setStepperStep(stepperStep + 1);
+        setLastSaved(new Date());
       }
+    } catch (error) {
+      console.error("Error saving step:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save this step.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsStepSaving(false);
     }
   };
 
@@ -128,6 +167,19 @@ export function ScreenDefinePanel({
     if (stepperStep > 1) {
       setStepperStep(stepperStep - 1);
     }
+  };
+
+  // Function to handle final save with validation
+  const handleFinalSave = () => {
+    // Validate the current step
+    const isValid = validateCurrentStep();
+    
+    if (!isValid) {
+      return;
+    }
+    
+    // If all validations pass, save the form
+    onSave(formData);
   };
 
   return <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
@@ -170,7 +222,7 @@ export function ScreenDefinePanel({
           <div>
             {(stepperStep === steps.length) && (
               <Button 
-                onClick={() => onSave(formData)} 
+                onClick={handleFinalSave} 
                 disabled={!formData.name || isLoading || isStepSaving} 
                 className="bg-[#00FF00] hover:bg-[#00FF00]/90 text-black font-medium">
                 {isLoading || isStepSaving ? "Saving..." : isEditing ? "Update Screen" : "Save Screen"}

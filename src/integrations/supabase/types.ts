@@ -602,7 +602,6 @@ export type Database = {
           id: string
           metadata: Json | null
           name: string
-          tags: string[] | null
           updated_at: string | null
           widget_id: string | null
         }
@@ -614,7 +613,6 @@ export type Database = {
           id?: string
           metadata?: Json | null
           name: string
-          tags?: string[] | null
           updated_at?: string | null
           widget_id?: string | null
         }
@@ -626,7 +624,6 @@ export type Database = {
           id?: string
           metadata?: Json | null
           name?: string
-          tags?: string[] | null
           updated_at?: string | null
           widget_id?: string | null
         }

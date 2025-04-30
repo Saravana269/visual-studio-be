@@ -7,7 +7,7 @@ import { useScreenDialogState } from "./useScreenDialogState";
 import { useScreenOperations } from "./useScreenOperations";
 import { ScreenFormData } from "@/types/screen";
 
-export function useScreenManager(widgetId: string | undefined) {
+export function useScreenManager(widgetId: string | undefined, setIsDetailView?: (isOpen: boolean) => void) {
   // Get screen data
   const { screens, isLoading, refetch } = useScreenData(widgetId);
   
@@ -34,7 +34,8 @@ export function useScreenManager(widgetId: string | undefined) {
     formData,
     activeScreenId: navigation.activeScreenId,
     goToScreenByIndex: navigation.goToScreenByIndex,
-    setIsDeleteDialogOpen
+    setIsDeleteDialogOpen,
+    setIsDetailView // Pass the detail view setter to screen operations
   });
 
   // Handle direct inline update of a screen

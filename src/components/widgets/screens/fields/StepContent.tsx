@@ -4,6 +4,7 @@ import { ScreenNameStep } from "./steps/ScreenNameStep";
 import { DescriptionStep } from "./steps/DescriptionStep";
 import { FrameworkTypeStep } from "./steps/FrameworkTypeStep";
 import { ScreenFormData } from "@/types/screen";
+import { useToast } from "@/hooks/use-toast";
 
 interface StepContentProps {
   currentStep: number;
@@ -20,6 +21,8 @@ export function StepContent({
   onSave,
   autoSave = false
 }: StepContentProps) {
+  const { toast } = useToast();
+  
   // Handle form field changes
   const handleFormChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));

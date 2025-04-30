@@ -65,7 +65,7 @@ export default function WidgetScreenManager() {
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     handleDeleteScreen
-  } = useScreenManager(id);
+  } = useScreenManager(id, setIsDetailView); // Pass setIsDetailView to useScreenManager
 
   // Handle back navigation to widgets list
   const handleBackToWidgets = () => {
