@@ -47,7 +47,12 @@ export function FrameworkFields({
       );
       
     case "Yes / No":
-      return <YesNoFieldConfig />;
+      return (
+        <YesNoFieldConfig 
+          frameworkConfig={frameworkConfig}
+          onUpdateMetadata={onUpdateMetadata}
+        />
+      );
       
     case "Image Upload":
       return <ImageUploadFieldConfig />;
