@@ -15,7 +15,7 @@ export function YesNoFieldConfig({
   onUpdateMetadata
 }: YesNoFieldConfigProps = {}) {
   // Convert string values to boolean for the toggle
-  const isEnabled = frameworkConfig.value === true || frameworkConfig.value === "yes";
+  const isEnabled = frameworkConfig.value === true || frameworkConfig.value === "yes" || frameworkConfig.value === "true";
 
   // Handle the toggle change
   const handleToggleChange = (checked: boolean) => {
@@ -40,7 +40,7 @@ export function YesNoFieldConfig({
             <div className="space-y-4">
               <FormItem className="space-y-2">
                 <FormLabel>Toggle Default Value</FormLabel>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 p-3 border border-gray-800 rounded-md bg-black/30">
                   <Switch 
                     id="default-toggle"
                     checked={isEnabled} 
@@ -60,7 +60,7 @@ export function YesNoFieldConfig({
                 <div className="flex gap-2">
                   <button
                     className={`px-4 py-2 rounded-md ${
-                      frameworkConfig.value === true || frameworkConfig.value === "yes" ? 'bg-green-600 text-white' : 'bg-gray-700'
+                      frameworkConfig.value === true || frameworkConfig.value === "yes" || frameworkConfig.value === "true" ? 'bg-green-600 text-white' : 'bg-black/30 border border-gray-800'
                     }`}
                     onClick={() => onUpdateMetadata({ value: true })}
                   >
@@ -68,7 +68,7 @@ export function YesNoFieldConfig({
                   </button>
                   <button
                     className={`px-4 py-2 rounded-md ${
-                      frameworkConfig.value === false || frameworkConfig.value === "no" ? 'bg-red-600 text-white' : 'bg-gray-700'
+                      frameworkConfig.value === false || frameworkConfig.value === "no" ? 'bg-red-600 text-white' : 'bg-black/30 border border-gray-800'
                     }`}
                     onClick={() => onUpdateMetadata({ value: false })}
                   >
@@ -76,7 +76,7 @@ export function YesNoFieldConfig({
                   </button>
                   <button
                     className={`px-4 py-2 rounded-md ${
-                      frameworkConfig.value === null ? 'bg-blue-600 text-white' : 'bg-gray-700'
+                      frameworkConfig.value === null ? 'bg-blue-600 text-white' : 'bg-black/30 border border-gray-800'
                     }`}
                     onClick={() => onUpdateMetadata({ value: null })}
                   >
@@ -88,9 +88,11 @@ export function YesNoFieldConfig({
           </TabsContent>
           
           <TabsContent value="advanced" className="mt-4">
-            <p className="text-sm text-gray-400">
-              Additional options for this field type will be available in future updates.
-            </p>
+            <div className="p-4 border border-gray-800 rounded-md bg-black/30">
+              <p className="text-sm text-gray-400">
+                Framework is set {isEnabled ? 'True / False' : 'False / True'}
+              </p>
+            </div>
           </TabsContent>
         </Tabs>
       )}
