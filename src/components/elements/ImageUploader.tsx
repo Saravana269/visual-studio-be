@@ -1,28 +1,52 @@
+
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Trash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface ImageUploaderProps {
   value: string;
   onChange: (value: string) => void;
+  maxSize?: number; // in MB
+  folderPath?: string;
 }
 
-export function ImageUploader({ value, onChange }: ImageUploaderProps) {
+export function ImageUploader({ 
+  value, 
+  onChange, 
+  maxSize = 5, // Default max size: 5MB
+  folderPath = "element-images" 
+}: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(value || null);
   const { toast } = useToast();
+
+  // Update preview when value changes externally
+  useEffect(() => {
+    setImagePreview(value || null);
+  }, [value]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
     if (!file.type.includes("image/")) {
       toast({
         title: "Invalid file type",
         description: "Please upload an image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size
+    if (file.size > maxSize * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: `Image must be smaller than ${maxSize}MB.`,
         variant: "destructive",
       });
       return;
@@ -38,7 +62,7 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
 
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      const filePath = `element-images/${fileName}`;
+      const filePath = `${folderPath}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("elements")
@@ -85,30 +109,33 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
     <div className="space-y-4">
       {imagePreview ? (
         <div className="relative">
-          <img 
-            src={imagePreview} 
-            alt="Preview" 
-            className="w-full h-48 object-cover rounded-md"
-            onError={() => {
-              if (imagePreview !== value) {
-                setImagePreview(null);
-                onChange("");
-                toast({
-                  title: "Invalid image URL",
-                  description: "The image URL provided is not valid.",
-                  variant: "destructive",
-                });
-              }
-            }}
-          />
+          <div className="p-3 bg-gray-900 border border-[#00FF00] rounded-md">
+            <img 
+              src={imagePreview} 
+              alt="Uploaded preview" 
+              className="w-full h-48 object-contain rounded-md"
+              onError={() => {
+                if (imagePreview !== value) {
+                  setImagePreview(null);
+                  onChange("");
+                  toast({
+                    title: "Invalid image URL",
+                    description: "The image URL provided is not valid.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            />
+          </div>
           <Button
             type="button"
             variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2 h-8 w-8"
+            size="sm"
+            className="absolute top-2 right-2 h-8"
             onClick={handleRemoveImage}
           >
-            <X size={16} />
+            <Trash size={16} className="mr-1" />
+            Remove
           </Button>
         </div>
       ) : (
@@ -127,7 +154,7 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
           />
           <Button
             type="button"
-            variant="outline"
+            variant="default"
             size="sm"
             asChild
             disabled={isUploading}
@@ -138,7 +165,7 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...
                 </>
               ) : (
-                "Select Image"
+                "Upload Image"
               )}
             </label>
           </Button>

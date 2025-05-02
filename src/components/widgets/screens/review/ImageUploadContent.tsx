@@ -14,11 +14,15 @@ export function ImageUploadContent({ metadata, onConnect }: ImageUploadContentPr
       <h4 className="text-xs font-medium text-gray-400 mb-2">Image Upload:</h4>
       <div className="max-h-[200px] overflow-y-auto">
         {metadata.image_url ? (
-          <div className="p-1 border border-[#00FF00]/20 rounded bg-black/30 relative">
+          <div className="p-1 border border-[#00FF00] rounded bg-black/30 relative">
             <img 
               src={metadata.image_url} 
               alt="Uploaded preview" 
               className="max-h-40 rounded object-contain mx-auto"
+              onError={(e) => {
+                // Handle error by showing a placeholder
+                e.currentTarget.src = '/placeholder.svg';
+              }}
             />
             {onConnect && (
               <div className="absolute top-2 right-2">

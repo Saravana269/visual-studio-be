@@ -1,11 +1,12 @@
 
-import { ScreenFormData } from "@/types/screen";
-import { NoFrameworkSelected } from "./output/NoFrameworkSelected";
+import React from "react";
+import { Card } from "@/components/ui/card";
 import { FrameworkTypeHeader } from "./output/FrameworkTypeHeader";
+import { NoFrameworkSelected } from "./output/NoFrameworkSelected";
 import { OptionsFramework } from "./output/OptionsFramework";
 import { SliderFramework } from "./output/SliderFramework";
-import { YesNoFramework } from "./output/YesNoFramework";
 import { InformationFramework } from "./output/InformationFramework";
+import { YesNoFramework } from "./output/YesNoFramework";
 import { ImageUploadFramework } from "./output/ImageUploadFramework";
 import { COEManagerFramework } from "./output/COEManagerFramework";
 import { FrameworkPreviewContainer } from "./output/FrameworkPreviewContainer";
@@ -13,89 +14,64 @@ import { FrameworkPreviewContainer } from "./output/FrameworkPreviewContainer";
 interface OutputStepProps {
   frameworkType: string | null;
   metadata: Record<string, any>;
-  onConnect?: (frameworkType: string, value: any, context?: string) => void;
+  onConnect: (frameworkType: string, value: any, context?: string) => void;
 }
 
 export function OutputStep({ frameworkType, metadata, onConnect }: OutputStepProps) {
-  // Handle connect button click
-  const handleConnect = (value: any, context?: string) => {
-    if (onConnect && frameworkType) {
-      onConnect(frameworkType, value, context);
-    }
-  };
-
-  // If no framework type is selected
   if (!frameworkType) {
     return <NoFrameworkSelected />;
   }
 
-  // Render framework content based on type
-  const renderFrameworkContent = () => {
-    switch (frameworkType) {
-      case "Multiple Options":
-      case "Radio Button":
-        return (
-          <OptionsFramework 
-            options={metadata.options || []} 
-            onConnect={handleConnect} 
-          />
-        );
-      
-      case "Slider":
-        return (
-          <SliderFramework
-            min={metadata.min}
-            max={metadata.max}
-            step={metadata.step}
-            onConnect={handleConnect}
-          />
-        );
-      
-      case "Yes / No":
-        return (
-          <YesNoFramework
-            value={metadata.value}
-            onConnect={handleConnect}
-          />
-        );
-      
-      case "Information":
-        return (
-          <InformationFramework
-            text={metadata.text}
-            onConnect={handleConnect}
-          />
-        );
-      
-      case "Image Upload":
-        return (
-          <ImageUploadFramework
-            imageUrl={metadata.image_url}
-            onConnect={handleConnect}
-          />
-        );
-      
-      case "COE Manager":
-        return (
-          <COEManagerFramework
-            coeId={metadata.coe_id}
-            onConnect={handleConnect}
-          />
-        );
-      
-      default:
-        return (
-          <p className="text-gray-500">No specific configuration for this framework type.</p>
-        );
+  const handleConnect = (value: any, context?: string) => {
+    if (frameworkType) {
+      onConnect(frameworkType, value, context);
     }
   };
 
   return (
     <div className="space-y-4">
-      <FrameworkPreviewContainer>
-        <FrameworkTypeHeader frameworkType={frameworkType} />
-        {renderFrameworkContent()}
-      </FrameworkPreviewContainer>
+      <FrameworkTypeHeader frameworkType={frameworkType} />
+      
+      <Card className="p-4 border-gray-700 bg-black/20">
+        <FrameworkPreviewContainer>
+          {frameworkType === "Multiple Options" || frameworkType === "Radio Button" ? (
+            <OptionsFramework 
+              options={metadata?.options || []} 
+              isRadio={frameworkType === "Radio Button"}
+              onConnect={handleConnect} 
+            />
+          ) : frameworkType === "Slider" ? (
+            <SliderFramework 
+              min={metadata?.min} 
+              max={metadata?.max} 
+              step={metadata?.step} 
+              onConnect={handleConnect} 
+            />
+          ) : frameworkType === "Information" ? (
+            <InformationFramework 
+              text={metadata?.text} 
+              onConnect={handleConnect} 
+            />
+          ) : frameworkType === "Yes / No" ? (
+            <YesNoFramework 
+              value={metadata?.value} 
+              onConnect={handleConnect} 
+            />
+          ) : frameworkType === "Image Upload" ? (
+            <ImageUploadFramework 
+              imageUrl={metadata?.image_url} 
+              onConnect={handleConnect} 
+            />
+          ) : frameworkType === "COE Manager" ? (
+            <COEManagerFramework 
+              coeId={metadata?.coe_id} 
+              onConnect={handleConnect} 
+            />
+          ) : (
+            <p className="text-gray-400">No preview available for this framework type.</p>
+          )}
+        </FrameworkPreviewContainer>
+      </Card>
     </div>
   );
 }

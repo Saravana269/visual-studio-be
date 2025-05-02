@@ -55,10 +55,20 @@ export function FrameworkFields({
       );
       
     case "Image Upload":
-      return <ImageUploadFieldConfig />;
+      return (
+        <ImageUploadFieldConfig 
+          frameworkConfig={frameworkConfig}
+          onUpdateMetadata={onUpdateMetadata}
+        />
+      );
       
     case "COE Manager":
-      return <COEManagerFieldConfig />;
+      return (
+        <COEManagerFieldConfig 
+          frameworkConfig={frameworkConfig}
+          onUpdateMetadata={onUpdateMetadata}
+        />
+      );
       
     default:
       return null;
