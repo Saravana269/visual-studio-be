@@ -12,6 +12,7 @@ export interface COE {
   primary_tag_id: string | null; // Changed to optional to match Element interface
   element_count?: number;
   coreSet_id?: string[] | null;
+  created_by?: string | null;
 }
 
 export const useCOEData = () => {

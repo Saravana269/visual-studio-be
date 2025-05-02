@@ -860,17 +860,30 @@ export type Database = {
         }[]
       }
       generate_component_id_code: {
-        Args: {
-          p_menu_code: string
-          p_submenu_code: string
-          p_classification_code: string
-          p_subclassification_code: string
-          p_component_name: string
-        }
+        Args:
+          | {
+              p_menu_code: string
+              p_submenu_code: string
+              p_classification_code: string
+              p_subclassification_code: string
+              p_component_name: string
+            }
+          | {
+              p_menu_code: string
+              p_submenu_code: string
+              p_classification_code: string
+              p_subclassification_code: string
+              p_component_name: string
+              p_component_type_head_id?: string
+            }
         Returns: string
       }
       generate_short_code: {
         Args: { component_name: string }
+        Returns: string
+      }
+      get_component_type_head_code: {
+        Args: { head_id: string }
         Returns: string
       }
       get_entity_type_values: {

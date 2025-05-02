@@ -11,6 +11,9 @@ interface UseStepperLogicProps {
   onStepSave: (step: number, data: Partial<ScreenFormData>, createFramework?: boolean) => Promise<boolean>;
 }
 
+// Local storage key for selected COE
+const SELECTED_COE_KEY = "selected_coe_for_screen";
+
 export function useStepperLogic({
   initialStep = 1,
   steps,
@@ -81,6 +84,12 @@ export function useStepperLogic({
     
     try {
       const success = await onStepSave(stepperStep, dataToSave, createFramework);
+      
+      // If save was successful and this is the COE Manager framework type
+      if (success && formData.framework_type === "COE Manager" && createFramework) {
+        // Clear the localStorage entry for selected COE
+        localStorage.removeItem(SELECTED_COE_KEY);
+      }
       
       // If save was successful and a target step is specified, navigate to that step
       if (success && navigateToStepAfter !== undefined) {

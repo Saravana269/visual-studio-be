@@ -29,7 +29,13 @@ export function validateStep(step: number, formData: ScreenFormData): Validation
       break;
       
     case 3: // Framework Type
-      // Framework type is optional
+      // For COE Manager, require a selected COE
+      if (formData.framework_type === "COE Manager" && !formData.metadata?.coe_id) {
+        errors.push({
+          field: "coe_id",
+          message: "Please select a class of elements"
+        });
+      }
       break;
 
     case 4: // Output
