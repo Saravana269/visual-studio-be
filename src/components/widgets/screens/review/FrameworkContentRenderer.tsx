@@ -54,6 +54,7 @@ export function FrameworkContentRenderer({ screen }: FrameworkContentRendererPro
       
     case "Yes / No":
       return <YesNoContent 
+        metadata={metadata}
         onConnect={(option) => handleConnect(option, `${option}_option`)} 
       />;
       

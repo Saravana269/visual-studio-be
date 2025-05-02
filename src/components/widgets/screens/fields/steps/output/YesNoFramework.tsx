@@ -1,6 +1,8 @@
 
 import React from "react";
 import { ConnectButton } from "./ConnectButton";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface YesNoFrameworkProps {
   value: boolean | null;
@@ -8,24 +10,44 @@ interface YesNoFrameworkProps {
 }
 
 export const YesNoFramework = ({ value, onConnect }: YesNoFrameworkProps) => {
+  // Convert string values to boolean for the toggle
+  const isEnabled = value === true || value === "yes";
+  
   return (
     <div className="space-y-3">
       <h4 className="text-base font-medium">Yes/No Configuration</h4>
+      
+      <div className="mb-4 p-3 border border-gray-800 rounded-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Switch id="yes-no-toggle" checked={isEnabled} disabled />
+            <Label htmlFor="yes-no-toggle" className="text-sm">
+              {isEnabled ? 'Yes' : 'No'}
+            </Label>
+          </div>
+          <ConnectButton 
+            value={isEnabled ? true : false} 
+            context="toggle_value" 
+            onConnect={onConnect} 
+          />
+        </div>
+      </div>
+      
       <div className="flex space-x-3">
         <div className="p-2 border border-gray-800 rounded-md flex-1">
           <div className="flex items-center justify-between">
             <p className="text-sm">Yes</p>
-            <ConnectButton value="yes" context="yes_option" onConnect={onConnect} />
+            <ConnectButton value={true} context="yes_option" onConnect={onConnect} />
           </div>
         </div>
         <div className="p-2 border border-gray-800 rounded-md flex-1">
           <div className="flex items-center justify-between">
             <p className="text-sm">No</p>
-            <ConnectButton value="no" context="no_option" onConnect={onConnect} />
+            <ConnectButton value={false} context="no_option" onConnect={onConnect} />
           </div>
         </div>
       </div>
-      <p className="text-xs text-gray-400">Default value: {value === null ? 'Not set' : value ? 'Yes' : 'No'}</p>
+      <p className="text-xs text-gray-400">Default value: {value === null ? 'Not set' : value === true || value === "yes" ? 'Yes' : 'No'}</p>
     </div>
   );
 };

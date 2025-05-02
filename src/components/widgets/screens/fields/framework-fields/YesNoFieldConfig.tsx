@@ -2,6 +2,8 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 
 interface YesNoFieldConfigProps {
   frameworkConfig?: Record<string, any>;
@@ -12,9 +14,19 @@ export function YesNoFieldConfig({
   frameworkConfig = {},
   onUpdateMetadata
 }: YesNoFieldConfigProps = {}) {
+  // Convert string values to boolean for the toggle
+  const isEnabled = frameworkConfig.value === true || frameworkConfig.value === "yes";
+
+  // Handle the toggle change
+  const handleToggleChange = (checked: boolean) => {
+    if (onUpdateMetadata) {
+      onUpdateMetadata({ value: checked ? true : false });
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <Label>Default values are Yes/No</Label>
+      <Label>Yes/No Configuration</Label>
       <p className="text-sm text-gray-400">This framework type presents a simple Yes/No choice to the user.</p>
       
       {onUpdateMetadata && (
@@ -25,33 +37,52 @@ export function YesNoFieldConfig({
           </TabsList>
           
           <TabsContent value="default" className="mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="default-value">Default Selection</Label>
-              <div className="flex gap-2">
-                <button
-                  className={`px-4 py-2 rounded-md ${
-                    frameworkConfig.value === 'yes' ? 'bg-green-600 text-white' : 'bg-gray-700'
-                  }`}
-                  onClick={() => onUpdateMetadata({ value: 'yes' })}
-                >
-                  Yes
-                </button>
-                <button
-                  className={`px-4 py-2 rounded-md ${
-                    frameworkConfig.value === 'no' ? 'bg-red-600 text-white' : 'bg-gray-700'
-                  }`}
-                  onClick={() => onUpdateMetadata({ value: 'no' })}
-                >
-                  No
-                </button>
-                <button
-                  className={`px-4 py-2 rounded-md ${
-                    frameworkConfig.value === null ? 'bg-blue-600 text-white' : 'bg-gray-700'
-                  }`}
-                  onClick={() => onUpdateMetadata({ value: null })}
-                >
-                  No Default
-                </button>
+            <div className="space-y-4">
+              <FormItem className="space-y-2">
+                <FormLabel>Toggle Default Value</FormLabel>
+                <div className="flex items-center gap-4">
+                  <Switch 
+                    id="default-toggle"
+                    checked={isEnabled} 
+                    onCheckedChange={handleToggleChange}
+                  />
+                  <Label htmlFor="default-toggle" className="text-sm">
+                    {isEnabled ? 'Yes (On)' : 'No (Off)'}
+                  </Label>
+                </div>
+                <FormDescription>
+                  Set the default state for the Yes/No toggle
+                </FormDescription>
+              </FormItem>
+
+              <div className="flex flex-col space-y-2 mt-4">
+                <Label>Or select a button</Label>
+                <div className="flex gap-2">
+                  <button
+                    className={`px-4 py-2 rounded-md ${
+                      frameworkConfig.value === true || frameworkConfig.value === "yes" ? 'bg-green-600 text-white' : 'bg-gray-700'
+                    }`}
+                    onClick={() => onUpdateMetadata({ value: true })}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-md ${
+                      frameworkConfig.value === false || frameworkConfig.value === "no" ? 'bg-red-600 text-white' : 'bg-gray-700'
+                    }`}
+                    onClick={() => onUpdateMetadata({ value: false })}
+                  >
+                    No
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-md ${
+                      frameworkConfig.value === null ? 'bg-blue-600 text-white' : 'bg-gray-700'
+                    }`}
+                    onClick={() => onUpdateMetadata({ value: null })}
+                  >
+                    No Default
+                  </button>
+                </div>
               </div>
             </div>
           </TabsContent>

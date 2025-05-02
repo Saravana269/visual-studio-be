@@ -66,9 +66,19 @@ export function useScreenFormState() {
         };
         
       case "Yes / No":
-        return { 
-          value: metadata.value || null 
-        };
+        // Handle different types of boolean values stored
+        let value = metadata.value;
+        
+        // Normalize the value to a boolean or null
+        if (value === "yes" || value === true || value === "true") {
+          value = true;
+        } else if (value === "no" || value === false || value === "false") {
+          value = false;
+        } else {
+          value = null;
+        }
+        
+        return { value };
         
       case "Information":
         // Convert old information to text
