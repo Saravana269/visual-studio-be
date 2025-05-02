@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+
+import { useStepNavigation } from "./stepper/useStepNavigation";
+import { useStepValidation } from "./stepper/useStepValidation";
+import { useStepSaving } from "./stepper/useStepSaving";
 import { ScreenFormData } from "@/types/screen";
-import { validateStep } from "@/components/widgets/screens/stepper/StepValidator";
 
 interface UseStepperLogicProps {
   initialStep?: number;
@@ -10,111 +11,44 @@ interface UseStepperLogicProps {
   onStepSave: (step: number, data: Partial<ScreenFormData>, createFramework?: boolean) => Promise<boolean>;
 }
 
-// Local storage key for selected COE
-const SELECTED_COE_KEY = "selected_coe_for_screen";
-
 export function useStepperLogic({
   initialStep = 1,
   steps,
   formData,
   onStepSave
 }: UseStepperLogicProps) {
-  const { toast } = useToast();
-  const [stepperStep, setStepperStep] = useState<number>(initialStep);
-  const [isStepSaving, setIsStepSaving] = useState<boolean>(false);
+  // Get step navigation functionality
+  const {
+    currentStep,
+    goToNextStep,
+    goToPrevStep,
+    goToStep,
+    handleStepClick,
+    getDisabledSteps,
+    canNavigateToStep
+  } = useStepNavigation({
+    steps,
+    formData,
+    initialStep
+  });
 
-  // Check if a step is accessible based on form data validity
-  const canNavigateToStep = (targetStep: number): boolean => {
-    // Allow navigation to step 1 at any time
-    if (targetStep === 1) return true;
-    
-    // For steps 2-4, check if previous requirements are met
-    if (targetStep === 2) {
-      // To go to step 2, screenName must not be empty
-      return !!formData.name?.trim();
-    }
-    
-    if (targetStep === 3) {
-      // To go to step 3, both name and description must not be empty
-      return !!formData.name?.trim() && !!formData.description?.trim();
-    }
-    
-    if (targetStep === 4) {
-      // To go to step 4, name, description, and framework_type must be filled
-      return (
-        !!formData.name?.trim() && 
-        !!formData.description?.trim() && 
-        !!formData.framework_type
-      );
-    }
-    
-    return false;
-  };
-  
-  // Get array of step numbers that should be disabled for clicking
-  const getDisabledSteps = (): number[] => {
-    const disabledSteps: number[] = [];
-    
-    // Step 1 is always enabled
-    
-    // Check if step 2 should be disabled
-    if (!formData.name?.trim()) {
-      disabledSteps.push(2);
-    }
-    
-    // Check if step 3 should be disabled
-    if (!formData.name?.trim() || !formData.description?.trim()) {
-      disabledSteps.push(3);
-    }
-    
-    // Check if step 4 should be disabled
-    if (!formData.name?.trim() || !formData.description?.trim() || !formData.framework_type) {
-      disabledSteps.push(4);
-    }
-    
-    return disabledSteps;
-  };
-  
-  // Handle clicking on a step number
-  const handleStepClick = (targetStep: number): boolean => {
-    // Always allow backward navigation
-    if (targetStep <= stepperStep) {
-      setStepperStep(targetStep);
-      return true;
-    }
-    
-    // For forward navigation, check requirements
-    if (canNavigateToStep(targetStep)) {
-      setStepperStep(targetStep);
-      return true;
-    } else {
-      // Show feedback via toast
-      toast({
-        title: "Cannot Navigate",
-        description: "Please complete the required fields in previous steps first.",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
+  // Get step validation functionality
+  const { validateCurrentStep: validateStep } = useStepValidation({
+    formData
+  });
+
+  // Get step saving functionality
+  const { isStepSaving, saveCurrentStep: saveStep } = useStepSaving({
+    formData,
+    onStepSave
+  });
 
   // Validate the current step
   const validateCurrentStep = (): boolean => {
-    const errors = validateStep(stepperStep, formData);
-    
-    if (errors.length > 0) {
-      toast({
-        title: "Validation Error",
-        description: errors.map(error => error.message).join(", "),
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    return true;
+    return validateStep(currentStep);
   };
 
-  // Save current step data with option to navigate to specific step after saving
+  // Save current step with validation
   const saveCurrentStep = async (createFramework: boolean = false, navigateToStepAfter?: number): Promise<boolean> => {
     // Validate the current step
     const isValid = validateCurrentStep();
@@ -123,94 +57,11 @@ export function useStepperLogic({
       return false;
     }
     
-    // Prepare data to save based on current step
-    let dataToSave: Partial<ScreenFormData> = {};
-    
-    switch (stepperStep) {
-      case 1: // Screen Name
-        dataToSave = { name: formData.name };
-        break;
-        
-      case 2: // Description
-        dataToSave = { description: formData.description };
-        break;
-        
-      case 3: // Framework Type
-        dataToSave = { 
-          framework_type: formData.framework_type,
-          metadata: formData.metadata 
-        };
-        break;
-
-      case 4: // Output
-        // Just save everything in the final step
-        dataToSave = { 
-          name: formData.name,
-          description: formData.description,
-          framework_type: formData.framework_type,
-          metadata: formData.metadata
-        };
-        break;
-    }
-    
-    // Save the current step without advancing
-    setIsStepSaving(true);
-    
-    try {
-      const success = await onStepSave(stepperStep, dataToSave, createFramework);
-      
-      // If save was successful and this is the COE Manager framework type
-      if (success && formData.framework_type === "COE Manager" && createFramework) {
-        // Clear the localStorage entry for selected COE
-        localStorage.removeItem(SELECTED_COE_KEY);
-      }
-      
-      // If save was successful and a target step is specified, navigate to that step
-      if (success && navigateToStepAfter !== undefined) {
-        setStepperStep(navigateToStepAfter);
-      }
-      
-      return success;
-    } catch (error) {
-      console.error("Error saving step:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save this step.",
-        variant: "destructive"
-      });
-      return false;
-    } finally {
-      setIsStepSaving(false);
-    }
-  };
-
-  // Function to go to the next step with validation and saving
-  const goToNextStep = async () => {
-    // Save the current step
-    const success = await saveCurrentStep(stepperStep === 3); // Create framework when on step 3
-    
-    // If save was successful and we're not at the last step, advance to next step
-    if (success && stepperStep < steps.length) {
-      setStepperStep(stepperStep + 1);
-    }
-  };
-
-  // Function to go to the previous step
-  const goToPrevStep = () => {
-    if (stepperStep > 1) {
-      setStepperStep(stepperStep - 1);
-    }
-  };
-
-  // Function to navigate directly to a step
-  const goToStep = (step: number) => {
-    if (step >= 1 && step <= steps.length) {
-      setStepperStep(step);
-    }
+    return saveStep(currentStep, createFramework, navigateToStepAfter);
   };
 
   return {
-    currentStep: stepperStep,
+    currentStep,
     isStepSaving,
     validateCurrentStep,
     saveCurrentStep,
