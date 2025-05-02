@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { ImageUploader } from "@/components/elements/ImageUploader";
 
-interface ImageUploadFieldConfigProps {
+export interface ImageUploadFieldConfigProps {
   frameworkConfig?: Record<string, any>;
   onUpdateMetadata?: (updates: Record<string, any>) => void;
 }
