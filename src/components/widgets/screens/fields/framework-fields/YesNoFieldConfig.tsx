@@ -3,7 +3,6 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 
 interface YesNoFieldConfigProps {
   frameworkConfig?: Record<string, any>;
@@ -38,8 +37,8 @@ export function YesNoFieldConfig({
           
           <TabsContent value="default" className="mt-4">
             <div className="space-y-4">
-              <FormItem className="space-y-2">
-                <FormLabel>Toggle Default Value</FormLabel>
+              <div className="space-y-2">
+                <Label htmlFor="default-toggle">Toggle Default Value</Label>
                 <div className="flex items-center gap-4 p-3 border border-gray-800 rounded-md bg-black/30">
                   <Switch 
                     id="default-toggle"
@@ -50,10 +49,10 @@ export function YesNoFieldConfig({
                     {isEnabled ? 'Yes (On)' : 'No (Off)'}
                   </Label>
                 </div>
-                <FormDescription>
+                <p className="text-xs text-gray-500">
                   Set the default state for the Yes/No toggle
-                </FormDescription>
-              </FormItem>
+                </p>
+              </div>
 
               <div className="flex flex-col space-y-2 mt-4">
                 <Label>Or select a button</Label>
@@ -62,7 +61,8 @@ export function YesNoFieldConfig({
                     className={`px-4 py-2 rounded-md ${
                       frameworkConfig.value === true || frameworkConfig.value === "yes" || frameworkConfig.value === "true" ? 'bg-green-600 text-white' : 'bg-black/30 border border-gray-800'
                     }`}
-                    onClick={() => onUpdateMetadata({ value: true })}
+                    onClick={() => onUpdateMetadata?.({ value: true })}
+                    type="button"
                   >
                     Yes
                   </button>
@@ -70,7 +70,8 @@ export function YesNoFieldConfig({
                     className={`px-4 py-2 rounded-md ${
                       frameworkConfig.value === false || frameworkConfig.value === "no" ? 'bg-red-600 text-white' : 'bg-black/30 border border-gray-800'
                     }`}
-                    onClick={() => onUpdateMetadata({ value: false })}
+                    onClick={() => onUpdateMetadata?.({ value: false })}
+                    type="button"
                   >
                     No
                   </button>
@@ -78,7 +79,8 @@ export function YesNoFieldConfig({
                     className={`px-4 py-2 rounded-md ${
                       frameworkConfig.value === null ? 'bg-blue-600 text-white' : 'bg-black/30 border border-gray-800'
                     }`}
-                    onClick={() => onUpdateMetadata({ value: null })}
+                    onClick={() => onUpdateMetadata?.({ value: null })}
+                    type="button"
                   >
                     No Default
                   </button>
