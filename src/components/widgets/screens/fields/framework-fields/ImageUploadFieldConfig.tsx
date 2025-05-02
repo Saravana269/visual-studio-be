@@ -13,8 +13,8 @@ export function ImageUploadFieldConfig({
   onUpdateMetadata
 }: ImageUploadFieldConfigProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const imageUrl = frameworkConfig.image_url || "";
 
-  // Handle image URL change
   const handleImageChange = (url: string) => {
     if (onUpdateMetadata) {
       onUpdateMetadata({ image_url: url });
@@ -29,12 +29,25 @@ export function ImageUploadFieldConfig({
       </p>
 
       {onUpdateMetadata && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-4">
           <Label className="mb-2 block">Default Image</Label>
           <ImageUploader 
-            value={frameworkConfig.image_url || ""}
+            value={imageUrl}
             onChange={handleImageChange}
           />
+
+          {imageUrl && (
+            <div className="mt-4">
+              <Label className="mb-2 block">Preview</Label>
+              <div className="border border-green-500 rounded p-2 bg-black/20 max-w-xs">
+                <img 
+                  src={imageUrl} 
+                  alt="Uploaded Preview" 
+                  className="w-full h-auto object-contain rounded"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
