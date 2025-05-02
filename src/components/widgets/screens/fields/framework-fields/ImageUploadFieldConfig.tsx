@@ -4,12 +4,12 @@ import { Label } from "@/components/ui/label";
 import { ImageUploader } from "@/components/elements/ImageUploader";
 
 export interface ImageUploadFieldConfigProps {
-  frameworkConfig?: Record<string, any>;
-  onUpdateMetadata?: (updates: Record<string, any>) => void;
+  frameworkConfig: Record<string, any>;
+  onUpdateMetadata: (updates: Record<string, any>) => void;
 }
 
 export function ImageUploadFieldConfig({
-  frameworkConfig = {},
+  frameworkConfig,
   onUpdateMetadata
 }: ImageUploadFieldConfigProps) {
   const [isUploading, setIsUploading] = useState(false);
