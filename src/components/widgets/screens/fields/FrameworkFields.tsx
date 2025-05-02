@@ -5,9 +5,10 @@ import {
   OptionsFieldConfig,
   InformationFieldConfig,
   YesNoFieldConfig,
-  ImageUploadFieldConfig,
   COEManagerFieldConfig
 } from "./framework-fields";
+// Import the ImageUploadFieldConfig directly to avoid the typing issue
+import { ImageUploadFieldConfig } from "./framework-fields/ImageUploadFieldConfig";
 
 interface FrameworkFieldsProps {
   frameworkType: string;
