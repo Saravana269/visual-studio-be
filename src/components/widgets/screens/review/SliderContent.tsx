@@ -1,8 +1,4 @@
 
-import { Button } from "@/components/ui/button";
-import { Link2 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 interface SliderContentProps {
   metadata: Record<string, any>;
   onConnect?: (value: number, type: string) => void;
@@ -21,49 +17,11 @@ export function SliderContent({ metadata, onConnect }: SliderContentProps) {
             <div className="h-full bg-[#00FF00]/50 rounded-full" style={{ width: "50%" }}></div>
           </div>
           <div className="flex justify-between text-xs text-gray-400">
-            <div className="flex items-center gap-1">
+            <div>
               <span>{min}</span>
-              {onConnect && (
-                <TooltipProvider>
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 rounded-full bg-[#00FF00]/10 hover:bg-[#00FF00]/20 border border-[#00FF00]/30"
-                        onClick={() => onConnect(min, "min")}
-                      >
-                        <Link2 className="h-3 w-3 text-[#00FF00]" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">Connect Min Value</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
             </div>
-            <div className="flex items-center gap-1">
+            <div>
               <span>{max}</span>
-              {onConnect && (
-                <TooltipProvider>
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-5 w-5 rounded-full bg-[#00FF00]/10 hover:bg-[#00FF00]/20 border border-[#00FF00]/30"
-                        onClick={() => onConnect(max, "max")}
-                      >
-                        <Link2 className="h-3 w-3 text-[#00FF00]" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">Connect Max Value</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
             </div>
           </div>
         </div>
