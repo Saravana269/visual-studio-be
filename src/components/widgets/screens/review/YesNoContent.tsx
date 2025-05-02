@@ -4,6 +4,7 @@ import { Link2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
 
 interface YesNoContentProps {
   onConnect?: (option: string) => void;
@@ -12,7 +13,20 @@ interface YesNoContentProps {
 
 export function YesNoContent({ onConnect, metadata = {} }: YesNoContentProps) {
   // Convert value to boolean, handling various formats
-  const isEnabled = metadata?.value === true || metadata?.value === "yes" || metadata?.value === "true";
+  const [isEnabled, setIsEnabled] = useState<boolean>(
+    metadata?.value === true || 
+    metadata?.value === "yes" || 
+    metadata?.value === "true"
+  );
+  
+  // Update state when metadata changes (for real-time updates)
+  useEffect(() => {
+    setIsEnabled(
+      metadata?.value === true || 
+      metadata?.value === "yes" || 
+      metadata?.value === "true"
+    );
+  }, [metadata]);
 
   return (
     <div className="space-y-4 mt-4">

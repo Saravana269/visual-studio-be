@@ -8,12 +8,14 @@ import { InformationContent } from "./InformationContent";
 import { ImageUploadContent } from "./ImageUploadContent";
 import { COEManagerContent } from "./COEManagerContent";
 import { useToast } from "@/hooks/use-toast";
+import { memo } from "react";
 
 interface FrameworkContentRendererProps {
   screen: Screen;
 }
 
-export function FrameworkContentRenderer({ screen }: FrameworkContentRendererProps) {
+// Using memo to prevent unnecessary re-renders when other parts of the UI change
+export const FrameworkContentRenderer = memo(function FrameworkContentRenderer({ screen }: FrameworkContentRendererProps) {
   const metadata = screen.metadata || {};
   const { toast } = useToast();
   
@@ -89,4 +91,4 @@ export function FrameworkContentRenderer({ screen }: FrameworkContentRendererPro
         </div>
       );
   }
-}
+});

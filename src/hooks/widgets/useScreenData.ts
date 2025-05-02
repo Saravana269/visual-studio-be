@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Screen } from "@/types/screen";
+import { useScreenRealtime } from "./useScreenRealtime";
 
 export function useScreenData(widgetId: string | undefined) {
   const { toast } = useToast();
@@ -38,6 +39,9 @@ export function useScreenData(widgetId: string | undefined) {
     },
     enabled: !!widgetId
   });
+  
+  // Set up real-time subscription
+  useScreenRealtime({ widgetId, enabled: !!widgetId });
   
   // Get single screen by ID
   const getScreenById = async (screenId: string): Promise<Screen | null> => {
