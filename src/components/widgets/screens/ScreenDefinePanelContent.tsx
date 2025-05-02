@@ -39,12 +39,17 @@ export function ScreenDefinePanelContent({
     goToPrevStep,
     validateCurrentStep,
     saveCurrentStep,
-    goToStep
+    goToStep,
+    handleStepClick,
+    getDisabledSteps
   } = useStepperLogic({
     steps,
     formData,
     onStepSave
   });
+  
+  // Get the list of disabled steps
+  const disabledSteps = getDisabledSteps();
 
   // Function to handle updating the framework without advancing to the next step
   const handleUpdateFramework = async () => {
@@ -85,6 +90,8 @@ export function ScreenDefinePanelContent({
           totalSteps={steps.length} 
           currentStep={currentStep - 1}
           steps={steps.map(step => step.label)}
+          onStepClick={handleStepClick}
+          disabledSteps={disabledSteps}
         />
       </div>
       
