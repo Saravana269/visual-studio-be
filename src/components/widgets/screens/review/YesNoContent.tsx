@@ -11,8 +11,8 @@ interface YesNoContentProps {
 }
 
 export function YesNoContent({ onConnect, metadata = {} }: YesNoContentProps) {
-  // Convert value to boolean
-  const isEnabled = metadata?.value === true || metadata?.value === "yes";
+  // Convert value to boolean, handling various formats
+  const isEnabled = metadata?.value === true || metadata?.value === "yes" || metadata?.value === "true";
 
   return (
     <div className="space-y-4 mt-4">

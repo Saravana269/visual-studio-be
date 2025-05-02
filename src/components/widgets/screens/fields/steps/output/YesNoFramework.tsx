@@ -5,13 +5,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 interface YesNoFrameworkProps {
-  value: boolean | null;
+  value: boolean | null | string;
   onConnect: (value: any, context?: string) => void;
 }
 
 export const YesNoFramework = ({ value, onConnect }: YesNoFrameworkProps) => {
-  // Convert string values to boolean for the toggle
-  const isEnabled = value === true || value === "yes";
+  // Convert string or boolean values to boolean for the toggle
+  const isEnabled = value === true || value === "yes" || value === "true";
   
   return (
     <div className="space-y-3">
@@ -47,7 +47,7 @@ export const YesNoFramework = ({ value, onConnect }: YesNoFrameworkProps) => {
           </div>
         </div>
       </div>
-      <p className="text-xs text-gray-400">Default value: {value === null ? 'Not set' : value === true || value === "yes" ? 'Yes' : 'No'}</p>
+      <p className="text-xs text-gray-400">Default value: {value === null ? 'Not set' : (value === true || value === "yes" || value === "true") ? 'Yes' : 'No'}</p>
     </div>
   );
 };
