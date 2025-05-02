@@ -11,7 +11,7 @@ interface ImageUploadFieldConfigProps {
 export function ImageUploadFieldConfig({
   frameworkConfig = {},
   onUpdateMetadata
-}: ImageUploadFieldConfigProps = {}) {
+}: ImageUploadFieldConfigProps) {
   const [isUploading, setIsUploading] = useState(false);
 
   // Handle image URL change

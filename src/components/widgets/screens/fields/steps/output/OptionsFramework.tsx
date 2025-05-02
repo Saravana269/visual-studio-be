@@ -5,10 +5,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OptionsFrameworkProps {
   options: string[];
+  isRadio?: boolean;
   onConnect: (value: any, context?: string) => void;
 }
 
-export const OptionsFramework = ({ options, onConnect }: OptionsFrameworkProps) => {
+export const OptionsFramework = ({ 
+  options, 
+  isRadio = false, 
+  onConnect 
+}: OptionsFrameworkProps) => {
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium">Options</h4>
