@@ -2,7 +2,15 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 
-export function COEManagerFieldConfig() {
+interface COEManagerFieldConfigProps {
+  frameworkConfig: Record<string, any>;
+  onUpdateMetadata: (updates: Record<string, any>) => void;
+}
+
+export function COEManagerFieldConfig({
+  frameworkConfig,
+  onUpdateMetadata
+}: COEManagerFieldConfigProps) {
   return (
     <div className="space-y-2">
       <Label>Class of Elements Selection</Label>
