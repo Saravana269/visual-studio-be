@@ -97,6 +97,9 @@ export function ScreenDefinePanelContent({
     goToNextStep();
   };
 
+  // Determine if we should show only the Update Framework button (now for both steps 3 AND 4)
+  const showOnlyUpdateFramework = currentStep === 3 || currentStep === 4;
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Fixed header */}
@@ -139,7 +142,7 @@ export function ScreenDefinePanelContent({
           isNextDisabled={!formData.name || isLoading || isStepSaving}
           isLoading={isLoading || isStepSaving}
           isEditing={isEditing}
-          showOnlyUpdateFramework={currentStep === 3} // Show only Update Framework button on step 3
+          showOnlyUpdateFramework={showOnlyUpdateFramework}
         />
       </div>
     </div>
