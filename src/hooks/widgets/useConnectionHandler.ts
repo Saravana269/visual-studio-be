@@ -6,16 +6,66 @@ export const useConnectionHandler = () => {
   
   // Store selected COE in local storage for demo purposes
   const handleConnect = (frameworkType: string, value: any, context?: string) => {
-    // For future connecting to different parts of the application
-    if (context?.startsWith('element_id_')) {
-      // Extract the element ID from the context
-      const elementId = context.replace('element_id_', '');
-      
-      // Handle element connection
+    if (!context) {
+      // Default generic connection
       toast({
-        title: "Element Connected",
-        description: `Connected element with ID: ${elementId}`,
+        title: "Value Connected",
+        description: `Connected ${frameworkType} value`,
       });
+      return;
+    }
+
+    // Handle element connection with the new options menu
+    if (context?.startsWith('element_id_')) {
+      // Check if there's an option selected
+      const [elementContext, option] = context.includes(':') 
+        ? context.split(':') 
+        : [context, null];
+      
+      // Extract the element ID from the context
+      const elementId = elementContext.replace('element_id_', '');
+      
+      if (option) {
+        // Handle specific options
+        switch(option) {
+          case 'new_screen':
+            toast({
+              title: "New Screen Connection",
+              description: `Creating new screen connected to element: ${elementId}`,
+            });
+            break;
+          case 'existing_screen':
+            toast({
+              title: "Existing Screen Connection",
+              description: `Connecting to existing screen from element: ${elementId}`,
+            });
+            break;
+          case 'connect_widget':
+            toast({
+              title: "Widget Connection",
+              description: `Connecting to another widget from element: ${elementId}`,
+            });
+            break;
+          case 'terminate':
+            toast({
+              title: "Connection Terminated",
+              description: `Removed connection for element: ${elementId}`,
+            });
+            break;
+          default:
+            // Generic element connection
+            toast({
+              title: "Element Connected",
+              description: `Connected element with ID: ${elementId}`,
+            });
+        }
+      } else {
+        // Backwards compatibility for direct connections
+        toast({
+          title: "Element Connected",
+          description: `Connected element with ID: ${elementId}`,
+        });
+      }
       
       // Store in local storage for demo
       try {
@@ -35,6 +85,43 @@ export const useConnectionHandler = () => {
         localStorage.setItem("selected_coe_for_screen", value);
       } catch (e) {
         console.error("Error storing COE ID in localStorage:", e);
+      }
+    } else if (context?.includes(':')) {
+      // Handle other contexts with options
+      const [baseContext, option] = context.split(':');
+      
+      // Handle based on option
+      switch(option) {
+        case 'new_screen':
+          toast({
+            title: "New Screen Connection",
+            description: `Creating new screen connection for ${frameworkType}`,
+          });
+          break;
+        case 'existing_screen':
+          toast({
+            title: "Existing Screen Connection",
+            description: `Connecting to existing screen for ${frameworkType}`,
+          });
+          break;
+        case 'connect_widget':
+          toast({
+            title: "Widget Connection",
+            description: `Connecting to another widget for ${frameworkType}`,
+          });
+          break;
+        case 'terminate':
+          toast({
+            title: "Connection Terminated",
+            description: `Removed connection for ${frameworkType}`,
+          });
+          break;
+        default:
+          // Generic connection
+          toast({
+            title: "Value Connected",
+            description: `Connected ${frameworkType} value with option: ${option}`,
+          });
       }
     } else {
       // Generic connection for other framework types
