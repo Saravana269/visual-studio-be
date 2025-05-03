@@ -19,19 +19,11 @@ export const YesNoFramework = ({ value, onConnect, widgetId }: YesNoFrameworkPro
       <h4 className="text-base font-medium">Yes/No Configuration</h4>
       
       <div className="mb-4 p-3 border border-gray-800 rounded-md bg-black/30">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Switch id="yes-no-toggle" checked={isEnabled} disabled />
-            <Label htmlFor="yes-no-toggle" className="text-sm text-gray-300">
-              {isEnabled ? 'Yes' : 'No'}
-            </Label>
-          </div>
-          <ConnectButton 
-            value={isEnabled ? true : false} 
-            context="toggle_value" 
-            onConnect={onConnect}
-            widgetId={widgetId}
-          />
+        <div className="flex items-center">
+          <Switch id="yes-no-toggle" checked={isEnabled} disabled />
+          <Label htmlFor="yes-no-toggle" className="text-sm text-gray-300 ml-3">
+            {isEnabled ? 'Yes' : 'No'}
+          </Label>
         </div>
       </div>
       
