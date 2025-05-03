@@ -36,28 +36,25 @@ export function OptionsFramework({
       </div>
 
       {isRadio ? (
-        <RadioGroup 
-          className="space-y-2 mt-4"
-          value={selectedOption || undefined}
-          onValueChange={setSelectedOption}
-        >
+        <div className="space-y-2 mt-4">
           {options.map((option, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <RadioGroupItem value={option} id={`option-${index}`} />
-              <Label htmlFor={`option-${index}`} className="cursor-pointer">
-                {option}
-              </Label>
-              <div className="ml-auto">
-                <ConnectButton 
-                  value={option} 
-                  context={`element_id_${index}`}
-                  onConnect={onConnect}
-                  widgetId={widgetId}
-                />
-              </div>
+            <div 
+              key={index} 
+              className="flex items-center justify-between p-2 rounded hover:bg-gray-800/30 border border-gray-700"
+            >
+              <span className="text-sm">{option}</span>
+              <ConnectButton 
+                value={option} 
+                context={`element_id_${index}`}
+                onConnect={onConnect}
+                widgetId={widgetId}
+              />
             </div>
           ))}
-        </RadioGroup>
+          {options.length === 0 && (
+            <p className="text-gray-500 text-sm">No options defined yet</p>
+          )}
+        </div>
       ) : (
         <div className="space-y-2 mt-4">
           {options.map((option, index) => (

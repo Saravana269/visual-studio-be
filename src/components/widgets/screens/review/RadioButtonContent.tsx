@@ -18,11 +18,11 @@ export function RadioButtonContent({
       <ScrollArea className="h-[200px]">
         <div className="space-y-2 pr-1">
           {(metadata.options || []).map((option: string, index: number) => (
-            <div key={index} className="p-2 rounded border border-[#00FF00]/20 bg-black/30">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full mr-2 border border-[#00FF00]/50"></div>
-                <span className="text-sm">{option}</span>
-              </div>
+            <div 
+              key={index} 
+              className="flex items-center justify-between p-2 rounded border border-[#00FF00]/20 bg-black/30"
+            >
+              <span className="text-sm">{option}</span>
             </div>
           ))}
           {(metadata.options || []).length === 0 && <div className="text-gray-500 italic text-sm">No options added yet</div>}
