@@ -1,39 +1,92 @@
 
 import React from "react";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ConnectButton } from "./ConnectButton";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OptionsFrameworkProps {
   options: string[];
   isRadio?: boolean;
   onConnect: (value: any, context?: string) => void;
+  widgetId?: string;
 }
 
-export const OptionsFramework = ({ 
-  options, 
-  isRadio = false, 
-  onConnect 
-}: OptionsFrameworkProps) => {
+export function OptionsFramework({ 
+  options = [], 
+  isRadio = false,
+  onConnect,
+  widgetId 
+}: OptionsFrameworkProps) {
+  const [selectedOption, setSelectedOption] = React.useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+
   return (
-    <div className="space-y-2">
-      <h4 className="text-sm font-medium">Options</h4>
-      
-      {/* Only the options list is scrollable */}
-      {options && options.length > 0 ? (
-        <ScrollArea className="h-[180px]">
-          <div className="pr-1">
-            <ul className="space-y-2">
-              {options.map((option: string, index: number) => (
-                <li key={index} className="text-gray-300 flex items-center justify-between text-sm p-1.5 border border-gray-800 rounded">
-                  <span>{option}</span>
-                  <ConnectButton value={option} context={`option_${index}`} onConnect={onConnect} />
-                </li>
-              ))}
-            </ul>
-          </div>
-        </ScrollArea>
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-lg font-medium">
+          {isRadio ? "Select one option" : "Select options"}
+        </h2>
+        <ConnectButton 
+          value={isRadio ? selectedOption : selectedOptions} 
+          context={`options_framework`}
+          onConnect={onConnect}
+          widgetId={widgetId}
+        />
+      </div>
+
+      {isRadio ? (
+        <RadioGroup 
+          className="space-y-2 mt-4"
+          value={selectedOption || undefined}
+          onValueChange={setSelectedOption}
+        >
+          {options.map((option, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <RadioGroupItem value={option} id={`option-${index}`} />
+              <Label htmlFor={`option-${index}`} className="cursor-pointer">
+                {option}
+              </Label>
+              <div className="ml-auto">
+                <ConnectButton 
+                  value={option} 
+                  context={`element_id_${index}`}
+                  onConnect={onConnect}
+                  widgetId={widgetId}
+                />
+              </div>
+            </div>
+          ))}
+        </RadioGroup>
       ) : (
-        <p className="text-gray-500 text-sm">No options defined</p>
+        <div className="space-y-2 mt-4">
+          {options.map((option, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <Checkbox 
+                id={`option-${index}`} 
+                checked={selectedOptions.includes(option)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedOptions([...selectedOptions, option]);
+                  } else {
+                    setSelectedOptions(selectedOptions.filter(o => o !== option));
+                  }
+                }}
+              />
+              <Label htmlFor={`option-${index}`} className="cursor-pointer">
+                {option}
+              </Label>
+              <div className="ml-auto">
+                <ConnectButton 
+                  value={option} 
+                  context={`element_id_${index}`}
+                  onConnect={onConnect}
+                  widgetId={widgetId}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

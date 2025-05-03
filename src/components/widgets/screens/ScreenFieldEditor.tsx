@@ -1,30 +1,60 @@
 
-import React from "react";
-import { ScreenFormData } from "@/types/screen";
+import React, { useState, useEffect } from "react";
 import { StepContent } from "./fields/StepContent";
+import { ScreenFormData } from "@/types/screen";
+import { StepResolver } from "./fields/steps/StepResolver";
+import { useStepContentHandlers } from "@/hooks/widgets/useStepContentHandlers";
+import { useConnectionHandler } from "@/hooks/widgets/useConnectionHandler";
+import { useParams } from "react-router-dom";
 
 interface ScreenFieldEditorProps {
   formData: ScreenFormData;
   setFormData: React.Dispatch<React.SetStateAction<ScreenFormData>>;
-  onSave?: () => void;
+  onSave?: (data: ScreenFormData) => void;
   autoSave?: boolean;
   currentStepperStep?: number;
 }
 
-export function ScreenFieldEditor({ 
-  formData, 
-  setFormData, 
-  onSave, 
+export function ScreenFieldEditor({
+  formData,
+  setFormData,
+  onSave,
   autoSave = false,
   currentStepperStep = 1
 }: ScreenFieldEditorProps) {
+  const { id: widgetId } = useParams<{ id: string }>();
+  
+  const { handleFormChange, handleFrameworkChange, updateMetadata } = useStepContentHandlers({
+    formData,
+    setFormData,
+    onSave,
+    autoSave
+  });
+  
+  const { handleConnect } = useConnectionHandler(widgetId);
+
+  // Listen for changes to formData and trigger save if autoSave is enabled
+  useEffect(() => {
+    if (autoSave && onSave) {
+      const timer = setTimeout(() => {
+        onSave(formData);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [formData, autoSave, onSave]);
+
   return (
-    <StepContent
-      currentStep={currentStepperStep}
-      formData={formData}
-      setFormData={setFormData}
-      onSave={onSave}
-      autoSave={autoSave}
-    />
+    <StepContent>
+      <StepResolver
+        currentStep={currentStepperStep}
+        formData={formData}
+        handleFormChange={handleFormChange}
+        handleFrameworkChange={handleFrameworkChange}
+        updateMetadata={updateMetadata}
+        handleConnect={handleConnect}
+        widgetId={widgetId}
+      />
+    </StepContent>
   );
 }

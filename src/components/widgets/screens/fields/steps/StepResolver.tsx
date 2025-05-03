@@ -13,6 +13,7 @@ interface StepResolverProps {
   handleFrameworkChange: (value: string) => void;
   updateMetadata: (updates: Record<string, any>) => void;
   handleConnect: (frameworkType: string, value: any, context?: string) => void;
+  widgetId?: string;
 }
 
 export const StepResolver: React.FC<StepResolverProps> = ({
@@ -21,7 +22,8 @@ export const StepResolver: React.FC<StepResolverProps> = ({
   handleFormChange,
   handleFrameworkChange,
   updateMetadata,
-  handleConnect
+  handleConnect,
+  widgetId
 }) => {
   // Render appropriate step based on currentStep
   switch (currentStep) {

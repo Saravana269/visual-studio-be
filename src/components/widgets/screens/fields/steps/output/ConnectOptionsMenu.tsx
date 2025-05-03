@@ -11,9 +11,10 @@ import { Plus, FileText, Link, X } from "lucide-react";
 interface ConnectOptionsMenuProps {
   trigger: React.ReactNode;
   onOptionSelect: (option: string) => void;
+  widgetId?: string;
 }
 
-export const ConnectOptionsMenu = ({ trigger, onOptionSelect }: ConnectOptionsMenuProps) => {
+export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: ConnectOptionsMenuProps) => {
   const menuOptions = [
     {
       id: "new_screen",

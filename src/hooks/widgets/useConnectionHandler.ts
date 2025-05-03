@@ -1,11 +1,15 @@
 
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useScreenCreation } from "./useScreenCreation";
 
-export const useConnectionHandler = () => {
+export const useConnectionHandler = (widgetId?: string) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { createScreen, isLoading } = useScreenCreation({ widgetId });
   
   // Store selected COE in local storage for demo purposes
-  const handleConnect = (frameworkType: string, value: any, context?: string) => {
+  const handleConnect = async (frameworkType: string, value: any, context?: string) => {
     if (!context) {
       // Default generic connection
       toast({
@@ -30,9 +34,50 @@ export const useConnectionHandler = () => {
         switch(option) {
           case 'new_screen':
             toast({
-              title: "New Screen Connection",
+              title: "Creating New Screen",
               description: `Creating new screen connected to element: ${elementId}`,
             });
+            
+            // Create a new screen if widget ID is available
+            if (widgetId) {
+              try {
+                const newScreen = await createScreen({
+                  name: "Untitled Screen",
+                  description: "",
+                  framework_type: null
+                });
+                
+                if (newScreen) {
+                  // Store connection info for the new screen
+                  try {
+                    localStorage.setItem(`connected_element_${newScreen.id}`, elementId);
+                  } catch (e) {
+                    console.error("Error storing connection info:", e);
+                  }
+                  
+                  // Navigate to the widget screens page with the new screen
+                  navigate(`/widgets/${widgetId}/screens`);
+                  
+                  toast({
+                    title: "Success",
+                    description: "New screen created and connected to element",
+                  });
+                }
+              } catch (error) {
+                console.error("Error creating screen:", error);
+                toast({
+                  title: "Error",
+                  description: "Failed to create new screen",
+                  variant: "destructive"
+                });
+              }
+            } else {
+              toast({
+                title: "Error",
+                description: "Widget ID not available. Cannot create screen.",
+                variant: "destructive"
+              });
+            }
             break;
           case 'existing_screen':
             toast({
@@ -94,9 +139,50 @@ export const useConnectionHandler = () => {
       switch(option) {
         case 'new_screen':
           toast({
-            title: "New Screen Connection",
+            title: "Creating New Screen",
             description: `Creating new screen connection for ${frameworkType}`,
           });
+          
+          // Create a new screen if widget ID is available
+          if (widgetId) {
+            try {
+              const newScreen = await createScreen({
+                name: "Untitled Screen",
+                description: "",
+                framework_type: null
+              });
+              
+              if (newScreen) {
+                // Store connection info
+                try {
+                  localStorage.setItem(`connected_framework_${newScreen.id}`, frameworkType);
+                } catch (e) {
+                  console.error("Error storing connection info:", e);
+                }
+                
+                // Navigate to the widget screens page with the new screen
+                navigate(`/widgets/${widgetId}/screens`);
+                
+                toast({
+                  title: "Success",
+                  description: "New screen created and connected",
+                });
+              }
+            } catch (error) {
+              console.error("Error creating screen:", error);
+              toast({
+                title: "Error",
+                description: "Failed to create new screen",
+                variant: "destructive"
+              });
+            }
+          } else {
+            toast({
+              title: "Error",
+              description: "Widget ID not available. Cannot create screen.",
+              variant: "destructive"
+            });
+          }
           break;
         case 'existing_screen':
           toast({
@@ -132,5 +218,5 @@ export const useConnectionHandler = () => {
     }
   };
 
-  return { handleConnect };
+  return { handleConnect, isConnecting: isLoading };
 };
