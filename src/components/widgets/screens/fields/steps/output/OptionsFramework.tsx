@@ -27,12 +27,7 @@ export function OptionsFramework({
         <h2 className="text-lg font-medium">
           {isRadio ? "Select one option" : "Select options"}
         </h2>
-        <ConnectButton 
-          value={isRadio ? selectedOption : selectedOptions} 
-          context={`options_framework`}
-          onConnect={onConnect}
-          widgetId={widgetId}
-        />
+        {/* Connect button in header removed as requested */}
       </div>
 
       {isRadio ? (
