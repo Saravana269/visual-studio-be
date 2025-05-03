@@ -27,7 +27,7 @@ export function ScreenFieldEditor({
   const { handleFormChange, handleFrameworkChange, updateMetadata } = useStepContentHandlers({
     formData,
     setFormData,
-    onSave,
+    onSave: onSave ? () => onSave(formData) : undefined,
     autoSave
   });
   
