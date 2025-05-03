@@ -49,11 +49,10 @@ export function useStepSaving({ formData, onStepSave }: UseStepSavingProps) {
     return dataToSave;
   };
 
-  // Save current step data with option to navigate to specific step after saving
+  // Save current step data
   const saveCurrentStep = async (
     currentStep: number,
-    createFramework: boolean = false,
-    navigateToStepAfter?: number
+    createFramework: boolean = false
   ): Promise<boolean> => {
     // Prepare data to save based on current step
     const dataToSave = prepareStepData(currentStep);

@@ -53,10 +53,12 @@ export function ScreenDefinePanelContent({
 
   // Function to handle updating the framework without advancing to the next step
   const handleUpdateFramework = async () => {
-    // Save current step with createFramework=true and navigate to step 4 after success
-    const success = await saveCurrentStep(true, 4);
+    // Save current step with createFramework=true
+    const success = await saveCurrentStep(true);
     
     if (success) {
+      // Successfully updated framework, now manually navigate to step 4
+      goToStep(4);
       toast({
         title: "Success",
         description: "Framework updated successfully",

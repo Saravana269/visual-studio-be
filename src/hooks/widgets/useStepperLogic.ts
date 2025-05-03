@@ -49,7 +49,7 @@ export function useStepperLogic({
   };
 
   // Save current step with validation
-  const saveCurrentStep = async (createFramework: boolean = false, navigateToStepAfter?: number): Promise<boolean> => {
+  const saveCurrentStep = async (createFramework: boolean = false): Promise<boolean> => {
     // Validate the current step
     const isValid = validateCurrentStep();
     
@@ -57,7 +57,7 @@ export function useStepperLogic({
       return false;
     }
     
-    return saveStep(currentStep, createFramework, navigateToStepAfter);
+    return saveStep(currentStep, createFramework);
   };
 
   return {
