@@ -36,6 +36,13 @@ export type Database = {
             foreignKeyName: "bom_components_component_id_fkey"
             columns: ["component_id"]
             isOneToOne: true
+            referencedRelation: "component_id_debug_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bom_components_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: true
             referencedRelation: "components"
             referencedColumns: ["id"]
           },
@@ -444,6 +451,13 @@ export type Database = {
             foreignKeyName: "files_component_id_fkey"
             columns: ["component_id"]
             isOneToOne: false
+            referencedRelation: "component_id_debug_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "files_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
             referencedRelation: "components"
             referencedColumns: ["id"]
           },
@@ -683,6 +697,13 @@ export type Database = {
             foreignKeyName: "specific_details_component_id_fkey"
             columns: ["component_id"]
             isOneToOne: false
+            referencedRelation: "component_id_debug_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specific_details_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
             referencedRelation: "components"
             referencedColumns: ["id"]
           },
@@ -847,7 +868,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      component_id_debug_view: {
+        Row: {
+          component_id_code: string | null
+          created_at: string | null
+          id: string | null
+          name: string | null
+          sub_classification_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "components_sub_classification_id_fkey"
+            columns: ["sub_classification_id"]
+            isOneToOne: false
+            referencedRelation: "sub_classification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_component_to_bom: {
@@ -860,22 +898,15 @@ export type Database = {
         }[]
       }
       generate_component_id_code: {
-        Args:
-          | {
-              p_menu_code: string
-              p_submenu_code: string
-              p_classification_code: string
-              p_subclassification_code: string
-              p_component_name: string
-            }
-          | {
-              p_menu_code: string
-              p_submenu_code: string
-              p_classification_code: string
-              p_subclassification_code: string
-              p_component_name: string
-              p_component_type_head_id?: string
-            }
+        Args: {
+          p_menu_code: string
+          p_submenu_code: string
+          p_classification_code: string
+          p_subclassification_code: string
+          p_component_name: string
+          p_component_type_head_id?: string
+          p_short_code?: string
+        }
         Returns: string
       }
       generate_short_code: {
@@ -895,6 +926,14 @@ export type Database = {
       is_component_in_bom: {
         Args: { p_component_id: string; p_user_id: string }
         Returns: boolean
+      }
+      show_component_id_function_usage: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          function_name: string
+          parameter_list: string
+          function_body: string
+        }[]
       }
     }
     Enums: {

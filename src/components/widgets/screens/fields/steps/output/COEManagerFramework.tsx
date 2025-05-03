@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from "react";
-import { ConnectButton } from "./ConnectButton";
 import { useCOEData } from "@/hooks/useCOEData";
 import { useCOEElements } from "@/hooks/useCOEElements";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ElementCard } from "./ElementCard";
 
 interface COEManagerFrameworkProps {
   coeId: string | null | undefined;
@@ -31,29 +31,36 @@ export const COEManagerFramework = ({ coeId, onConnect }: COEManagerFrameworkPro
       <div className="p-3 border border-gray-800 rounded-md">
         {coeId ? (
           <div className="space-y-3">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-medium">{selectedCoe?.name || 'Selected COE'}</p>
-                {selectedCoe?.description && (
-                  <p className="text-sm text-gray-400">{selectedCoe.description}</p>
-                )}
-              </div>
-              <ConnectButton value={coeId} context="coe_id" onConnect={onConnect} />
+            <div>
+              <p className="font-medium">{selectedCoe?.name || 'Selected COE'}</p>
+              {selectedCoe?.description && (
+                <p className="text-sm text-gray-400">{selectedCoe.description}</p>
+              )}
             </div>
 
             {/* Display associated elements when available */}
-            {coeElements && coeElements.length > 0 && (
-              <div className="mt-3">
+            {coeElements && coeElements.length > 0 ? (
+              <div className="mt-4">
                 <p className="text-sm font-medium mb-2">Associated Elements ({coeElements.length})</p>
-                <ScrollArea className="h-[150px]">
-                  <div className="space-y-2">
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2 pr-2">
                     {coeElements.map(element => (
-                      <div key={element.id} className="p-2 border border-gray-800 rounded-md bg-black/20 text-sm">
-                        {element.name}
-                      </div>
+                      <ElementCard 
+                        key={element.id} 
+                        element={element} 
+                        onConnect={(value) => onConnect(value, `element_id_${element.id}`)}
+                      />
                     ))}
                   </div>
                 </ScrollArea>
+              </div>
+            ) : isLoadingElements ? (
+              <div className="mt-3 text-center py-4">
+                <p className="text-sm text-gray-400">Loading elements...</p>
+              </div>
+            ) : (
+              <div className="mt-3 text-center py-4">
+                <p className="text-sm text-gray-400">No elements in this COE yet</p>
               </div>
             )}
           </div>
