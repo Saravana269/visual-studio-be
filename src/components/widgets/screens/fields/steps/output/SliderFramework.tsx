@@ -7,9 +7,10 @@ interface SliderFrameworkProps {
   max: number;
   step: number;
   onConnect: (value: any, context?: string) => void;
+  widgetId?: string;
 }
 
-export const SliderFramework = ({ min, max, step, onConnect }: SliderFrameworkProps) => {
+export const SliderFramework = ({ min, max, step, onConnect, widgetId }: SliderFrameworkProps) => {
   return (
     <div className="space-y-3">
       <h4 className="text-base font-medium">Slider Configuration</h4>
@@ -20,7 +21,7 @@ export const SliderFramework = ({ min, max, step, onConnect }: SliderFrameworkPr
               <p className="text-xs text-gray-400">Min Value</p>
               <p className="text-sm font-medium">{min || 0}</p>
             </div>
-            <ConnectButton value={min || 0} context="min_value" onConnect={onConnect} />
+            <ConnectButton value={min || 0} context="min_value" onConnect={onConnect} widgetId={widgetId} />
           </div>
         </div>
         <div className="p-2 border border-gray-800 rounded-md">
@@ -29,7 +30,7 @@ export const SliderFramework = ({ min, max, step, onConnect }: SliderFrameworkPr
               <p className="text-xs text-gray-400">Max Value</p>
               <p className="text-sm font-medium">{max || 100}</p>
             </div>
-            <ConnectButton value={max || 100} context="max_value" onConnect={onConnect} />
+            <ConnectButton value={max || 100} context="max_value" onConnect={onConnect} widgetId={widgetId} />
           </div>
         </div>
         <div className="p-2 border border-gray-800 rounded-md">
@@ -38,7 +39,7 @@ export const SliderFramework = ({ min, max, step, onConnect }: SliderFrameworkPr
               <p className="text-xs text-gray-400">Step</p>
               <p className="text-sm font-medium">{step || 1}</p>
             </div>
-            <ConnectButton value={step || 1} context="step_value" onConnect={onConnect} />
+            <ConnectButton value={step || 1} context="step_value" onConnect={onConnect} widgetId={widgetId} />
           </div>
         </div>
       </div>

@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 interface YesNoFrameworkProps {
   value: boolean | null | string;
   onConnect: (value: any, context?: string) => void;
+  widgetId?: string;
 }
 
-export const YesNoFramework = ({ value, onConnect }: YesNoFrameworkProps) => {
+export const YesNoFramework = ({ value, onConnect, widgetId }: YesNoFrameworkProps) => {
   // Convert string or boolean values to boolean for the toggle
   const isEnabled = value === true || value === "yes" || value === "true";
   
@@ -28,7 +29,8 @@ export const YesNoFramework = ({ value, onConnect }: YesNoFrameworkProps) => {
           <ConnectButton 
             value={isEnabled ? true : false} 
             context="toggle_value" 
-            onConnect={onConnect} 
+            onConnect={onConnect}
+            widgetId={widgetId}
           />
         </div>
       </div>
@@ -37,13 +39,13 @@ export const YesNoFramework = ({ value, onConnect }: YesNoFrameworkProps) => {
         <div className="p-2 border border-gray-800 rounded-md flex-1 bg-black/30">
           <div className="flex items-center justify-between">
             <p className="text-sm">Yes</p>
-            <ConnectButton value={true} context="yes_option" onConnect={onConnect} />
+            <ConnectButton value={true} context="yes_option" onConnect={onConnect} widgetId={widgetId} />
           </div>
         </div>
         <div className="p-2 border border-gray-800 rounded-md flex-1 bg-black/30">
           <div className="flex items-center justify-between">
             <p className="text-sm">No</p>
-            <ConnectButton value={false} context="no_option" onConnect={onConnect} />
+            <ConnectButton value={false} context="no_option" onConnect={onConnect} widgetId={widgetId} />
           </div>
         </div>
       </div>

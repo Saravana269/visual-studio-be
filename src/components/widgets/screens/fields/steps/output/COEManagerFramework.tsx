@@ -8,9 +8,10 @@ import { ElementCard } from "./ElementCard";
 interface COEManagerFrameworkProps {
   coeId: string | null | undefined;
   onConnect: (value: any, context?: string) => void;
+  widgetId?: string;
 }
 
-export const COEManagerFramework = ({ coeId, onConnect }: COEManagerFrameworkProps) => {
+export const COEManagerFramework = ({ coeId, onConnect, widgetId }: COEManagerFrameworkProps) => {
   const { data: coes } = useCOEData();
   const [selectedCoe, setSelectedCoe] = useState<any>(null);
   const { data: coeElements = [], isLoading: isLoadingElements } = useCOEElements(coeId);
@@ -49,6 +50,7 @@ export const COEManagerFramework = ({ coeId, onConnect }: COEManagerFrameworkPro
                         key={element.id} 
                         element={element} 
                         onConnect={(value) => onConnect(value, `element_id_${element.id}`)}
+                        widgetId={widgetId}
                       />
                     ))}
                   </div>

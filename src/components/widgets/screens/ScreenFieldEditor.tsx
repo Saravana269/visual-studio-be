@@ -45,7 +45,7 @@ export function ScreenFieldEditor({
   }, [formData, autoSave, onSave]);
 
   return (
-    <StepContent>
+    <div className="h-full">
       <StepResolver
         currentStep={currentStepperStep}
         formData={formData}
@@ -55,6 +55,6 @@ export function ScreenFieldEditor({
         handleConnect={handleConnect}
         widgetId={widgetId}
       />
-    </StepContent>
+    </div>
   );
 }

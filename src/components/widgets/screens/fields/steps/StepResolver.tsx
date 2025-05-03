@@ -56,6 +56,7 @@ export const StepResolver: React.FC<StepResolverProps> = ({
           frameworkType={formData.framework_type}
           metadata={formData.metadata || {}}
           onConnect={handleConnect}
+          widgetId={widgetId}
         />
       );
     default:

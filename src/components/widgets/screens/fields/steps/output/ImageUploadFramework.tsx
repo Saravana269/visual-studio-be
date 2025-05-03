@@ -5,9 +5,10 @@ import { ConnectButton } from "./ConnectButton";
 interface ImageUploadFrameworkProps {
   imageUrl: string | undefined;
   onConnect: (value: any, context?: string) => void;
+  widgetId?: string;
 }
 
-export const ImageUploadFramework = ({ imageUrl, onConnect }: ImageUploadFrameworkProps) => {
+export const ImageUploadFramework = ({ imageUrl, onConnect, widgetId }: ImageUploadFrameworkProps) => {
   return (
     <div className="space-y-3">
       <h4 className="text-base font-medium">Image Upload Configuration</h4>
@@ -23,7 +24,7 @@ export const ImageUploadFramework = ({ imageUrl, onConnect }: ImageUploadFramewo
                 />
               </div>
               <div className="ml-2 pt-1">
-                <ConnectButton value={imageUrl} context="image_url" onConnect={onConnect} />
+                <ConnectButton value={imageUrl} context="image_url" onConnect={onConnect} widgetId={widgetId} />
               </div>
             </div>
           </div>

@@ -10,17 +10,15 @@ import { YesNoFramework } from "./output/YesNoFramework";
 import { ImageUploadFramework } from "./output/ImageUploadFramework";
 import { COEManagerFramework } from "./output/COEManagerFramework";
 import { FrameworkPreviewContainer } from "./output/FrameworkPreviewContainer";
-import { useParams } from "react-router-dom";
 
 interface OutputStepProps {
   frameworkType: string | null;
   metadata: Record<string, any>;
   onConnect: (frameworkType: string, value: any, context?: string) => void;
+  widgetId?: string;
 }
 
-export function OutputStep({ frameworkType, metadata, onConnect }: OutputStepProps) {
-  const { id: widgetId } = useParams<{ id: string }>();
-  
+export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: OutputStepProps) {
   if (!frameworkType) {
     return <NoFrameworkSelected />;
   }

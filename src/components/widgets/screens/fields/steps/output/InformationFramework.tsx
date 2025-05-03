@@ -5,9 +5,10 @@ import { ConnectButton } from "./ConnectButton";
 interface InformationFrameworkProps {
   text: string | undefined;
   onConnect: (value: any, context?: string) => void;
+  widgetId?: string;
 }
 
-export const InformationFramework = ({ text, onConnect }: InformationFrameworkProps) => {
+export const InformationFramework = ({ text, onConnect, widgetId }: InformationFrameworkProps) => {
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium">Information Content</h4>
@@ -19,7 +20,7 @@ export const InformationFramework = ({ text, onConnect }: InformationFrameworkPr
             ) : (
               <p className="text-gray-500 text-sm">No information text provided</p>
             )}
-            {text && <ConnectButton value={text} context="info_text" onConnect={onConnect} />}
+            {text && <ConnectButton value={text} context="info_text" onConnect={onConnect} widgetId={widgetId} />}
           </div>
         </div>
       </div>
