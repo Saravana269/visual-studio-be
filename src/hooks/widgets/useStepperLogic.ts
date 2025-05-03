@@ -17,7 +17,31 @@ export function useStepperLogic({
   formData,
   onStepSave
 }: UseStepperLogicProps) {
-  // Get step navigation functionality
+  // Get step validation functionality
+  const { validateCurrentStep: validateStep } = useStepValidation({
+    formData
+  });
+
+  // Get step saving functionality
+  const { isStepSaving, saveCurrentStep: saveStep } = useStepSaving({
+    formData,
+    onStepSave
+  });
+
+  // Function to save the current step before navigation
+  const saveBeforeNavigate = async (currentStep: number): Promise<boolean> => {
+    // Validate the current step
+    const isValid = validateStep(currentStep);
+    
+    if (!isValid) {
+      return false;
+    }
+    
+    // If validation passes, try to save
+    return await saveStep(currentStep, false);
+  };
+
+  // Get step navigation functionality with save-before-navigate
   const {
     currentStep,
     goToNextStep,
@@ -29,18 +53,8 @@ export function useStepperLogic({
   } = useStepNavigation({
     steps,
     formData,
-    initialStep
-  });
-
-  // Get step validation functionality
-  const { validateCurrentStep: validateStep } = useStepValidation({
-    formData
-  });
-
-  // Get step saving functionality
-  const { isStepSaving, saveCurrentStep: saveStep } = useStepSaving({
-    formData,
-    onStepSave
+    initialStep,
+    onSaveBefore: saveBeforeNavigate
   });
 
   // Validate the current step

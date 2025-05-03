@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ScreenFormData } from "@/types/screen";
 import { useToast } from "@/hooks/use-toast";
@@ -7,12 +6,14 @@ export interface UseStepNavigationProps {
   steps: { id: number; label: string }[];
   formData: ScreenFormData;
   initialStep?: number;
+  onSaveBefore?: (step: number) => Promise<boolean>; // New prop for saving before navigation
 }
 
 export function useStepNavigation({ 
   steps, 
   formData,
-  initialStep = 1 
+  initialStep = 1,
+  onSaveBefore
 }: UseStepNavigationProps) {
   const { toast } = useToast();
   const [stepperStep, setStepperStep] = useState<number>(initialStep);
@@ -69,16 +70,34 @@ export function useStepNavigation({
     return disabledSteps;
   };
   
-  // Handle clicking on a step number
-  const handleStepClick = (targetStep: number): boolean => {
+  // Handle clicking on a step number - now with saving logic
+  const handleStepClick = async (targetStep: number): Promise<boolean> => {
     // Always allow backward navigation
     if (targetStep <= stepperStep) {
+      // For backward navigation, we should still save the current step
+      // but we don't block navigation if saving fails
+      if (onSaveBefore) {
+        await onSaveBefore(stepperStep);
+      }
       setStepperStep(targetStep);
       return true;
     }
     
     // For forward navigation, check requirements
     if (canNavigateToStep(targetStep)) {
+      // Try to save current step before navigating
+      if (onSaveBefore) {
+        const saveSucceeded = await onSaveBefore(stepperStep);
+        if (!saveSucceeded) {
+          toast({
+            title: "Save Failed",
+            description: "Unable to save your changes. Please try again.",
+            variant: "destructive"
+          });
+          return false;
+        }
+      }
+      
       setStepperStep(targetStep);
       return true;
     } else {
@@ -92,23 +111,54 @@ export function useStepNavigation({
     }
   };
 
-  // Function to go to the next step
-  const goToNextStep = () => {
+  // Function to go to the next step - now with saving logic
+  const goToNextStep = async () => {
     if (stepperStep < steps.length) {
+      // Try to save current step before going to next
+      if (onSaveBefore) {
+        const saveSucceeded = await onSaveBefore(stepperStep);
+        if (!saveSucceeded) {
+          toast({
+            title: "Save Failed",
+            description: "Unable to save your changes. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+      
       setStepperStep(stepperStep + 1);
     }
   };
 
   // Function to go to the previous step
-  const goToPrevStep = () => {
+  const goToPrevStep = async () => {
     if (stepperStep > 1) {
+      // Optional: save current step before going back
+      if (onSaveBefore) {
+        await onSaveBefore(stepperStep);
+      }
+      
       setStepperStep(stepperStep - 1);
     }
   };
 
   // Function to navigate directly to a step
-  const goToStep = (step: number) => {
+  const goToStep = async (step: number) => {
     if (step >= 1 && step <= steps.length) {
+      // Try to save current step before changing steps
+      if (onSaveBefore) {
+        const saveSucceeded = await onSaveBefore(stepperStep);
+        if (!saveSucceeded && step > stepperStep) {
+          toast({
+            title: "Save Failed",
+            description: "Unable to save your changes. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+      
       setStepperStep(step);
     }
   };

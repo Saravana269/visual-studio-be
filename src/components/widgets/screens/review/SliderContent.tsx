@@ -14,8 +14,10 @@ export function SliderContent({ metadata, onConnect }: SliderContentProps) {
   // Generate the list of values based on min, max, and step
   const generateValues = () => {
     const values = [];
-    for (let i = min + step; i <= max; i += step) {
-      values.push(i);
+    for (let i = min; i <= max; i += step) {
+      if (i > min) { // Skip the min value itself
+        values.push(i);
+      }
     }
     return values;
   };
@@ -35,6 +37,14 @@ export function SliderContent({ metadata, onConnect }: SliderContentProps) {
                 className="flex items-center justify-between p-2 rounded border border-[#00FF00]/20 bg-black/30"
               >
                 <span className="text-sm">{value}</span>
+                {onConnect && (
+                  <button 
+                    onClick={() => onConnect(value, `slider_value_${value}`)}
+                    className="px-2 py-1 text-xs text-[#00FF00] hover:bg-[#00FF00]/20 rounded"
+                  >
+                    Connect
+                  </button>
+                )}
               </div>
             ))
           ) : (

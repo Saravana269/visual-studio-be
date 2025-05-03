@@ -67,7 +67,7 @@ export function ScreenDefinePanelContent({
   };
 
   // Function to handle final save with validation
-  const handleFinalSave = () => {
+  const handleFinalSave = async () => {
     // Validate the current step
     const isValid = validateCurrentStep();
     
@@ -75,8 +75,26 @@ export function ScreenDefinePanelContent({
       return;
     }
     
-    // If all validations pass, save the form
+    // Try to save the current step first
+    const saveSuccess = await saveCurrentStep();
+    
+    if (!saveSuccess) {
+      toast({
+        title: "Error",
+        description: "Failed to save current step. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // If all validations pass and step saved, save the entire form
     onSave(formData);
+  };
+
+  // Handle next step click with saving
+  const handleNextClick = async () => {
+    // goToNextStep already includes saving logic
+    goToNextStep();
   };
 
   return (
@@ -114,7 +132,7 @@ export function ScreenDefinePanelContent({
           currentStep={currentStep}
           totalSteps={steps.length}
           onPrevious={goToPrevStep}
-          onNext={goToNextStep}
+          onNext={handleNextClick}
           onSave={handleFinalSave}
           onUpdateFramework={currentStep === 3 ? handleUpdateFramework : undefined}
           isPreviousDisabled={currentStep === 1 || isStepSaving || isLoading}
