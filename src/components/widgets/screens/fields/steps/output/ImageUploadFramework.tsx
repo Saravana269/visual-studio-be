@@ -12,6 +12,9 @@ interface ImageUploadFrameworkProps {
 
 export function ImageUploadFramework({ imageUrl, onConnect, widgetId }: ImageUploadFrameworkProps) {
   const handleOptionSelect = (option: string) => {
+    // Log the option selection and widget ID
+    console.log("🔘 Image Upload option selected:", { option, widgetId });
+    
     // Append the selected option to the context
     onConnect(imageUrl || null, `imageUpload:${option}`);
   };
@@ -40,6 +43,7 @@ export function ImageUploadFramework({ imageUrl, onConnect, widgetId }: ImageUpl
             <Button 
               variant="outline" 
               className="border-[#00FF00] text-[#00FF00] hover:bg-[#00FF00]/10"
+              onClick={() => console.log("📱 Image Upload Connect button clicked with widgetId:", widgetId)}
             >
               Connect
             </Button>

@@ -40,6 +40,8 @@ export const useConnectionHandler = (widgetId?: string) => {
   
   // Store selected COE in local storage for demo purposes
   const handleConnect = async (frameworkType: string, value: any, context?: string) => {
+    console.log("🔗 Handle Connect called:", { frameworkType, context, widgetId });
+    
     if (!context) {
       // Default generic connection
       toast({
@@ -60,6 +62,8 @@ export const useConnectionHandler = (widgetId?: string) => {
       const elementId = elementContext.replace('element_id_', '');
       
       if (option) {
+        console.log(`📌 Element connection option selected: ${option} for element ${elementId}`);
+        
         // Handle specific options
         switch(option) {
           case 'new_screen':
@@ -107,6 +111,7 @@ export const useConnectionHandler = (widgetId?: string) => {
     } else if (context?.includes(':')) {
       // Handle other contexts with options
       const [baseContext, option] = context.split(':');
+      console.log(`📌 Framework connection option selected: ${option} for context ${baseContext}`);
       
       // Handle based on option
       switch(option) {
@@ -115,6 +120,7 @@ export const useConnectionHandler = (widgetId?: string) => {
           break;
           
         case 'existing_screen':
+          console.log("🔍 Handling existing screen for framework", { baseContext, frameworkType, value, widgetId });
           await handleExistingScreenForFramework(baseContext, frameworkType, value);
           break;
           
@@ -144,7 +150,12 @@ export const useConnectionHandler = (widgetId?: string) => {
 
   // Handle connection to existing screen
   const handleExistingScreenConnect = (selectedScreenId: string) => {
-    if (!connectionContext) return;
+    console.log("🔄 Existing screen selected for connection", { selectedScreenId, connectionContext });
+    
+    if (!connectionContext) {
+      console.warn("⚠️ No connection context available when trying to connect to existing screen");
+      return;
+    }
     
     if (connectionContext.context?.startsWith('element_id_')) {
       const elementId = connectionContext.context.replace('element_id_', '');
@@ -160,6 +171,14 @@ export const useConnectionHandler = (widgetId?: string) => {
     
     // Clear state
     setConnectionContext(null);
+    
+    // Close dialog after connection
+    setIsExistingScreenDialogOpen(false);
+    
+    toast({
+      title: "Screen Connected",
+      description: "Successfully connected to the selected screen",
+    });
   };
 
   return { 

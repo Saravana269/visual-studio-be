@@ -41,7 +41,10 @@ export const useConnectionHandlers = (widgetId?: string) => {
   
   // Handle "existing_screen" option for an element
   const handleExistingScreenForElement = async (elementId: string) => {
+    console.log("🔍 Handling existing screen for element", { elementId, widgetId });
+    
     if (!widgetId) {
+      console.error("❌ Widget ID not available for existing screen selection");
       toast({
         title: "Error",
         description: "Widget ID not available",
@@ -51,14 +54,35 @@ export const useConnectionHandlers = (widgetId?: string) => {
     }
     
     const currentScreenId = localStorage.getItem('current_screen_id');
-    const screenData = await fetchCurrentScreen(currentScreenId);
+    console.log("📋 Current screen ID from localStorage:", currentScreenId);
     
-    setCurrentScreen(screenData);
-    setConnectionContext({ 
-      value: elementId, 
-      context: `element_id_${elementId}`,
-    });
-    setIsExistingScreenDialogOpen(true);
+    try {
+      const screenData = await fetchCurrentScreen(currentScreenId);
+      console.log("📊 Current screen data:", screenData);
+      
+      if (screenData) {
+        setCurrentScreen(screenData);
+        setConnectionContext({ 
+          value: elementId, 
+          context: `element_id_${elementId}`,
+        });
+        setIsExistingScreenDialogOpen(true);
+      } else {
+        console.error("❌ Failed to fetch current screen data");
+        toast({
+          title: "Error",
+          description: "Could not load current screen information",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error fetching current screen:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load screen information",
+        variant: "destructive"
+      });
+    }
   };
   
   // Handle "connect_widget" option for an element
@@ -94,7 +118,10 @@ export const useConnectionHandlers = (widgetId?: string) => {
   
   // Handle existing screen selection for framework
   const handleExistingScreenForFramework = async (baseContext: string, frameworkType: string, value: any) => {
+    console.log("🔍 Handling existing screen for framework", { baseContext, frameworkType, value, widgetId });
+    
     if (!widgetId) {
+      console.error("❌ Widget ID not available for existing screen selection");
       toast({
         title: "Error",
         description: "Widget ID not available",
@@ -104,15 +131,36 @@ export const useConnectionHandlers = (widgetId?: string) => {
     }
     
     const currentScreenId = localStorage.getItem('current_screen_id');
-    const screenData = await fetchCurrentScreen(currentScreenId);
+    console.log("📋 Current screen ID from localStorage:", currentScreenId);
     
-    setCurrentScreen(screenData);
-    setConnectionContext({ 
-      value, 
-      context: baseContext,
-      frameType: frameworkType
-    });
-    setIsExistingScreenDialogOpen(true);
+    try {
+      const screenData = await fetchCurrentScreen(currentScreenId);
+      console.log("📊 Current screen data:", screenData);
+      
+      if (screenData) {
+        setCurrentScreen(screenData);
+        setConnectionContext({ 
+          value, 
+          context: baseContext,
+          frameType: frameworkType
+        });
+        setIsExistingScreenDialogOpen(true);
+      } else {
+        console.error("❌ Failed to fetch current screen data");
+        toast({
+          title: "Error",
+          description: "Could not load current screen information",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error fetching current screen:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load screen information",
+        variant: "destructive"
+      });
+    }
   };
   
   // Handle connecting framework to another widget

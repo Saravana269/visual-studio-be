@@ -19,11 +19,15 @@ interface OutputStepProps {
 }
 
 export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: OutputStepProps) {
+  console.log("🖼️ Rendering OutputStep with:", { frameworkType, widgetId });
+  
   if (!frameworkType) {
     return <NoFrameworkSelected />;
   }
 
   const handleConnect = (value: any, context?: string) => {
+    console.log("🔗 OutputStep handleConnect called with:", { value, context, frameworkType, widgetId });
+    
     if (frameworkType) {
       onConnect(frameworkType, value, context);
     }

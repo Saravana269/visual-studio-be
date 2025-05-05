@@ -54,18 +54,40 @@ export const useScreenConnection = (widgetId?: string) => {
   
   // Fetch current screen data
   const fetchCurrentScreen = async (currentScreenId: string | null) => {
-    if (!currentScreenId) return null;
+    console.log("🔍 Fetching current screen with ID:", currentScreenId);
+    
+    if (!currentScreenId) {
+      console.warn("⚠️ No current screen ID provided");
+      // Try to get active screen from URL if not in localStorage
+      const path = window.location.pathname;
+      const matches = path.match(/\/widgets\/([^\/]+)\/screens\/([^\/]+)/);
+      
+      if (matches && matches.length >= 3) {
+        currentScreenId = matches[2];
+        console.log("📌 Extracted screen ID from URL:", currentScreenId);
+      } else {
+        console.error("❌ Could not determine current screen ID");
+        return null;
+      }
+    }
     
     try {
-      const { data: screenData } = await supabase
+      console.log("🔄 Fetching screen from Supabase with ID:", currentScreenId);
+      const { data: screenData, error } = await supabase
         .from('screens')
         .select('*')
         .eq('id', currentScreenId)
         .maybeSingle();
       
+      if (error) {
+        console.error("❌ Supabase error fetching screen:", error);
+        throw error;
+      }
+      
+      console.log("✅ Screen data retrieved:", screenData);
       return screenData;
     } catch (error) {
-      console.error("Error fetching current screen:", error);
+      console.error("❌ Error fetching current screen:", error);
       return null;
     }
   };
