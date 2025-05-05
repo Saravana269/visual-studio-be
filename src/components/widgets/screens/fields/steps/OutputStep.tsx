@@ -10,6 +10,7 @@ import { YesNoFramework } from "./output/YesNoFramework";
 import { ImageUploadFramework } from "./output/ImageUploadFramework";
 import { COEManagerFramework } from "./output/COEManagerFramework";
 import { FrameworkPreviewContainer } from "./output/FrameworkPreviewContainer";
+import { useParams } from "react-router-dom";
 
 interface OutputStepProps {
   frameworkType: string | null;
@@ -19,14 +20,29 @@ interface OutputStepProps {
 }
 
 export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: OutputStepProps) {
-  console.log("🖼️ Rendering OutputStep with:", { frameworkType, widgetId });
+  // Get current widget ID from URL if available
+  const { id: urlWidgetId } = useParams<{ id: string }>();
+  
+  // Use the URL widget ID if the prop is not provided
+  const effectiveWidgetId = widgetId || urlWidgetId;
+  
+  console.log("🖼️ Rendering OutputStep with:", { 
+    frameworkType, 
+    widgetId: effectiveWidgetId,
+    urlWidgetId
+  });
   
   if (!frameworkType) {
     return <NoFrameworkSelected />;
   }
 
   const handleConnect = (value: any, context?: string) => {
-    console.log("🔗 OutputStep handleConnect called with:", { value, context, frameworkType, widgetId });
+    console.log("🔗 OutputStep handleConnect called with:", { 
+      value, 
+      context, 
+      frameworkType, 
+      widgetId: effectiveWidgetId 
+    });
     
     if (frameworkType) {
       onConnect(frameworkType, value, context);
@@ -44,7 +60,7 @@ export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: Out
               options={metadata?.options || []} 
               isRadio={frameworkType === "Radio Button"}
               onConnect={handleConnect} 
-              widgetId={widgetId}
+              widgetId={effectiveWidgetId}
             />
           ) : frameworkType === "Slider" ? (
             <SliderFramework 
@@ -52,31 +68,31 @@ export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: Out
               max={metadata?.max} 
               step={metadata?.step} 
               onConnect={handleConnect}
-              widgetId={widgetId}
+              widgetId={effectiveWidgetId}
             />
           ) : frameworkType === "Information" ? (
             <InformationFramework 
               text={metadata?.text} 
               onConnect={handleConnect}
-              widgetId={widgetId}
+              widgetId={effectiveWidgetId}
             />
           ) : frameworkType === "Yes / No" ? (
             <YesNoFramework 
               value={metadata?.value} 
               onConnect={handleConnect} 
-              widgetId={widgetId}
+              widgetId={effectiveWidgetId}
             />
           ) : frameworkType === "Image Upload" ? (
             <ImageUploadFramework 
               imageUrl={metadata?.image_url} 
               onConnect={handleConnect}
-              widgetId={widgetId}
+              widgetId={effectiveWidgetId}
             />
           ) : frameworkType === "COE Manager" ? (
             <COEManagerFramework 
               coeId={metadata?.coe_id} 
               onConnect={handleConnect}
-              widgetId={widgetId}
+              widgetId={effectiveWidgetId}
             />
           ) : (
             <p className="text-gray-400">No preview available for this framework type.</p>

@@ -6,6 +6,7 @@ import { AppHeader } from "./components/layout/AppHeader";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { supabase } from "@/integrations/supabase/client";
+import { ConnectionDialogProvider } from "./context/ConnectionDialogContext";
 
 // Import pages
 import ElementsManager from "./pages/ElementsManager";
@@ -82,40 +83,42 @@ function App() {
   return (
     <Router>
       <TooltipProvider>
-        <div className="flex h-screen bg-black text-white">
-          <Sidebar onSignOut={() => supabase.auth.signOut()} />
-          
-          <div className="flex-1 flex flex-col ml-16">
-            <AppHeader />
+        <ConnectionDialogProvider>
+          <div className="flex h-screen bg-black text-white">
+            <Sidebar onSignOut={() => supabase.auth.signOut()} />
             
-            <main className="flex-1 p-6 mt-16 overflow-y-auto">
-              <Routes>
-                {/* Redirect root path to elements */}
-                <Route path="/" element={<Navigate to="/elements" replace />} />
-                
-                {/* Main application routes */}
-                <Route path="/elements" element={<ElementsManager />} />
-                <Route path="/coe" element={<COEManager />} />
-                <Route path="/coe/:id" element={<COEDetailView />} />
-                <Route path="/core-set" element={<CoreSetManager />} />
-                <Route path="/core-set/:id" element={<CoreSetDetails />} />
-                <Route path="/core-set/:id/assignment" element={<CoreSetAssignment />} />
-                <Route path="/widgets" element={<WidgetManager />} />
-                <Route path="/widgets/:id/screens" element={<WidgetScreenManager />} />
-                <Route path="/settings" element={<Settings />} />
-                
-                {/* Auth routes redirect to elements if already authenticated */}
-                <Route path="/auth" element={<Navigate to="/elements" replace />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                
-                {/* Catch all for unknown routes */}
-                <Route path="*" element={<Navigate to="/elements" replace />} />
-              </Routes>
-            </main>
+            <div className="flex-1 flex flex-col ml-16">
+              <AppHeader />
+              
+              <main className="flex-1 p-6 mt-16 overflow-y-auto">
+                <Routes>
+                  {/* Redirect root path to elements */}
+                  <Route path="/" element={<Navigate to="/elements" replace />} />
+                  
+                  {/* Main application routes */}
+                  <Route path="/elements" element={<ElementsManager />} />
+                  <Route path="/coe" element={<COEManager />} />
+                  <Route path="/coe/:id" element={<COEDetailView />} />
+                  <Route path="/core-set" element={<CoreSetManager />} />
+                  <Route path="/core-set/:id" element={<CoreSetDetails />} />
+                  <Route path="/core-set/:id/assignment" element={<CoreSetAssignment />} />
+                  <Route path="/widgets" element={<WidgetManager />} />
+                  <Route path="/widgets/:id/screens" element={<WidgetScreenManager />} />
+                  <Route path="/settings" element={<Settings />} />
+                  
+                  {/* Auth routes redirect to elements if already authenticated */}
+                  <Route path="/auth" element={<Navigate to="/elements" replace />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  
+                  {/* Catch all for unknown routes */}
+                  <Route path="*" element={<Navigate to="/elements" replace />} />
+                </Routes>
+              </main>
+            </div>
+            
+            <Toaster />
           </div>
-          
-          <Toaster />
-        </div>
+        </ConnectionDialogProvider>
       </TooltipProvider>
     </Router>
   );

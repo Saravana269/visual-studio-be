@@ -1,8 +1,8 @@
+
 import { ScreenReviewPanel } from "./ScreenReviewPanel";
 import { ScreenDefinePanel } from "./ScreenDefinePanel";
 import { ScreenCarouselNav } from "./ScreenCarouselNav";
 import { Screen, ScreenFormData } from "@/types/screen";
-import { ExistingScreenDialog } from "./dialogs/ExistingScreenDialog";
 import { useConnectionHandler } from "@/hooks/widgets/useConnectionHandler";
 import { useEffect } from "react";
 
@@ -42,20 +42,10 @@ export function ScreenContent({
       }
     }
   }, [activeScreen?.id]);
-
-  // Get connection handler for the dialog
-  const { 
-    isExistingScreenDialogOpen, 
-    setIsExistingScreenDialogOpen,
-    currentScreen,
-    handleExistingScreenConnect
-  } = useConnectionHandler(activeScreen?.widget_id);
   
   console.log("⚡ ScreenContent render state:", { 
     activeScreenId: activeScreen?.id,
-    widgetId: activeScreen?.widget_id,
-    isDialogOpen: isExistingScreenDialogOpen,
-    hasCurrentScreen: !!currentScreen
+    widgetId: activeScreen?.widget_id
   });
   
   return (
@@ -95,28 +85,7 @@ export function ScreenContent({
         </div>
       )}
 
-      {/* Existing Screen Selection Dialog - Show regardless of currentScreen state for debugging */}
-      {isExistingScreenDialogOpen && activeScreen && (
-        <>
-          {console.log("🔄 Rendering ExistingScreenDialog with:", {
-            currentScreen,
-            widgetId: activeScreen.widget_id
-          })}
-          <ExistingScreenDialog
-            isOpen={isExistingScreenDialogOpen}
-            onClose={() => {
-              console.log("🚪 Closing ExistingScreenDialog");
-              setIsExistingScreenDialogOpen(false);
-            }}
-            onConnect={(screenId) => {
-              console.log("🔗 Connecting to screen:", screenId);
-              handleExistingScreenConnect(screenId);
-            }}
-            currentScreen={currentScreen || activeScreen}
-            widgetId={activeScreen.widget_id}
-          />
-        </>
-      )}
+      {/* Dialog management is now handled by the global ConnectionDialogProvider */}
     </div>
   );
 }

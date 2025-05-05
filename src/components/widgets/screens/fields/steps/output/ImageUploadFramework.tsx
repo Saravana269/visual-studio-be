@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "./ConnectButton";
 import { ConnectOptionsMenu } from "./ConnectOptionsMenu";
+import { useLocation } from "react-router-dom";
 
 interface ImageUploadFrameworkProps {
   imageUrl: string | null;
@@ -11,6 +12,15 @@ interface ImageUploadFrameworkProps {
 }
 
 export function ImageUploadFramework({ imageUrl, onConnect, widgetId }: ImageUploadFrameworkProps) {
+  const location = useLocation();
+  
+  // Log debug info
+  console.log("🖼️ Rendering ImageUploadFramework with:", { 
+    imageUrl, 
+    widgetId,
+    pathname: location.pathname
+  });
+
   const handleOptionSelect = (option: string) => {
     // Log the option selection and widget ID
     console.log("🔘 Image Upload option selected:", { option, widgetId });

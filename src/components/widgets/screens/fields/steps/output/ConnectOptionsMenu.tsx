@@ -7,6 +7,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Plus, FileText, Link, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { useConnectionDialogs } from "@/context/ConnectionDialogContext";
 
 interface ConnectOptionsMenuProps {
   trigger: React.ReactNode;
@@ -15,6 +17,14 @@ interface ConnectOptionsMenuProps {
 }
 
 export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: ConnectOptionsMenuProps) => {
+  const location = useLocation();
+  const { openExistingScreenDialog } = useConnectionDialogs();
+  
+  // Determine if we're on the elements page
+  const isOnElementsPage = location.pathname.includes('/elements');
+  
+  console.log("🔄 ConnectOptionsMenu rendered with widgetId:", widgetId, "on path:", location.pathname);
+
   const menuOptions = [
     {
       id: "new_screen",
@@ -42,6 +52,24 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
     }
   ];
 
+  // Handle menu option selection with special handling for elements page
+  const handleMenuItemClick = (option: string, event: React.MouseEvent<HTMLDivElement>) => {
+    console.log("🔘 Menu option clicked:", option, "widgetId:", widgetId, "path:", location.pathname);
+    
+    // Special handling for "existing_screen" when we're on elements page
+    if (option === "existing_screen" && isOnElementsPage) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      // Instead of calling onOptionSelect, we trigger the global dialog
+      console.log("🌍 Using global dialog for existing screen on elements page");
+      openExistingScreenDialog(null, "imageUpload", "Image Upload", widgetId);
+    } else {
+      // Normal handling - call the provided onOptionSelect function
+      onOptionSelect(option);
+    }
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -56,7 +84,7 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
           {menuOptions.map((option) => (
             <div
               key={option.id}
-              onClick={() => onOptionSelect(option.id)}
+              onClick={(e) => handleMenuItemClick(option.id, e)}
               className="px-4 py-3 cursor-pointer hover:bg-[#00FF00]/10 transition-colors"
             >
               <div className="flex items-start space-x-3">
