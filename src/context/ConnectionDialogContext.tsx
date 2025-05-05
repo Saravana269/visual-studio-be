@@ -7,7 +7,7 @@ import { useWidgetList } from "@/hooks/widgets/useWidgetList";
 // Define the context type
 interface ConnectionDialogContextType {
   isExistingScreenDialogOpen: boolean;
-  openExistingScreenDialog: (value: any, context?: string, frameType?: string) => void;
+  openExistingScreenDialog: (value: any, context?: string, widgetId?: string) => void;
   closeExistingScreenDialog: () => void;
   handleExistingScreenConnect: (selectedScreenId: string) => void;
 }
@@ -41,9 +41,12 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
   // Get widget list for global context
   const { widgets, isLoading: isLoadingWidgets } = useWidgetList();
   
-  // Open the screen selection dialog
-  const openExistingScreenDialog = (value: any, context?: string, frameType?: string, widgetId?: string) => {
-    console.log("🔍 Global: Opening existing screen dialog with:", { value, context, frameType, widgetId });
+  // Open the screen selection dialog - updated to match usage in ConnectOptionsMenu
+  const openExistingScreenDialog = (value: any, context?: string, widgetId?: string) => {
+    console.log("🔍 Global: Opening existing screen dialog with:", { value, context, widgetId });
+    
+    // Set frameType from context if needed
+    const frameType = context || "unknown";
     
     setConnectionValueContext({ value, context, frameType, widgetId });
     
