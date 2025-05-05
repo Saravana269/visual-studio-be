@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { Screen } from "@/types/screen";
-import { ExistingScreenDialog } from "@/components/widgets/screens/dialogs/ExistingScreenDialog";
 import { useWidgetList } from "@/hooks/widgets/useWidgetList";
 
 // Define the context type
@@ -41,7 +40,7 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
   // Get widget list for global context
   const { widgets, isLoading: isLoadingWidgets } = useWidgetList();
   
-  // Open the screen selection dialog - updated to match usage in ConnectOptionsMenu
+  // Open the screen selection dialog - updated to work with panel-based approach
   const openExistingScreenDialog = (value: any, context?: string, widgetId?: string) => {
     console.log("🔍 Global: Opening existing screen dialog with:", { value, context, widgetId });
     
@@ -67,9 +66,12 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
       });
     }
     
-    // Open the dialog regardless of whether we have a current screen
+    // Open the panel by setting dialog open and dispatching custom event
     console.log("🚪 Global: Setting dialog open to true");
     setIsExistingScreenDialogOpen(true);
+    
+    // Dispatch a custom event to notify components that need to show the panel
+    window.dispatchEvent(new CustomEvent('openConnectionPanel'));
   };
   
   // Close the dialog
@@ -126,17 +128,6 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
   return (
     <ConnectionDialogContext.Provider value={contextValue}>
       {children}
-      
-      {/* Global dialog that can be opened from anywhere */}
-      {isExistingScreenDialogOpen && (
-        <ExistingScreenDialog
-          isOpen={isExistingScreenDialogOpen}
-          onClose={closeExistingScreenDialog}
-          onConnect={handleExistingScreenConnect}
-          currentScreen={currentScreen}
-          widgetId={connectionValueContext?.widgetId || widgets?.[0]?.id}
-        />
-      )}
     </ConnectionDialogContext.Provider>
   );
 };

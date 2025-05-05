@@ -61,10 +61,8 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
       event.preventDefault();
       event.stopPropagation();
       
-      // The issue is here - openExistingScreenDialog is being called with too many arguments
       console.log("🌍 Using global dialog for existing screen on elements page");
       // Fixed: Pass only the required parameters according to the function signature
-      // Original: openExistingScreenDialog(null, "imageUpload", "Image Upload", widgetId);
       openExistingScreenDialog(null, "imageUpload", widgetId);
     } else {
       // Normal handling - call the provided onOptionSelect function
