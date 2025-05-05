@@ -1,37 +1,53 @@
 
 import React from "react";
+import { Button } from "@/components/ui/button";
 import { ConnectButton } from "./ConnectButton";
+import { ConnectOptionsMenu } from "./ConnectOptionsMenu";
 
 interface ImageUploadFrameworkProps {
-  imageUrl: string | undefined;
+  imageUrl: string | null;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
 }
 
-export const ImageUploadFramework = ({ imageUrl, onConnect, widgetId }: ImageUploadFrameworkProps) => {
+export function ImageUploadFramework({ imageUrl, onConnect, widgetId }: ImageUploadFrameworkProps) {
+  const handleOptionSelect = (option: string) => {
+    // Append the selected option to the context
+    onConnect(imageUrl || null, `imageUpload:${option}`);
+  };
+
   return (
-    <div className="space-y-3">
-      <h4 className="text-base font-medium">Image Upload Configuration</h4>
-      <div className="max-h-60 overflow-y-auto">
+    <div className="space-y-6">
+      <div className="flex justify-center">
         {imageUrl ? (
-          <div className="w-full max-w-md">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <img 
-                  src={imageUrl} 
-                  alt="Uploaded preview" 
-                  className="w-full h-auto border border-gray-800 rounded-md"
-                />
-              </div>
-              <div className="ml-2 pt-1">
-                <ConnectButton value={imageUrl} context="image_url" onConnect={onConnect} widgetId={widgetId} />
-              </div>
-            </div>
+          <div className="border border-gray-700 rounded overflow-hidden w-48 h-48 flex items-center justify-center">
+            <img 
+              src={imageUrl} 
+              alt="Uploaded preview"
+              className="max-w-full max-h-full object-contain"
+            />
           </div>
         ) : (
-          <p className="text-gray-500 text-sm">No default image set</p>
+          <div className="border border-gray-700 rounded bg-black/50 w-48 h-48 flex items-center justify-center">
+            <p className="text-gray-500 text-sm">No image uploaded</p>
+          </div>
         )}
+      </div>
+
+      <div className="flex justify-center">
+        <ConnectOptionsMenu 
+          trigger={
+            <Button 
+              variant="outline" 
+              className="border-[#00FF00] text-[#00FF00] hover:bg-[#00FF00]/10"
+            >
+              Connect
+            </Button>
+          }
+          onOptionSelect={handleOptionSelect}
+          widgetId={widgetId}
+        />
       </div>
     </div>
   );
-};
+}
