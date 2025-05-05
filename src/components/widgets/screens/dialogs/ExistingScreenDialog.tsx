@@ -3,11 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Screen } from "@/types/screen";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { CurrentScreenInfo } from "./components/CurrentScreenInfo";
 import { ScreenSelectionList } from "./components/ScreenSelectionList";
 import { ScreenPreviewSection } from "./components/ScreenPreviewSection";
+import { useExistingScreensQuery } from "@/hooks/widgets/useExistingScreensQuery";
+import { useSelectedScreenQuery } from "@/hooks/widgets/useSelectedScreenQuery";
 
 interface ExistingScreenDialogProps {
   isOpen: boolean;
@@ -26,55 +26,15 @@ export function ExistingScreenDialog({
 }: ExistingScreenDialogProps) {
   const [selectedScreenId, setSelectedScreenId] = useState<string | null>(null);
 
-  // Fetch all screens for this widget
-  const { data: screens = [], isLoading } = useQuery({
-    queryKey: ["widget-screens-for-connection", widgetId],
-    queryFn: async () => {
-      if (!widgetId) return [];
-      
-      try {
-        const { data, error } = await supabase
-          .from("screens")
-          .select("*")
-          .eq("widget_id", widgetId)
-          .order("created_at", { ascending: true });
-        
-        if (error) throw error;
-        
-        // Filter out the current screen
-        return (data as Screen[]).filter(screen => 
-          screen.id !== currentScreen?.id
-        );
-      } catch (error) {
-        console.error("Error fetching screens:", error);
-        return [];
-      }
-    },
-    enabled: !!widgetId && isOpen
+  // Use custom hooks for data fetching
+  const { screens, isLoading } = useExistingScreensQuery({ 
+    widgetId, 
+    currentScreenId: currentScreen?.id || null,
+    enabled: isOpen
   });
   
-  // Get details of the selected screen
-  const { data: selectedScreen, isLoading: isLoadingSelectedScreen } = useQuery({
-    queryKey: ["selected-screen-details", selectedScreenId],
-    queryFn: async () => {
-      if (!selectedScreenId) return null;
-      
-      try {
-        const { data, error } = await supabase
-          .from("screens")
-          .select("*")
-          .eq("id", selectedScreenId)
-          .single();
-        
-        if (error) throw error;
-        
-        return data as Screen;
-      } catch (error) {
-        console.error("Error fetching selected screen:", error);
-        return null;
-      }
-    },
-    enabled: !!selectedScreenId
+  const { selectedScreen, isLoading: isLoadingSelectedScreen } = useSelectedScreenQuery({
+    screenId: selectedScreenId
   });
   
   // Reset selection when dialog opens
