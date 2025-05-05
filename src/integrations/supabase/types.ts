@@ -913,6 +913,10 @@ export type Database = {
         Args: { component_name: string }
         Returns: string
       }
+      get_and_increment_component_serial: {
+        Args: { p_prefix: string }
+        Returns: number
+      }
       get_component_type_head_code: {
         Args: { head_id: string }
         Returns: string
