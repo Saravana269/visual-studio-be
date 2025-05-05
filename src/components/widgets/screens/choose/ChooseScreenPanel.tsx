@@ -13,13 +13,15 @@ interface ChooseScreenPanelProps {
   widgetId: string | undefined;
   onScreenSelect: (screenId: string) => void;
   onClose: () => void;
+  isConnectionMode?: boolean;
 }
 
 export function ChooseScreenPanel({
   currentScreen,
   widgetId,
   onScreenSelect,
-  onClose
+  onClose,
+  isConnectionMode = false
 }: ChooseScreenPanelProps) {
   const [selectedScreenId, setSelectedScreenId] = useState<string | null>(null);
 
@@ -41,11 +43,18 @@ export function ChooseScreenPanel({
     }
   };
 
+  // Clear selection when the panel opens
+  useEffect(() => {
+    setSelectedScreenId(null);
+  }, [isConnectionMode]);
+
   return (
     <div className="flex flex-col h-full border border-gray-800 rounded-lg overflow-hidden">
       {/* Fixed header */}
       <div className="bg-[#00FF00] p-4 border-b border-[#00FF00]/30">
-        <h2 className="text-black text-lg font-medium">Choose Screen</h2>
+        <h2 className="text-black text-lg font-medium">
+          {isConnectionMode ? "Choose Existing Screen to Connect" : "Choose Screen"}
+        </h2>
       </div>
       
       {/* Scrollable content area */}

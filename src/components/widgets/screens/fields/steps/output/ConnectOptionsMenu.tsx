@@ -64,7 +64,20 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
       console.log("🌍 Using global dialog for existing screen on elements page");
       // Fixed: Pass only the required parameters according to the function signature
       openExistingScreenDialog(null, "imageUpload", widgetId);
-    } else {
+    } 
+    // Special handling for "existing_screen" on the screens page - use the panel layout
+    else if (option === "existing_screen" && !isOnElementsPage) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      console.log("🌍 Using panel layout for existing screen on screens page");
+      // Dispatch a custom event with connection mode detail
+      const customEvent = new CustomEvent('openConnectionPanel', { 
+        detail: { connectionMode: "existingScreen" } 
+      });
+      window.dispatchEvent(customEvent);
+    }
+    else {
       // Normal handling - call the provided onOptionSelect function
       onOptionSelect(option);
     }

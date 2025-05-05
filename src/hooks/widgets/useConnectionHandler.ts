@@ -121,7 +121,17 @@ export const useConnectionHandler = (widgetId?: string) => {
           
         case 'existing_screen':
           console.log("🔍 Handling existing screen for framework", { baseContext, frameworkType, value, widgetId });
-          await handleExistingScreenForFramework(baseContext, frameworkType, value);
+          // If we're on screens page, use panel layout instead of dialog
+          if (window.location.pathname.includes('/screens')) {
+            // Dispatch custom event to open the panel in connection mode
+            const customEvent = new CustomEvent('openConnectionPanel', { 
+              detail: { connectionMode: "existingScreen" } 
+            });
+            window.dispatchEvent(customEvent);
+          } else {
+            // Use dialog approach for other pages
+            await handleExistingScreenForFramework(baseContext, frameworkType, value);
+          }
           break;
           
         case 'connect_widget':
