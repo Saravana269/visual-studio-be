@@ -1,8 +1,9 @@
-
 import { ScreenReviewPanel } from "./ScreenReviewPanel";
 import { ScreenDefinePanel } from "./ScreenDefinePanel";
 import { ScreenCarouselNav } from "./ScreenCarouselNav";
 import { Screen, ScreenFormData } from "@/types/screen";
+import { ExistingScreenDialog } from "./dialogs/ExistingScreenDialog";
+import { useConnectionHandler } from "@/hooks/widgets/useConnectionHandler";
 
 interface ScreenContentProps {
   screens: Screen[];
@@ -29,6 +30,23 @@ export function ScreenContent({
   onStepSave,
   isActionLoading
 }: ScreenContentProps) {
+  // Store the current screen ID for connection dialogs
+  if (activeScreen?.id) {
+    try {
+      localStorage.setItem('current_screen_id', activeScreen.id);
+    } catch (e) {
+      console.error("Error storing current screen ID:", e);
+    }
+  }
+
+  // Get connection handler for the dialog
+  const { 
+    isExistingScreenDialogOpen, 
+    setIsExistingScreenDialogOpen,
+    currentScreen,
+    handleExistingScreenConnect
+  } = useConnectionHandler(activeScreen?.widget_id);
+  
   return (
     <div className="flex flex-col h-full">
       {/* Main content area with fixed height */}
@@ -64,6 +82,17 @@ export function ScreenContent({
             onAddScreen={onAddScreen}
           />
         </div>
+      )}
+
+      {/* Existing Screen Selection Dialog */}
+      {isExistingScreenDialogOpen && currentScreen && activeScreen && (
+        <ExistingScreenDialog
+          isOpen={isExistingScreenDialogOpen}
+          onClose={() => setIsExistingScreenDialogOpen(false)}
+          onConnect={handleExistingScreenConnect}
+          currentScreen={currentScreen}
+          widgetId={activeScreen.widget_id}
+        />
       )}
     </div>
   );

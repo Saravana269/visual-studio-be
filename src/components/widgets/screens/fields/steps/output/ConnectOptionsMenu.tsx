@@ -74,4 +74,4 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
       </PopoverContent>
     </Popover>
   );
-};
+}
