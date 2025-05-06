@@ -82,64 +82,72 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
   );
 
   // Connection card component
-  const ConnectionCard = ({ connection }: { connection: ScreenConnection }) => (
-    <Card className="bg-black border-gray-800 mb-2">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-2">
-              {getFrameworkIcon(connection.framework_type)}
-              
-              <span className="font-medium">
-                {connection.framework_type || "Screen"}
-              </span>
-              
-              <ChevronsRightIcon size={16} className="text-gray-500" />
-              
-              <span className="font-medium">
-                {connection.screen_name || "Connected Screen"}
-              </span>
-            </div>
-            
-            {connection.screen_description && (
-              <div className="mt-1 text-sm text-gray-400">
-                {connection.screen_description}
+  const ConnectionCard = ({ connection }: { connection: ScreenConnection }) => {
+    // Determine if the current screen is the source or destination
+    const isCurrentScreenSource = connection.screen_ref === screenId;
+    
+    // Get the name/description of the connected screen (either source or destination)
+    const connectedScreenName = isCurrentScreenSource 
+      ? connection.nextScreen_Name || "Connected Screen"
+      : connection.screen_name || "Source Screen";
+      
+    const connectedScreenDesc = isCurrentScreenSource
+      ? connection.nextScreen_Description
+      : connection.screen_description;
+      
+    return (
+      <Card className="bg-black border-gray-800 mb-2">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-start">
+            <div className="flex flex-col">
+              <div className="flex items-center space-x-2">
+                {getFrameworkIcon(connection.framework_type)}
+                
+                <span className="font-medium">
+                  {connection.framework_type || "Screen"}
+                </span>
+                
+                <ChevronsRightIcon size={16} className="text-gray-500" />
+                
+                <span className="font-medium">
+                  {connectedScreenName}
+                </span>
               </div>
-            )}
-            
-            <div className="mt-2 space-x-2">
-              {connection.is_screen_terminated && (
-                <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/30">
-                  Terminated
-                </Badge>
+              
+              {connectedScreenDesc && (
+                <div className="mt-1 text-sm text-gray-400">
+                  {connectedScreenDesc}
+                </div>
               )}
               
-              {connection.framework_type && (
-                <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                  {connection.framework_type}
-                </Badge>
-              )}
-              
-              {connection.connection_context && (
-                <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                  {connection.connection_context?.split(':')?.[1] || connection.connection_context}
-                </Badge>
-              )}
+              <div className="mt-2 space-x-2">
+                {connection.framework_type && (
+                  <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                    {connection.framework_type}
+                  </Badge>
+                )}
+                
+                {connection.connection_context && (
+                  <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                    {connection.connection_context?.split(':')?.[1] || connection.connection_context}
+                  </Badge>
+                )}
+              </div>
             </div>
+            
+            <Button
+              variant="ghost" 
+              size="icon"
+              onClick={() => handleRemoveConnection(connection.id)}
+              className="h-7 w-7 rounded-full hover:bg-red-500/10 hover:text-red-400"
+            >
+              <XIcon size={14} />
+            </Button>
           </div>
-          
-          <Button
-            variant="ghost" 
-            size="icon"
-            onClick={() => handleRemoveConnection(connection.id)}
-            className="h-7 w-7 rounded-full hover:bg-red-500/10 hover:text-red-400"
-          >
-            <XIcon size={14} />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (isLoading) {
     return (
