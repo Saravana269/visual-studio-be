@@ -8,7 +8,7 @@ import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnec
 interface MultipleOptionsContentProps {
   metadata: Record<string, any>;
   screenId?: string;
-  onConnect?: (option: string, index: number) => void;
+  onConnect?: (option: string[] | string, context?: string) => void; // Updated to accept both string[] and string
 }
 
 export function MultipleOptionsContent({
@@ -26,6 +26,13 @@ export function MultipleOptionsContent({
   const handleViewConnection = (connectionId: string) => {
     setSelectedConnectionId(connectionId);
     setIsModalOpen(true);
+  };
+
+  // Create a wrapper for onConnect to handle the parameter type conversion
+  const handleConnect = (option: string, index: number) => {
+    if (onConnect) {
+      onConnect([option], `option_${index}`);
+    }
   };
 
   return (

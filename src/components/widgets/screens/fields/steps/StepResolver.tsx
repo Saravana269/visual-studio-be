@@ -27,12 +27,37 @@ export function StepResolver({
   widgetId,
   screenId
 }: StepResolverProps) {
+  // Create wrapper handlers for ScreenNameStep and DescriptionStep
+  const handleNameChange = (name: string) => {
+    // Create a synthetic event-like object to work with handleFormChange
+    const syntheticEvent = {
+      target: {
+        name: "name",
+        value: name
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    handleFormChange(syntheticEvent);
+  };
+
+  const handleDescriptionChange = (description: string) => {
+    // Create a synthetic event-like object to work with handleFormChange
+    const syntheticEvent = {
+      target: {
+        name: "description",
+        value: description
+      }
+    } as React.ChangeEvent<HTMLTextAreaElement>;
+    
+    handleFormChange(syntheticEvent);
+  };
+
   switch (currentStep) {
     case 1:
       return (
         <ScreenNameStep
           name={formData.name}
-          onChange={handleFormChange}
+          onChange={handleNameChange}
         />
       );
       
@@ -40,15 +65,17 @@ export function StepResolver({
       return (
         <DescriptionStep
           description={formData.description}
-          onChange={handleFormChange}
+          onChange={handleDescriptionChange}
         />
       );
       
     case 3:
       return (
         <FrameworkTypeStep
-          selectedFrameworkType={formData.framework_type}
+          frameworkType={formData.framework_type}
+          metadata={formData.metadata || {}}
           onFrameworkChange={handleFrameworkChange}
+          onMetadataUpdate={updateMetadata}
         />
       );
       
@@ -58,7 +85,6 @@ export function StepResolver({
           frameworkType={formData.framework_type}
           metadata={formData.metadata || {}}
           onConnect={handleConnect}
-          updateMetadata={updateMetadata}
           widgetId={widgetId}
           screenId={screenId}
         />
