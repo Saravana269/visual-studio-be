@@ -25,6 +25,8 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
   
   console.log("🔄 ConnectOptionsMenu rendered with widgetId:", widgetId, "on path:", location.pathname);
 
+  const [open, setOpen] = React.useState(false);
+
   const menuOptions = [
     {
       id: "new_screen",
@@ -56,6 +58,9 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
   const handleMenuItemClick = (option: string, event: React.MouseEvent<HTMLDivElement>) => {
     console.log("🔘 Menu option clicked:", option, "widgetId:", widgetId, "path:", location.pathname);
     
+    // Close the menu immediately
+    setOpen(false);
+    
     // Special handling for "existing_screen" when we're on elements page
     if (option === "existing_screen" && isOnElementsPage) {
       event.preventDefault();
@@ -84,7 +89,7 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
   };
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         {trigger}
       </PopoverTrigger>
