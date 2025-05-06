@@ -1,7 +1,10 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ScreenConnection } from "@/types/connection";
+import { 
+  useScreenConnectionQueries, 
+  useElementConnectionQueries, 
+  useWidgetConnectionQueries 
+} from "./queries";
+import { combineConnections } from "./utils/connectionUtils";
 
 interface UseScreenConnectionsProps {
   screenId?: string;
@@ -10,6 +13,9 @@ interface UseScreenConnectionsProps {
   enabled?: boolean;
 }
 
+/**
+ * Hook for fetching and managing screen, element, and widget connections
+ */
 export const useScreenConnections = ({
   screenId,
   elementId,
@@ -22,27 +28,7 @@ export const useScreenConnections = ({
     isLoading: isLoadingScreenConnections,
     error: screenConnectionsError,
     refetch: refetchScreenConnections
-  } = useQuery({
-    queryKey: ['screen-connections', screenId],
-    queryFn: async () => {
-      if (!screenId) return [];
-      
-      try {
-        const { data, error } = await supabase
-          .from('connect_screens')
-          .select('*')
-          .eq('screen_ref', screenId);
-          
-        if (error) throw error;
-        
-        return data as ScreenConnection[];
-      } catch (error) {
-        console.error("Error fetching screen connections:", error);
-        return [];
-      }
-    },
-    enabled: !!screenId && enabled
-  });
+  } = useScreenConnectionQueries(screenId, enabled);
   
   // Query for connections based on element ID
   const {
@@ -50,27 +36,7 @@ export const useScreenConnections = ({
     isLoading: isLoadingElementConnections,
     error: elementConnectionsError,
     refetch: refetchElementConnections
-  } = useQuery({
-    queryKey: ['element-connections', elementId],
-    queryFn: async () => {
-      if (!elementId) return [];
-      
-      try {
-        const { data, error } = await supabase
-          .from('connect_screens')
-          .select('*')
-          .eq('element_ref', elementId);
-          
-        if (error) throw error;
-        
-        return data as ScreenConnection[];
-      } catch (error) {
-        console.error("Error fetching element connections:", error);
-        return [];
-      }
-    },
-    enabled: !!elementId && enabled
-  });
+  } = useElementConnectionQueries(elementId, enabled);
   
   // Query for connections based on widget ID
   const {
@@ -78,27 +44,7 @@ export const useScreenConnections = ({
     isLoading: isLoadingWidgetConnections,
     error: widgetConnectionsError,
     refetch: refetchWidgetConnections
-  } = useQuery({
-    queryKey: ['widget-connections', widgetId],
-    queryFn: async () => {
-      if (!widgetId) return [];
-      
-      try {
-        const { data, error } = await supabase
-          .from('connect_screens')
-          .select('*')
-          .eq('widget_ref', widgetId);
-          
-        if (error) throw error;
-        
-        return data as ScreenConnection[];
-      } catch (error) {
-        console.error("Error fetching widget connections:", error);
-        return [];
-      }
-    },
-    enabled: !!widgetId && enabled
-  });
+  } = useWidgetConnectionQueries(widgetId, enabled);
 
   // Determine overall loading state
   const isLoading = 
@@ -106,17 +52,12 @@ export const useScreenConnections = ({
     (!!elementId && isLoadingElementConnections) ||
     (!!widgetId && isLoadingWidgetConnections);
   
-  // Combine all connections
-  const connections = [
-    ...screenConnections,
-    ...elementConnections.filter(ec => 
-      !screenConnections.some(sc => sc.id === ec.id)
-    ),
-    ...widgetConnections.filter(wc => 
-      !screenConnections.some(sc => sc.id === wc.id) && 
-      !elementConnections.some(ec => ec.id === wc.id)
-    )
-  ];
+  // Combine all connections using our utility function
+  const connections = combineConnections(
+    screenConnections,
+    elementConnections,
+    widgetConnections
+  );
 
   // Function to refetch all active queries
   const refetchConnections = async () => {
@@ -137,6 +78,9 @@ export const useScreenConnections = ({
     await Promise.all(promises);
   };
 
+  // Determine if there was an error in any query
+  const error = screenConnectionsError || elementConnectionsError || widgetConnectionsError;
+
   return {
     connections,
     screenConnections,
@@ -144,6 +88,6 @@ export const useScreenConnections = ({
     widgetConnections,
     isLoading,
     refetchConnections,
-    error: screenConnectionsError || elementConnectionsError || widgetConnectionsError
+    error
   };
 };

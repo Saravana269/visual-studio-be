@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ScreenConnection } from "@/types/connection";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
