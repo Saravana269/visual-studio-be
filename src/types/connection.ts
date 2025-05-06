@@ -14,6 +14,9 @@ export interface ScreenConnection {
   element_ref: string | null;
   connection_context: string | null;
   source_value: string | null;
+  screen_name: string | null;
+  screen_description: string | null;
+  property_values: Record<string, any> | null;
 }
 
 export type CreateScreenConnectionParams = Omit<

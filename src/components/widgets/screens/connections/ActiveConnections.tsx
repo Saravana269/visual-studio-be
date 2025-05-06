@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ScreenConnection } from "@/types/connection";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
@@ -81,10 +82,16 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
               <ArrowRightIcon size={16} className="text-gray-500" />
               
               <span className="font-medium">
-                {connection.screen_ref ? "Screen" : ""}
+                {connection.screen_name || (connection.screen_ref ? "Screen" : "")}
                 {connection.widget_ref && !connection.screen_ref ? "Widget" : ""}
               </span>
             </div>
+            
+            {connection.screen_description && (
+              <div className="mt-1 text-sm text-gray-400">
+                {connection.screen_description}
+              </div>
+            )}
             
             <div className="mt-2 space-x-2">
               {connection.is_screen_terminated && (

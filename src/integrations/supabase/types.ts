@@ -331,6 +331,9 @@ export type Database = {
           is_screen_terminated: boolean | null
           next_connected_screen_ref: string | null
           previous_connected_screen_ref: string | null
+          property_values: Json | null
+          screen_description: string | null
+          screen_name: string | null
           screen_ref: string | null
           source_value: string | null
           updated_at: string | null
@@ -347,6 +350,9 @@ export type Database = {
           is_screen_terminated?: boolean | null
           next_connected_screen_ref?: string | null
           previous_connected_screen_ref?: string | null
+          property_values?: Json | null
+          screen_description?: string | null
+          screen_name?: string | null
           screen_ref?: string | null
           source_value?: string | null
           updated_at?: string | null
@@ -363,6 +369,9 @@ export type Database = {
           is_screen_terminated?: boolean | null
           next_connected_screen_ref?: string | null
           previous_connected_screen_ref?: string | null
+          property_values?: Json | null
+          screen_description?: string | null
+          screen_name?: string | null
           screen_ref?: string | null
           source_value?: string | null
           updated_at?: string | null
@@ -653,61 +662,6 @@ export type Database = {
         }
         Relationships: []
       }
-      screen_connectors: {
-        Row: {
-          condition_logic: Json | null
-          created_at: string | null
-          destination_screen_id: string | null
-          framework_id: string | null
-          id: string
-          source_screen_id: string | null
-          transition_type: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          condition_logic?: Json | null
-          created_at?: string | null
-          destination_screen_id?: string | null
-          framework_id?: string | null
-          id?: string
-          source_screen_id?: string | null
-          transition_type?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          condition_logic?: Json | null
-          created_at?: string | null
-          destination_screen_id?: string | null
-          framework_id?: string | null
-          id?: string
-          source_screen_id?: string | null
-          transition_type?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "screen_connectors_destination_screen_id_fkey"
-            columns: ["destination_screen_id"]
-            isOneToOne: false
-            referencedRelation: "screens"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "screen_connectors_framework_id_fkey"
-            columns: ["framework_id"]
-            isOneToOne: false
-            referencedRelation: "framework_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "screen_connectors_source_screen_id_fkey"
-            columns: ["source_screen_id"]
-            isOneToOne: false
-            referencedRelation: "screens"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       screens: {
         Row: {
           created_at: string | null
@@ -758,6 +712,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      si_unit_definitions: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          related_units: string | null
+          si_unit: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          related_units?: string | null
+          si_unit: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          related_units?: string | null
+          si_unit?: string
+        }
+        Relationships: []
       }
       specific_details: {
         Row: {
