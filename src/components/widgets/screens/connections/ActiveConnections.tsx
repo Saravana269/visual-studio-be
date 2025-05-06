@@ -1,11 +1,10 @@
-
 import React from "react";
 import { ScreenConnection } from "@/types/connection";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRightIcon, FileTextIcon, CubeIcon, XIcon } from "lucide-react";
+import { ArrowRightIcon, FileTextIcon, BoxIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,7 +68,7 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
               {connection.element_ref && (
-                <CubeIcon size={16} className="text-[#00FF00]" />
+                <BoxIcon size={16} className="text-[#00FF00]" />
               )}
               {connection.screen_ref && (
                 <FileTextIcon size={16} className="text-[#00FF00]" />
