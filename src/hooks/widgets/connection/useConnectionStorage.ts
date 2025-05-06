@@ -1,13 +1,17 @@
 
-// This file needs updates to use the proper types
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreateScreenConnectionParams } from "@/types/connection";
+import { useConnectionUtils } from "./useConnectionUtils";
 
+/**
+ * Hook for storing connections in the database or local storage
+ */
 export function useConnectionStorage() {
   const { toast } = useToast();
   const [isStoring, setIsStoring] = useState(false);
+  const { getCurrentScreenData, getPropertyValues } = useConnectionUtils();
 
   // Store connection between an element and a screen
   const storeElementScreenConnection = async (elementId: string, screenId: string) => {
@@ -16,42 +20,22 @@ export function useConnectionStorage() {
       console.log("🔗 Storing connection between element", elementId, "and screen", screenId);
       
       // Get current screen data
-      const { data: currentScreenData, error: screenError } = await supabase
-        .from('screens')
-        .select('*')
-        .eq('id', localStorage.getItem('current_screen_id') || '')
-        .maybeSingle();
-        
-      if (screenError) {
-        throw new Error(`Error fetching current screen: ${screenError.message}`);
-      }
-      
+      const currentScreenData = await getCurrentScreenData();
       if (!currentScreenData) {
-        throw new Error('No current screen found');
+        throw new Error('No current screen data available');
       }
       
       // Get property values for current screen
-      let propertyValues = null;
-      if (currentScreenData.framework_id) {
-        const { data: frameworkData } = await supabase
-          .from('framework_types')
-          .select('property_values')
-          .eq('id', currentScreenData.framework_id)
-          .maybeSingle();
-        
-        if (frameworkData) {
-          propertyValues = frameworkData.property_values;
-        }
-      }
+      const propertyValues = await getPropertyValues(currentScreenData.framework_id);
       
       // Create the connection
       const connectionData: CreateScreenConnectionParams = {
         element_ref: elementId,
         screen_ref: currentScreenData.id,
         nextScreen_Ref: screenId,
-        widget_ref: null,
-        framework_type: null,
-        framework_type_ref: null,
+        widget_ref: currentScreenData.widget_id || null,
+        framework_type: currentScreenData.framework_type || null,
+        framework_type_ref: currentScreenData.framework_id || null,
         is_screen_terminated: false,
         connection_context: `element_id_${elementId}`,
         source_value: "element_connection",
@@ -94,41 +78,21 @@ export function useConnectionStorage() {
       console.log("🔗 Storing framework connection for", frameworkType, "to screen", screenId);
       
       // Get current screen data
-      const { data: currentScreenData, error: screenError } = await supabase
-        .from('screens')
-        .select('*')
-        .eq('id', localStorage.getItem('current_screen_id') || '')
-        .maybeSingle();
-        
-      if (screenError) {
-        throw new Error(`Error fetching current screen: ${screenError.message}`);
-      }
-      
+      const currentScreenData = await getCurrentScreenData();
       if (!currentScreenData) {
-        throw new Error('No current screen found');
+        throw new Error('No current screen data available');
       }
       
       // Get property values for current screen
-      let propertyValues = null;
-      if (currentScreenData.framework_id) {
-        const { data: frameworkData } = await supabase
-          .from('framework_types')
-          .select('property_values')
-          .eq('id', currentScreenData.framework_id)
-          .maybeSingle();
-        
-        if (frameworkData) {
-          propertyValues = frameworkData.property_values;
-        }
-      }
+      const propertyValues = await getPropertyValues(currentScreenData.framework_id);
       
       // Create the connection
       const connectionData: CreateScreenConnectionParams = {
         framework_type: frameworkType,
         screen_ref: currentScreenData.id,
         nextScreen_Ref: screenId,
-        widget_ref: null,
-        framework_type_ref: null,
+        widget_ref: currentScreenData.widget_id || null,
+        framework_type_ref: currentScreenData.framework_id || null,
         is_screen_terminated: false,
         element_ref: null,
         connection_context: frameworkType,
@@ -191,7 +155,7 @@ export function useConnectionStorage() {
               framework_type: null,
               framework_type_ref: null,
               is_screen_terminated: false,
-              element_ref: null,
+              element_ref: elementId,
               connection_context: `element_id_${elementId}`,
               source_value: "element_selected",
               screen_name: data.name,

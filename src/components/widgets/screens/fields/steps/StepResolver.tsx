@@ -1,22 +1,22 @@
 
 import React from "react";
+import { FrameworkTypeStep } from "./FrameworkTypeStep";
 import { ScreenNameStep } from "./ScreenNameStep";
 import { DescriptionStep } from "./DescriptionStep";
-import { FrameworkTypeStep } from "./FrameworkTypeStep";
 import { OutputStep } from "./OutputStep";
 import { ScreenFormData } from "@/types/screen";
 
 interface StepResolverProps {
   currentStep: number;
   formData: ScreenFormData;
-  handleFormChange: (field: string, value: any) => void;
-  handleFrameworkChange: (value: string) => void;
-  updateMetadata: (updates: Record<string, any>) => void;
-  handleConnect: (frameworkType: string, value: any, context?: string) => void;
+  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleFrameworkChange: (value: string | null) => void;
+  updateMetadata: (metadata: Record<string, any>) => void;
+  handleConnect: (value: any, context?: string) => void;
   widgetId?: string;
 }
 
-export const StepResolver: React.FC<StepResolverProps> = ({
+export function StepResolver({
   currentStep,
   formData,
   handleFormChange,
@@ -24,42 +24,44 @@ export const StepResolver: React.FC<StepResolverProps> = ({
   updateMetadata,
   handleConnect,
   widgetId
-}) => {
-  // Render appropriate step based on currentStep
+}: StepResolverProps) {
+  // Render the appropriate step based on current step number
   switch (currentStep) {
     case 1:
       return (
         <ScreenNameStep 
-          name={formData.name} 
-          onChange={(value) => handleFormChange("name", value)} 
+          formData={formData} 
+          handleFormChange={handleFormChange} 
         />
       );
     case 2:
       return (
         <DescriptionStep 
-          description={formData.description} 
-          onChange={(value) => handleFormChange("description", value)} 
+          formData={formData} 
+          handleFormChange={handleFormChange} 
         />
       );
     case 3:
       return (
         <FrameworkTypeStep 
-          frameworkType={formData.framework_type}
-          metadata={formData.metadata || {}}
-          onFrameworkChange={handleFrameworkChange}
-          onMetadataUpdate={updateMetadata}
+          formData={formData} 
+          handleFrameworkChange={handleFrameworkChange} 
         />
       );
     case 4:
       return (
         <OutputStep 
-          frameworkType={formData.framework_type}
-          metadata={formData.metadata || {}}
-          onConnect={handleConnect}
+          formData={formData} 
+          updateMetadata={updateMetadata}
+          handleConnect={handleConnect}
           widgetId={widgetId}
         />
       );
     default:
-      return null;
+      return (
+        <div className="p-6 text-center">
+          <p className="text-gray-500">Step not found</p>
+        </div>
+      );
   }
-};
+}
