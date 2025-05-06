@@ -3,6 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActiveConnections } from "./ActiveConnections";
 import { Screen } from "@/types/screen";
+import { Badge } from "@/components/ui/badge";
 
 interface ConnectionsPanelProps {
   currentScreen: Screen | null;
@@ -40,9 +41,9 @@ export function ConnectionsPanel({ currentScreen, widgetId, onClose }: Connectio
               <p className="text-sm text-gray-400">{currentScreen?.description || "No description"}</p>
               {currentScreen?.framework_type && (
                 <div className="mt-2">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#00FF00]/10 text-[#00FF00]">
+                  <Badge className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#00FF00]/10 text-[#00FF00]">
                     {currentScreen.framework_type}
-                  </span>
+                  </Badge>
                 </div>
               )}
             </CardContent>

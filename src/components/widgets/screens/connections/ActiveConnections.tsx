@@ -1,10 +1,11 @@
+
 import React from "react";
 import { ScreenConnection } from "@/types/connection";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRightIcon, FileTextIcon, BoxIcon, XIcon } from "lucide-react";
+import { ArrowRightIcon, FileTextIcon, BoxIcon, XIcon, ImageIcon, ChevronsRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +61,18 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
     }
   };
 
+  // Get the appropriate icon for a framework type
+  const getFrameworkIcon = (frameworkType: string | null) => {
+    switch(frameworkType) {
+      case "Image Upload":
+        return <ImageIcon size={16} className="text-[#00FF00]" />;
+      case "COE Manager":
+        return <BoxIcon size={16} className="text-[#00FF00]" />;
+      default:
+        return <FileTextIcon size={16} className="text-[#00FF00]" />;
+    }
+  };
+
   // Connection card component
   const ConnectionCard = ({ connection }: { connection: ScreenConnection }) => (
     <Card className="bg-black border-gray-800 mb-2">
@@ -67,22 +80,16 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
         <div className="flex justify-between items-start">
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
-              {connection.element_ref && (
-                <BoxIcon size={16} className="text-[#00FF00]" />
-              )}
-              {connection.screen_ref && (
-                <FileTextIcon size={16} className="text-[#00FF00]" />
-              )}
+              {getFrameworkIcon(connection.framework_type)}
+              
               <span className="font-medium">
-                {connection.element_ref ? "Element" : 
-                 connection.framework_type ? connection.framework_type : "Screen"}
+                {connection.framework_type || "Screen"}
               </span>
               
-              <ArrowRightIcon size={16} className="text-gray-500" />
+              <ChevronsRightIcon size={16} className="text-gray-500" />
               
               <span className="font-medium">
-                {connection.screen_name || (connection.screen_ref ? "Screen" : "")}
-                {connection.widget_ref && !connection.screen_ref ? "Widget" : ""}
+                {connection.screen_name || "Connected Screen"}
               </span>
             </div>
             
@@ -107,7 +114,7 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
               
               {connection.connection_context && (
                 <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                  {connection.connection_context}
+                  {connection.connection_context?.split(':')?.[1] || connection.connection_context}
                 </Badge>
               )}
             </div>

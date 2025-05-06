@@ -8,7 +8,7 @@ export interface ConnectionDialogContextType {
   openExistingScreenDialog: (value: any, context?: string, widgetId?: string) => void;
   closeExistingScreenDialog: () => void;
   handleExistingScreenConnect: (selectedScreenId: string) => void;
-  isConnecting?: boolean;  // Added isConnecting property
+  isConnecting: boolean;  // This property was needed but missing
 }
 
 // Create the context with a default value
