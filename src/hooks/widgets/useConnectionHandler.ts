@@ -3,5 +3,23 @@
 import { useConnectionManager } from "./connection/useConnectionManager";
 
 export const useConnectionHandler = (widgetId?: string) => {
-  return useConnectionManager(widgetId);
+  const {
+    handleConnect,
+    isConnecting,
+    isExistingScreenDialogOpen,
+    setIsExistingScreenDialogOpen,
+    currentScreen,
+    handleExistingScreenConnect,
+    fetchCurrentScreen
+  } = useConnectionManager(widgetId);
+
+  return {
+    handleConnect,
+    isConnecting,
+    isExistingScreenDialogOpen,
+    setIsExistingScreenDialogOpen,
+    currentScreen,
+    handleExistingScreenConnect,
+    fetchCurrentScreen
+  };
 };

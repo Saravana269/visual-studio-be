@@ -1,3 +1,4 @@
+
 import { ScreenReviewPanel } from "./ScreenReviewPanel";
 import { ScreenDefinePanel } from "./ScreenDefinePanel";
 import { ScreenCarouselNav } from "./ScreenCarouselNav";
@@ -48,6 +49,10 @@ export function ScreenContent({
       console.log("💾 Storing current screen ID in localStorage:", activeScreen.id);
       try {
         localStorage.setItem('current_screen_id', activeScreen.id);
+        // Also store widget_id to ensure we have both pieces of information available
+        if (activeScreen.widget_id) {
+          localStorage.setItem('current_widget_id', activeScreen.widget_id);
+        }
       } catch (e) {
         console.error("Error storing current screen ID:", e);
       }
@@ -75,7 +80,7 @@ export function ScreenContent({
       window.removeEventListener('openConnectionPanel', handleConnectionDialogOpen as EventListener);
       window.removeEventListener('openConnectionsPanel', handleConnectionsPanelOpen);
     };
-  }, [activeScreen?.id]);
+  }, [activeScreen?.id, activeScreen?.widget_id]);
   
   // Handle connecting to a screen
   const handleConnectToScreen = (screenId: string) => {

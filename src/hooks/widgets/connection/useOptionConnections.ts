@@ -1,100 +1,89 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { ScreenConnection } from "@/types/connection";
+
+interface UseOptionConnectionsProps {
+  screenId?: string;
+  frameworkType?: string;
+}
 
 /**
- * Hook to fetch and track option connections for a specific screen
+ * Hook to fetch and manage connections for options (radio buttons, multiple options, etc.)
  */
-export function useOptionConnections(screenId?: string, frameworkType?: string | null) {
-  // Connection state tracking
-  const [connectedOptions, setConnectedOptions] = useState<Record<string, any>>({});
-
-  // Fetch connections for this screen
-  const { data: connections, isLoading } = useQuery({
-    queryKey: ['option-connections', screenId, frameworkType],
+export function useOptionConnections(screenId?: string, frameworkType?: string) {
+  // Fetch all connections for this screen
+  const { data: connections = [], isLoading } = useQuery({
+    queryKey: ["screen-connections", screenId],
     queryFn: async () => {
       if (!screenId) return [];
       
       try {
+        console.log(`🔍 Fetching connections for screen: ${screenId} and framework: ${frameworkType}`);
         const { data, error } = await supabase
           .from('connect_screens')
           .select('*')
-          .eq('screen_ref', screenId)
-          .order('created_at', { ascending: false });
+          .eq('screen_ref', screenId);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching connections:", error);
+          throw error;
+        }
         
-        return data || [];
+        console.log(`🔍 Found ${data?.length || 0} connections for screen: ${screenId}`);
+        return data as ScreenConnection[];
       } catch (error) {
-        console.error("Error fetching option connections:", error);
+        console.error("Error in useOptionConnections:", error);
         return [];
       }
     },
     enabled: !!screenId
   });
-
-  // Process connections to map them by option value
-  useEffect(() => {
-    if (connections && connections.length > 0) {
-      const optionsMap: Record<string, any> = {};
-      
-      connections.forEach(connection => {
-        if (connection.source_value) {
-          try {
-            // Try to parse the source_value if it's a JSON string
-            const sourceValue = 
-              typeof connection.source_value === 'string' && 
-              (connection.source_value.startsWith('[') || connection.source_value.startsWith('{'))
-                ? JSON.parse(connection.source_value)
-                : connection.source_value;
-                
-            // For single values
-            if (typeof sourceValue === 'string') {
-              optionsMap[sourceValue] = connection;
-            } 
-            // For array values (like combination selections)
-            else if (Array.isArray(sourceValue)) {
-              const combinationKey = sourceValue.join(',');
-              optionsMap[combinationKey] = connection;
+  
+  // Process connections to create a map of option -> connection
+  const getConnectionMap = () => {
+    const connectionMap = new Map<string, ScreenConnection>();
+    
+    connections.forEach(connection => {
+      if (connection.source_value) {
+        // Handle array values that may be stored as strings
+        try {
+          if (connection.source_value.startsWith('[') && connection.source_value.endsWith(']')) {
+            const parsed = JSON.parse(connection.source_value);
+            if (Array.isArray(parsed)) {
+              parsed.forEach(value => {
+                connectionMap.set(String(value), connection);
+              });
             }
-          } catch (e) {
-            // If parsing fails, just use the raw value
-            optionsMap[connection.source_value] = connection;
+          } else {
+            connectionMap.set(connection.source_value, connection);
           }
+        } catch (e) {
+          // If parsing fails, just use the raw value
+          connectionMap.set(connection.source_value, connection);
         }
-      });
-      
-      setConnectedOptions(optionsMap);
-    } else {
-      setConnectedOptions({});
-    }
-  }, [connections]);
-
-  // Check if a specific option is connected
-  const isOptionConnected = (option: string | string[]): boolean => {
-    if (Array.isArray(option)) {
-      // For combination options
-      return !!connectedOptions[option.join(',')];
-    }
-    // For single options
-    return !!connectedOptions[option];
+      }
+    });
+    
+    return connectionMap;
   };
-
-  // Get connection details for a specific option
-  const getConnectionForOption = (option: string | string[]): any => {
-    if (Array.isArray(option)) {
-      // For combination options
-      return connectedOptions[option.join(',')] || null;
-    }
-    // For single options
-    return connectedOptions[option] || null;
+  
+  // Check if an option is connected
+  const isOptionConnected = (option: string): boolean => {
+    const connectionMap = getConnectionMap();
+    return connectionMap.has(option);
+  };
+  
+  // Get connection for an option
+  const getConnectionForOption = (option: string): ScreenConnection | null => {
+    const connectionMap = getConnectionMap();
+    return connectionMap.get(option) || null;
   };
 
   return {
-    connectedOptions,
+    connections,
+    isLoading,
     isOptionConnected,
-    getConnectionForOption,
-    isLoading
+    getConnectionForOption
   };
 }

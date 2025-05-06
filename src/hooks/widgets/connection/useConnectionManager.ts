@@ -14,6 +14,7 @@ export function useConnectionManager(widgetId?: string) {
     setIsExistingScreenDialogOpen,
     currentScreen,
     setConnectionContext,
+    fetchCurrentScreen,
     toast 
   } = useConnectionCore(widgetId);
   
@@ -34,6 +35,10 @@ export function useConnectionManager(widgetId?: string) {
   // Store selected COE in local storage for demo purposes
   const handleConnect = async (frameworkType: string, value: any, context?: string) => {
     console.log("🔗 Handle Connect called:", { frameworkType, context, widgetId });
+    
+    // Always try to fetch current screen first to ensure we have the data
+    await fetchCurrentScreen();
+    
     setIsConnecting(true);
     
     try {
@@ -112,6 +117,17 @@ export function useConnectionManager(widgetId?: string) {
             console.log("🔍 Handling existing screen for framework", { baseContext, frameworkType, value, widgetId });
             // If we're on screens page, use panel layout instead of dialog
             if (window.location.pathname.includes('/screens')) {
+              // Make sure we have current screen info first
+              const currentScreenInfo = await fetchCurrentScreen();
+              if (!currentScreenInfo) {
+                toast({
+                  title: "Connection Error",
+                  description: "Current screen information not available",
+                  variant: "destructive"
+                });
+                break;
+              }
+              
               // Dispatch custom event to open the panel in connection mode
               const customEvent = new CustomEvent('openConnectionPanel', { 
                 detail: { connectionMode: "existingScreen" } 
@@ -163,6 +179,7 @@ export function useConnectionManager(widgetId?: string) {
     isExistingScreenDialogOpen,
     setIsExistingScreenDialogOpen,
     currentScreen,
-    handleExistingScreenConnect
+    handleExistingScreenConnect,
+    fetchCurrentScreen
   };
 }

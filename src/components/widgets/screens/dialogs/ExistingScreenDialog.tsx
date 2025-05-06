@@ -10,6 +10,7 @@ import { useExistingScreensQuery } from "@/hooks/widgets/useExistingScreensQuery
 import { useSelectedScreenQuery } from "@/hooks/widgets/useSelectedScreenQuery";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface ExistingScreenDialogProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface ExistingScreenDialogProps {
   onConnect: (screenId: string) => void;
   currentScreen: Screen | null;
   widgetId: string;
+  isConnecting?: boolean;
 }
 
 export function ExistingScreenDialog({
@@ -24,14 +26,15 @@ export function ExistingScreenDialog({
   onClose,
   onConnect,
   currentScreen,
-  widgetId
+  widgetId,
+  isConnecting = false
 }: ExistingScreenDialogProps) {
   const [selectedScreenId, setSelectedScreenId] = useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
+  
   // Use custom hooks for data fetching
-  const { screens, isLoading } = useExistingScreensQuery({ 
+  const { screens, isLoading: isLoadingScreens } = useExistingScreensQuery({ 
     widgetId, 
     currentScreenId: currentScreen?.id || null,
     enabled: isOpen
@@ -45,77 +48,47 @@ export function ExistingScreenDialog({
   useEffect(() => {
     if (isOpen) {
       setSelectedScreenId(null);
+      
+      // Check if currentScreen is available, if not try to fetch it
+      if (!currentScreen) {
+        const fetchCurrentScreen = async () => {
+          const currentScreenId = localStorage.getItem('current_screen_id');
+          if (currentScreenId) {
+            try {
+              const { data, error } = await supabase
+                .from('screens')
+                .select('*')
+                .eq('id', currentScreenId)
+                .single();
+                
+              if (error || !data) {
+                toast({
+                  title: "Warning",
+                  description: "Could not load current screen information",
+                  variant: "warning"
+                });
+              }
+            } catch (e) {
+              console.error("Error fetching current screen:", e);
+            }
+          }
+        };
+        
+        fetchCurrentScreen();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, currentScreen, toast]);
 
   // Handle connection
   const handleConnect = async () => {
     if (selectedScreenId && currentScreen) {
-      setIsConnecting(true);
-      try {
-        // Get the framework type data to retrieve property values
-        const { data: frameworkData } = await supabase
-          .from('framework_types')
-          .select('property_values, framework_Type')
-          .eq('screen_id', currentScreen.id)
-          .single();
-        
-        // Get connection context from session storage if available
-        let connectionContext: any = null;
-        let sourceValue: any = null;
-        
-        try {
-          const rawContext = window.sessionStorage.getItem('connectionContext');
-          if (rawContext) {
-            const parsedContext = JSON.parse(rawContext);
-            connectionContext = parsedContext.context || null;
-            sourceValue = parsedContext.value || null;
-          }
-        } catch (e) {
-          console.error("Error parsing connection context:", e);
-        }
-        
-        // Prepare connection data
-        const connectionData = {
-          nextScreen_Ref: selectedScreenId,
-          framework_type: currentScreen.framework_type,
-          widget_ref: currentScreen.widget_id,
-          screen_ref: currentScreen.id,
-          screen_name: currentScreen.name,
-          screen_description: currentScreen.description,
-          property_values: frameworkData?.property_values || {},
-          framework_type_ref: currentScreen.framework_id,
-          connection_context: connectionContext,
-          source_value: sourceValue ? String(sourceValue) : null
-        };
-        
-        // Insert the connection data into connect_screens table
-        const { error } = await supabase
-          .from('connect_screens')
-          .insert(connectionData);
-          
-        if (error) {
-          throw new Error(`Failed to create connection: ${error.message}`);
-        }
-        
-        toast({
-          title: "Connection created",
-          description: "Screen connection has been successfully created",
-        });
-        
-        // Call the onConnect callback and close the dialog
-        onConnect(selectedScreenId);
-        onClose();
-      } catch (error) {
-        console.error("Error creating connection:", error);
-        toast({
-          title: "Connection failed",
-          description: error instanceof Error ? error.message : "An unknown error occurred",
-          variant: "destructive"
-        });
-      } finally {
-        setIsConnecting(false);
-      }
+      onConnect(selectedScreenId);
+    } else if (!currentScreen) {
+      toast({
+        title: "Connection Error",
+        description: "Current screen information not available",
+        variant: "destructive"
+      });
     }
   };
 
@@ -127,26 +100,37 @@ export function ExistingScreenDialog({
         </DialogHeader>
         
         {/* Current Screen Info */}
-        <CurrentScreenInfo currentScreen={currentScreen} />
+        {!currentScreen ? (
+          <div className="p-3 border border-red-500/30 rounded-md bg-red-500/10 text-center">
+            <p className="text-red-400">Current screen information not available</p>
+            <p className="text-xs text-gray-400 mt-1">Please try refreshing the page and try again</p>
+          </div>
+        ) : (
+          <CurrentScreenInfo currentScreen={currentScreen} />
+        )}
         
-        {/* Screen Selection */}
-        <div className="border border-gray-800 rounded-md p-4 mb-4 bg-black/30">
-          <h3 className="text-sm font-medium text-gray-200 mb-3">Select a Screen to Connect:</h3>
-          
-          <ScreenSelectionList 
-            screens={screens}
-            isLoading={isLoading}
-            selectedScreenId={selectedScreenId}
-            onSelectScreen={setSelectedScreenId}
-          />
-        </div>
+        {/* Screen Selection - Only show if current screen is available */}
+        {currentScreen && (
+          <div className="border border-gray-800 rounded-md p-4 mb-4 bg-black/30">
+            <h3 className="text-sm font-medium text-gray-200 mb-3">Select a Screen to Connect:</h3>
+            
+            <ScreenSelectionList 
+              screens={screens}
+              isLoading={isLoadingScreens}
+              selectedScreenId={selectedScreenId}
+              onSelectScreen={setSelectedScreenId}
+            />
+          </div>
+        )}
         
         {/* Preview Section */}
-        <ScreenPreviewSection 
-          selectedScreenId={selectedScreenId}
-          selectedScreen={selectedScreen}
-          isLoading={isLoadingSelectedScreen}
-        />
+        {currentScreen && selectedScreenId && (
+          <ScreenPreviewSection 
+            selectedScreenId={selectedScreenId}
+            selectedScreen={selectedScreen}
+            isLoading={isLoadingSelectedScreen}
+          />
+        )}
         
         <DialogFooter className="mt-4">
           <Button 
@@ -159,10 +143,15 @@ export function ExistingScreenDialog({
           </Button>
           <Button 
             onClick={handleConnect}
-            disabled={!selectedScreenId || isConnecting}
+            disabled={!selectedScreenId || isConnecting || !currentScreen}
             className="bg-[#00FF00] text-black hover:bg-[#00DD00]"
           >
-            {isConnecting ? "Connecting..." : "Connect"}
+            {isConnecting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
+            ) : "Connect"}
           </Button>
         </DialogFooter>
       </DialogContent>
