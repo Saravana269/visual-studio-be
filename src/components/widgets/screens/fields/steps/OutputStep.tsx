@@ -96,6 +96,7 @@ export function OutputStep({
               imageUrl={metadata?.image_url} 
               onConnect={handleConnect}
               widgetId={effectiveWidgetId}
+              screenId={screenId}
             />
           ) : frameworkType === "COE Manager" ? (
             <COEManagerFramework 
