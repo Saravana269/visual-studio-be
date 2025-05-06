@@ -6,6 +6,7 @@ import { Screen, ScreenFormData } from "@/types/screen";
 import { useEffect, useState } from "react";
 import { ChooseScreenPanel } from "./choose/ChooseScreenPanel";
 import { useConnectionDialogs } from "@/context/ConnectionDialogContext";
+import { ConnectionsPanel } from "./connections/ConnectionsPanel";
 
 interface ScreenContentProps {
   screens: Screen[];
@@ -36,6 +37,8 @@ export function ScreenContent({
   const [isChooseScreenVisible, setIsChooseScreenVisible] = useState(false);
   // New state to track if we're in existing screen connection mode
   const [inConnectionMode, setInConnectionMode] = useState(false);
+  // State to control whether the connections panel is visible
+  const [isConnectionsPanelVisible, setIsConnectionsPanelVisible] = useState(false);
   
   // Get the connection dialogs context
   const { handleExistingScreenConnect, closeExistingScreenDialog } = useConnectionDialogs();
@@ -60,11 +63,18 @@ export function ScreenContent({
       }
     };
     
+    // Listen for connections panel events
+    const handleConnectionsPanelOpen = () => {
+      setIsConnectionsPanelVisible(true);
+    };
+    
     // Custom event for opening the connection panel
     window.addEventListener('openConnectionPanel', handleConnectionDialogOpen as EventListener);
+    window.addEventListener('openConnectionsPanel', handleConnectionsPanelOpen);
     
     return () => {
       window.removeEventListener('openConnectionPanel', handleConnectionDialogOpen as EventListener);
+      window.removeEventListener('openConnectionsPanel', handleConnectionsPanelOpen);
     };
   }, [activeScreen?.id]);
   
@@ -82,19 +92,25 @@ export function ScreenContent({
     closeExistingScreenDialog();
   };
   
+  // Handle closing the connections panel
+  const handleCloseConnectionsPanel = () => {
+    setIsConnectionsPanelVisible(false);
+  };
+  
   console.log("⚡ ScreenContent render state:", { 
     activeScreenId: activeScreen?.id,
     widgetId: activeScreen?.widget_id,
     isChooseScreenVisible,
-    inConnectionMode
+    inConnectionMode,
+    isConnectionsPanelVisible
   });
   
   // Determine the panel layout based on various conditions
   let panelLayout = "two-panel"; // default layout
   
-  if (isChooseScreenVisible) {
+  if (isChooseScreenVisible || isConnectionsPanelVisible) {
     if (inConnectionMode) {
-      panelLayout = "connection-mode"; // Only Define Panel + Choose Screen
+      panelLayout = "connection-mode"; // Only Define Panel + Choose Screen/Connections
     } else {
       panelLayout = "three-panel"; // All three panels
     }
@@ -107,7 +123,10 @@ export function ScreenContent({
         {/* Left panel - Review Panel - hidden in connection mode */}
         {panelLayout !== "connection-mode" && (
           <div className={`${panelLayout === "two-panel" ? "w-1/2 min-w-[50%]" : "w-1/3 min-w-[33.3%]"} h-full overflow-hidden p-3`}>
-            <ScreenReviewPanel screen={activeScreen} />
+            <ScreenReviewPanel 
+              screen={activeScreen}
+              onShowConnections={() => setIsConnectionsPanelVisible(true)} 
+            />
           </div>
         )}
         
@@ -130,7 +149,7 @@ export function ScreenContent({
           />
         </div>
         
-        {/* Right panel - Choose Screen - only visible when needed */}
+        {/* Right panel - Choose Screen/Connections - only visible when needed */}
         {isChooseScreenVisible && (
           <div className={`${
             panelLayout === "connection-mode" ? "w-1/2 min-w-[50%]" : "w-1/3 min-w-[33.3%]"
@@ -141,6 +160,19 @@ export function ScreenContent({
               onScreenSelect={handleConnectToScreen}
               onClose={handleCloseChooseScreen}
               isConnectionMode={inConnectionMode}
+            />
+          </div>
+        )}
+        
+        {/* Right panel - Connections Panel - only visible when requested */}
+        {isConnectionsPanelVisible && !isChooseScreenVisible && (
+          <div className={`${
+            panelLayout === "connection-mode" ? "w-1/2 min-w-[50%]" : "w-1/3 min-w-[33.3%]"
+          } h-full overflow-hidden p-3`}>
+            <ConnectionsPanel
+              currentScreen={activeScreen}
+              widgetId={activeScreen?.widget_id}
+              onClose={handleCloseConnectionsPanel}
             />
           </div>
         )}

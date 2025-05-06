@@ -319,6 +319,107 @@ export type Database = {
           },
         ]
       }
+      connect_screens: {
+        Row: {
+          coe_ref: string | null
+          connection_context: string | null
+          created_at: string | null
+          element_ref: string | null
+          framework_type: string | null
+          framework_type_ref: string | null
+          id: string
+          is_screen_terminated: boolean | null
+          next_connected_screen_ref: string | null
+          previous_connected_screen_ref: string | null
+          screen_ref: string | null
+          source_value: string | null
+          updated_at: string | null
+          widget_ref: string | null
+        }
+        Insert: {
+          coe_ref?: string | null
+          connection_context?: string | null
+          created_at?: string | null
+          element_ref?: string | null
+          framework_type?: string | null
+          framework_type_ref?: string | null
+          id?: string
+          is_screen_terminated?: boolean | null
+          next_connected_screen_ref?: string | null
+          previous_connected_screen_ref?: string | null
+          screen_ref?: string | null
+          source_value?: string | null
+          updated_at?: string | null
+          widget_ref?: string | null
+        }
+        Update: {
+          coe_ref?: string | null
+          connection_context?: string | null
+          created_at?: string | null
+          element_ref?: string | null
+          framework_type?: string | null
+          framework_type_ref?: string | null
+          id?: string
+          is_screen_terminated?: boolean | null
+          next_connected_screen_ref?: string | null
+          previous_connected_screen_ref?: string | null
+          screen_ref?: string | null
+          source_value?: string | null
+          updated_at?: string | null
+          widget_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connect_screens_coe_ref_fkey"
+            columns: ["coe_ref"]
+            isOneToOne: false
+            referencedRelation: "class_of_elements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_screens_element_ref_fkey"
+            columns: ["element_ref"]
+            isOneToOne: false
+            referencedRelation: "elements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_screens_framework_type_ref_fkey"
+            columns: ["framework_type_ref"]
+            isOneToOne: false
+            referencedRelation: "framework_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_screens_next_connected_screen_ref_fkey"
+            columns: ["next_connected_screen_ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_screens_previous_connected_screen_ref_fkey"
+            columns: ["previous_connected_screen_ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_screens_screen_ref_fkey"
+            columns: ["screen_ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_screens_widget_ref_fkey"
+            columns: ["widget_ref"]
+            isOneToOne: false
+            referencedRelation: "widgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       core_sets: {
         Row: {
           created_at: string | null

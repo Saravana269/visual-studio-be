@@ -1,7 +1,10 @@
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Screen } from "@/types/screen";
 import { useWidgetList } from "@/hooks/widgets/useWidgetList";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { CreateScreenConnectionParams } from "@/types/connection";
 
 // Define the context type
 interface ConnectionDialogContextType {
@@ -28,6 +31,9 @@ interface ConnectionValueContext {
 }
 
 export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderProps) => {
+  const { toast } = useToast();
+  const [isConnecting, setIsConnecting] = useState(false);
+  
   // Dialog state
   const [isExistingScreenDialogOpen, setIsExistingScreenDialogOpen] = useState(false);
   
@@ -55,15 +61,22 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
     
     // If we have a current screen ID, try to fetch the screen data
     if (currentScreenId) {
-      // This would normally fetch from the database, but for now we'll just set the ID
-      // In a real implementation, you would fetch the screen data from Supabase
-      setCurrentScreen({
-        id: currentScreenId,
-        name: "Current Screen",
-        widget_id: widgetId || "unknown",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
+      // In a real implementation, fetch the screen data from Supabase
+      supabase
+        .from('screens')
+        .select('*')
+        .eq('id', currentScreenId)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Error fetching screen:", error);
+            return;
+          }
+          
+          if (data) {
+            setCurrentScreen(data as Screen);
+          }
+        });
     }
     
     // Open the panel by setting dialog open and dispatching custom event
@@ -83,39 +96,77 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
   };
   
   // Handle connection to an existing screen
-  const handleExistingScreenConnect = (selectedScreenId: string) => {
+  const handleExistingScreenConnect = async (selectedScreenId: string) => {
     if (!connectionValueContext) {
       console.warn("⚠️ No connection value context when trying to connect to screen");
       closeExistingScreenDialog();
       return;
     }
     
-    console.log("🔗 Global: Connecting to screen:", { 
-      screenId: selectedScreenId, 
-      value: connectionValueContext.value,
-      context: connectionValueContext.context,
-      frameType: connectionValueContext.frameType
-    });
-    
-    // Store the connection in localStorage for demo purposes
-    const connectionKey = `connection_${Date.now()}`;
-    const connectionData = {
-      screenId: selectedScreenId,
-      value: connectionValueContext.value,
-      context: connectionValueContext.context,
-      frameType: connectionValueContext.frameType,
-      timestamp: Date.now()
-    };
+    setIsConnecting(true);
     
     try {
-      localStorage.setItem(connectionKey, JSON.stringify(connectionData));
-      console.log("💾 Global: Stored connection with key:", connectionKey);
-    } catch (e) {
-      console.error("Error storing connection:", e);
+      console.log("🔗 Global: Connecting to screen:", { 
+        screenId: selectedScreenId, 
+        value: connectionValueContext.value,
+        context: connectionValueContext.context,
+        frameType: connectionValueContext.frameType
+      });
+      
+      // Extract element ID if this is an element connection
+      let elementRef = null;
+      if (connectionValueContext.context?.startsWith('element_id_')) {
+        elementRef = connectionValueContext.context.replace('element_id_', '');
+      }
+      
+      // Create connection record in database
+      const connectionData: CreateScreenConnectionParams = {
+        screen_ref: selectedScreenId,
+        widget_ref: connectionValueContext.widgetId || null,
+        framework_type: connectionValueContext.frameType || null,
+        framework_type_ref: null,
+        is_screen_terminated: false,
+        previous_connected_screen_ref: null,
+        next_connected_screen_ref: null,
+        coe_ref: null,
+        element_ref: elementRef,
+        connection_context: connectionValueContext.context || null,
+        source_value: String(connectionValueContext.value)
+      };
+      
+      const { data, error } = await supabase
+        .from('connect_screens')
+        .insert(connectionData)
+        .select();
+      
+      if (error) {
+        console.error("Error creating connection:", error);
+        toast({
+          title: "Connection Failed",
+          description: "Failed to store connection in database",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      console.log("💾 Global: Stored connection in database:", data);
+      
+      toast({
+        title: "Connection Established",
+        description: `Connected to screen "${selectedScreenId}"`,
+      });
+    } catch (error) {
+      console.error("Error connecting to screen:", error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to establish connection",
+        variant: "destructive"
+      });
+    } finally {
+      setIsConnecting(false);
+      // Close the dialog after successful connection
+      closeExistingScreenDialog();
     }
-    
-    // Close the dialog after successful connection
-    closeExistingScreenDialog();
   };
   
   const contextValue: ConnectionDialogContextType = {
