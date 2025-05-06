@@ -60,6 +60,7 @@ export function ChooseScreenPanel({
       {/* Scrollable content area */}
       <div className="flex-1 overflow-auto">
         <div className="p-6 space-y-4">
+          {/* Current Screen */}
           <div className="border border-gray-800 rounded-md p-4 bg-black/30">
             <h3 className="text-sm font-medium text-gray-200 mb-3">Current Screen:</h3>
             <CurrentScreenInfo currentScreen={currentScreen} />
