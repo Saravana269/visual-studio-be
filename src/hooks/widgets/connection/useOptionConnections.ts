@@ -49,12 +49,8 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
         // Handle array values that may be stored as strings
         try {
           if (connection.source_value.startsWith('[') && connection.source_value.endsWith(']')) {
-            const parsed = JSON.parse(connection.source_value);
-            if (Array.isArray(parsed)) {
-              parsed.forEach(value => {
-                connectionMap.set(String(value), connection);
-              });
-            }
+            // If it's a JSON string that represents an array, use it as is for the map key
+            connectionMap.set(connection.source_value, connection);
           } else {
             connectionMap.set(connection.source_value, connection);
           }
@@ -71,7 +67,13 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
   // Check if an option is connected
   const isOptionConnected = (option: string): boolean => {
     const connectionMap = getConnectionMap();
-    return connectionMap.has(option);
+    
+    // If option is an array in string form, we can check directly
+    if (typeof option === 'string') {
+      return connectionMap.has(option);
+    }
+    
+    return false;
   };
   
   // Get connection for an option

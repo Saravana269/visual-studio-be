@@ -65,7 +65,7 @@ export function ExistingScreenDialog({
                 toast({
                   title: "Warning",
                   description: "Could not load current screen information",
-                  variant: "warning"
+                  variant: "destructive"  // Changed from "warning" to "destructive"
                 });
               }
             } catch (e) {

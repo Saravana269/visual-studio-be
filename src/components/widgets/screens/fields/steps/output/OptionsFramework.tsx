@@ -86,8 +86,8 @@ export function OptionsFramework({
                 <span className="text-sm">{option}</span>
                 {connected ? (
                   <ConnectionBadge 
-                    connectionId={connection?.id}
-                    onViewConnection={() => handleViewConnection(connection.id)}
+                    connectionId={connection?.id || ''}
+                    onViewConnection={() => connection && handleViewConnection(connection.id)}
                   />
                 ) : (
                   <ConnectButton 
@@ -110,9 +110,11 @@ export function OptionsFramework({
             <ScrollArea className="h-[350px]">
               <div className="space-y-2">
                 {combinations.map((combination, index) => {
+                  // For string arrays, we need to convert to string for connection checking
+                  const combinationStr = JSON.stringify(combination);
                   // Check if this combination is connected
-                  const connected = isOptionConnected(combination);
-                  const connection = connected ? getConnectionForOption(combination) : null;
+                  const connected = isOptionConnected(combinationStr);
+                  const connection = connected ? getConnectionForOption(combinationStr) : null;
                   
                   return (
                     <div 
@@ -122,8 +124,8 @@ export function OptionsFramework({
                       <span className="text-sm">{combination.join(", ")}</span>
                       {connected ? (
                         <ConnectionBadge 
-                          connectionId={connection?.id}
-                          onViewConnection={() => handleViewConnection(connection.id)}
+                          connectionId={connection?.id || ''}
+                          onViewConnection={() => connection && handleViewConnection(connection.id)}
                         />
                       ) : (
                         <ConnectButton 

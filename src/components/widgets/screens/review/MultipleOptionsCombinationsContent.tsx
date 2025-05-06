@@ -1,3 +1,4 @@
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConnectionBadge } from "../connections/ConnectionBadge";
 
@@ -55,7 +56,8 @@ export function MultipleOptionsCombinationsContent({
         <div className="space-y-2 pr-1">
           {combinations.length > 0 ? (
             combinations.map((combination, index) => {
-              const isConnected = isOptionConnected(combination);
+              // Check if this combination is connected - we need to handle both array and string formats
+              const isConnected = isOptionConnected ? isOptionConnected(combination) || isOptionConnected(JSON.stringify(combination)) : false;
               
               return (
                 <div 

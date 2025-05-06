@@ -47,7 +47,7 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
           toast({
             title: "Warning",
             description: "Could not load current screen information",
-            variant: "warning"
+            variant: "destructive"  // Changed from "warning" to "destructive"
           });
         }
       } catch (error) {
@@ -58,7 +58,7 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
       toast({
         title: "Warning",
         description: "Current screen information not available",
-        variant: "warning"
+        variant: "destructive"  // Changed from "warning" to "destructive"
       });
       return; // Don't open dialog if we don't have the current screen
     }
