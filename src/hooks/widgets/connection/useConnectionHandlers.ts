@@ -30,6 +30,48 @@ export const useConnectionHandlers = (widgetId?: string) => {
     storeFrameworkConnectionInfo
   } = useConnectionStorage();
 
+  // Helper function to get screen info for connection records
+  const getScreenInfo = async (screenId: string) => {
+    try {
+      const { data: screenData } = await supabase
+        .from('screens')
+        .select('name, description, framework_id')
+        .eq('id', screenId)
+        .maybeSingle();
+      
+      if (screenData) {
+        let propertyValues = null;
+        
+        // If we have a framework_id, fetch its property values
+        if (screenData.framework_id) {
+          const { data: frameworkData } = await supabase
+            .from('framework_types')
+            .select('property_values')
+            .eq('id', screenData.framework_id)
+            .maybeSingle();
+          
+          if (frameworkData) {
+            propertyValues = frameworkData.property_values;
+          }
+        }
+        
+        return {
+          screenName: screenData.name,
+          screenDescription: screenData.description,
+          propertyValues
+        };
+      }
+    } catch (e) {
+      console.error("Error fetching screen data:", e);
+    }
+    
+    return {
+      screenName: null,
+      screenDescription: null,
+      propertyValues: null
+    };
+  };
+
   // Handle "new_screen" option for an element
   const handleNewScreenForElement = async (elementId: string) => {
     setIsProcessing(true);
@@ -49,6 +91,10 @@ export const useConnectionHandlers = (widgetId?: string) => {
           widgetId
         );
         
+        // Get screen info
+        const { screenName, screenDescription, propertyValues } = 
+          await getScreenInfo(newScreen.id);
+        
         // Create element connection record
         const connectionData: CreateScreenConnectionParams = {
           element_ref: elementId,
@@ -57,11 +103,11 @@ export const useConnectionHandlers = (widgetId?: string) => {
           framework_type: null,
           framework_type_ref: null,
           is_screen_terminated: false,
-          previous_connected_screen_ref: null,
-          next_connected_screen_ref: null,
-          coe_ref: null,
           connection_context: "element_to_screen",
-          source_value: elementId
+          source_value: elementId,
+          screen_name: screenName,
+          screen_description: screenDescription,
+          property_values: propertyValues
         };
         
         const { error } = await supabase
@@ -152,11 +198,11 @@ export const useConnectionHandlers = (widgetId?: string) => {
         framework_type: null,
         framework_type_ref: null,
         is_screen_terminated: false,
-        previous_connected_screen_ref: null,
-        next_connected_screen_ref: null,
-        coe_ref: null,
         connection_context: "element_to_widget",
-        source_value: elementId
+        source_value: elementId,
+        screen_name: null,
+        screen_description: null,
+        property_values: null
       };
       
       const { error } = await supabase
@@ -214,11 +260,11 @@ export const useConnectionHandlers = (widgetId?: string) => {
           framework_type: null,
           framework_type_ref: null,
           is_screen_terminated: true,
-          previous_connected_screen_ref: null,
-          next_connected_screen_ref: null,
-          coe_ref: null,
           connection_context: "terminated",
-          source_value: elementId
+          source_value: elementId,
+          screen_name: null,
+          screen_description: null,
+          property_values: null
         };
         
         const { error } = await supabase
@@ -262,6 +308,10 @@ export const useConnectionHandlers = (widgetId?: string) => {
         // Store framework connection info
         await storeFrameworkConnectionInfo(newScreen.id, frameworkType, widgetId);
         
+        // Get screen info
+        const { screenName, screenDescription, propertyValues } = 
+          await getScreenInfo(newScreen.id);
+        
         // Create framework connection record
         const connectionData: CreateScreenConnectionParams = {
           element_ref: null,
@@ -270,11 +320,11 @@ export const useConnectionHandlers = (widgetId?: string) => {
           framework_type: frameworkType,
           framework_type_ref: null,
           is_screen_terminated: false,
-          previous_connected_screen_ref: null,
-          next_connected_screen_ref: null,
-          coe_ref: null,
           connection_context: "framework_to_screen",
-          source_value: frameworkType
+          source_value: frameworkType,
+          screen_name: screenName,
+          screen_description: screenDescription,
+          property_values: propertyValues
         };
         
         const { error } = await supabase
@@ -367,11 +417,11 @@ export const useConnectionHandlers = (widgetId?: string) => {
         framework_type: frameworkType,
         framework_type_ref: null,
         is_screen_terminated: false,
-        previous_connected_screen_ref: null,
-        next_connected_screen_ref: null,
-        coe_ref: null,
         connection_context: "framework_to_widget",
-        source_value: frameworkType
+        source_value: frameworkType,
+        screen_name: null,
+        screen_description: null,
+        property_values: null
       };
       
       const { error } = await supabase
@@ -429,11 +479,11 @@ export const useConnectionHandlers = (widgetId?: string) => {
           framework_type: frameworkType,
           framework_type_ref: null,
           is_screen_terminated: true,
-          previous_connected_screen_ref: null,
-          next_connected_screen_ref: null,
-          coe_ref: null,
           connection_context: "terminated",
-          source_value: frameworkType
+          source_value: frameworkType,
+          screen_name: null,
+          screen_description: null,
+          property_values: null
         };
         
         const { error } = await supabase

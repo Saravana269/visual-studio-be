@@ -321,7 +321,6 @@ export type Database = {
       }
       connect_screens: {
         Row: {
-          coe_ref: string | null
           connection_context: string | null
           created_at: string | null
           element_ref: string | null
@@ -329,8 +328,6 @@ export type Database = {
           framework_type_ref: string | null
           id: string
           is_screen_terminated: boolean | null
-          next_connected_screen_ref: string | null
-          previous_connected_screen_ref: string | null
           property_values: Json | null
           screen_description: string | null
           screen_name: string | null
@@ -340,7 +337,6 @@ export type Database = {
           widget_ref: string | null
         }
         Insert: {
-          coe_ref?: string | null
           connection_context?: string | null
           created_at?: string | null
           element_ref?: string | null
@@ -348,8 +344,6 @@ export type Database = {
           framework_type_ref?: string | null
           id?: string
           is_screen_terminated?: boolean | null
-          next_connected_screen_ref?: string | null
-          previous_connected_screen_ref?: string | null
           property_values?: Json | null
           screen_description?: string | null
           screen_name?: string | null
@@ -359,7 +353,6 @@ export type Database = {
           widget_ref?: string | null
         }
         Update: {
-          coe_ref?: string | null
           connection_context?: string | null
           created_at?: string | null
           element_ref?: string | null
@@ -367,8 +360,6 @@ export type Database = {
           framework_type_ref?: string | null
           id?: string
           is_screen_terminated?: boolean | null
-          next_connected_screen_ref?: string | null
-          previous_connected_screen_ref?: string | null
           property_values?: Json | null
           screen_description?: string | null
           screen_name?: string | null
@@ -378,13 +369,6 @@ export type Database = {
           widget_ref?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "connect_screens_coe_ref_fkey"
-            columns: ["coe_ref"]
-            isOneToOne: false
-            referencedRelation: "class_of_elements"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "connect_screens_element_ref_fkey"
             columns: ["element_ref"]
@@ -397,20 +381,6 @@ export type Database = {
             columns: ["framework_type_ref"]
             isOneToOne: false
             referencedRelation: "framework_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "connect_screens_next_connected_screen_ref_fkey"
-            columns: ["next_connected_screen_ref"]
-            isOneToOne: false
-            referencedRelation: "screens"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "connect_screens_previous_connected_screen_ref_fkey"
-            columns: ["previous_connected_screen_ref"]
-            isOneToOne: false
-            referencedRelation: "screens"
             referencedColumns: ["id"]
           },
           {

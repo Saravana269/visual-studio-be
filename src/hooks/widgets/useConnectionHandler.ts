@@ -105,7 +105,8 @@ export const useConnectionHandler = (widgetId?: string) => {
         // Store in local storage for demo
         storeSelectedElement(elementId);
       } else if (context === 'coe_id') {
-        // Handle COE connection
+        // Handle COE connection - now using element_ref for both elements and COEs
+        // We differentiate them using the connection_context field
         toast({
           title: "COE Connected",
           description: `Connected COE with ID: ${value}`,

@@ -119,6 +119,39 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
         elementRef = connectionValueContext.context.replace('element_id_', '');
       }
       
+      // Fetch screen info for storing screen_name and screen_description
+      let screenName = null;
+      let screenDescription = null;
+      let propertyValues = null;
+      
+      try {
+        const { data: screenData } = await supabase
+          .from('screens')
+          .select('name, description, framework_id')
+          .eq('id', selectedScreenId)
+          .maybeSingle();
+        
+        if (screenData) {
+          screenName = screenData.name;
+          screenDescription = screenData.description;
+          
+          // If we have a framework_id, fetch its property values
+          if (screenData.framework_id) {
+            const { data: frameworkData } = await supabase
+              .from('framework_types')
+              .select('property_values')
+              .eq('id', screenData.framework_id)
+              .maybeSingle();
+            
+            if (frameworkData) {
+              propertyValues = frameworkData.property_values;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching screen or framework data:", e);
+      }
+      
       // Create connection record in database
       const connectionData: CreateScreenConnectionParams = {
         screen_ref: selectedScreenId,
@@ -126,12 +159,12 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
         framework_type: connectionValueContext.frameType || null,
         framework_type_ref: null,
         is_screen_terminated: false,
-        previous_connected_screen_ref: null,
-        next_connected_screen_ref: null,
-        coe_ref: null,
         element_ref: elementRef,
         connection_context: connectionValueContext.context || null,
-        source_value: String(connectionValueContext.value)
+        source_value: String(connectionValueContext.value),
+        screen_name: screenName,
+        screen_description: screenDescription,
+        property_values: propertyValues
       };
       
       const { data, error } = await supabase

@@ -46,17 +46,31 @@ export const useConnectionStorage = () => {
     // First, get screen info for storing screen_name and screen_description
     let screenName = null;
     let screenDescription = null;
+    let propertyValues = null;
     
     try {
       const { data: screenData } = await supabase
         .from('screens')
-        .select('name, description')
+        .select('name, description, framework_id')
         .eq('id', screenId)
         .maybeSingle();
       
       if (screenData) {
         screenName = screenData.name;
         screenDescription = screenData.description;
+        
+        // If we have a framework_id, fetch its property values
+        if (screenData.framework_id) {
+          const { data: frameworkData } = await supabase
+            .from('framework_types')
+            .select('property_values')
+            .eq('id', screenData.framework_id)
+            .maybeSingle();
+          
+          if (frameworkData) {
+            propertyValues = frameworkData.property_values;
+          }
+        }
       }
     } catch (e) {
       console.error("Error fetching screen data:", e);
@@ -69,14 +83,11 @@ export const useConnectionStorage = () => {
       framework_type: null,
       framework_type_ref: null,
       is_screen_terminated: false,
-      previous_connected_screen_ref: null,
-      next_connected_screen_ref: null,
-      coe_ref: null,
       connection_context: `element_connection_${elementId}`,
       source_value: elementId,
       screen_name: screenName,
       screen_description: screenDescription,
-      property_values: null
+      property_values: propertyValues
     };
     
     const success = await storeConnection(connectionData);
@@ -137,9 +148,6 @@ export const useConnectionStorage = () => {
       widget_ref: null,
       framework_type_ref: null,
       is_screen_terminated: false,
-      previous_connected_screen_ref: null,
-      next_connected_screen_ref: null,
-      coe_ref: null,
       element_ref: null,
       connection_context: `framework_connection_${frameworkType}`,
       source_value: String(value),
@@ -169,17 +177,31 @@ export const useConnectionStorage = () => {
     // Get screen info
     let screenName = null;
     let screenDescription = null;
+    let propertyValues = null;
     
     try {
       const { data: screenData } = await supabase
         .from('screens')
-        .select('name, description')
+        .select('name, description, framework_id')
         .eq('id', screenId)
         .maybeSingle();
       
       if (screenData) {
         screenName = screenData.name;
         screenDescription = screenData.description;
+        
+        // If we have a framework_id, fetch its property values
+        if (screenData.framework_id) {
+          const { data: frameworkData } = await supabase
+            .from('framework_types')
+            .select('property_values')
+            .eq('id', screenData.framework_id)
+            .maybeSingle();
+          
+          if (frameworkData) {
+            propertyValues = frameworkData.property_values;
+          }
+        }
       }
     } catch (e) {
       console.error("Error fetching screen data:", e);
@@ -191,15 +213,12 @@ export const useConnectionStorage = () => {
       framework_type: null,
       framework_type_ref: null,
       is_screen_terminated: false,
-      previous_connected_screen_ref: null,
-      next_connected_screen_ref: null,
-      coe_ref: null,
       element_ref: null,
       connection_context: "new_screen_connection",
       source_value: connectionData,
       screen_name: screenName,
       screen_description: screenDescription,
-      property_values: null
+      property_values: propertyValues
     };
     
     return await storeConnection(data);
@@ -251,9 +270,6 @@ export const useConnectionStorage = () => {
       framework_type: frameworkType,
       framework_type_ref: null,
       is_screen_terminated: false,
-      previous_connected_screen_ref: null,
-      next_connected_screen_ref: null,
-      coe_ref: null,
       element_ref: null,
       connection_context: "framework_connection",
       source_value: frameworkType,

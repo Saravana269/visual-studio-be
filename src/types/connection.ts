@@ -8,9 +8,6 @@ export interface ScreenConnection {
   created_at: string;
   updated_at: string;
   is_screen_terminated: boolean;
-  previous_connected_screen_ref: string | null;
-  next_connected_screen_ref: string | null;
-  coe_ref: string | null;
   element_ref: string | null;
   connection_context: string | null;
   source_value: string | null;
