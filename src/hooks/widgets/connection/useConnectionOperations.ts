@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useConnectionCore } from "./useConnectionCore";
 import { useConnectionStorage } from "./useConnectionStorage";
 import { useConnectionHandlers } from "./useConnectionHandlers";
+import { ConnectionValueContext } from "@/types/connection"; // Fixed the missing import
 
 /**
  * Hook that provides operations for connecting elements and frameworks

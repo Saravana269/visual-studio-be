@@ -30,30 +30,31 @@ export function StepResolver({
     case 1:
       return (
         <ScreenNameStep 
-          formData={formData} 
-          handleFormChange={handleFormChange} 
+          value={formData.name}
+          onChange={handleFormChange}
         />
       );
     case 2:
       return (
         <DescriptionStep 
-          formData={formData} 
-          handleFormChange={handleFormChange} 
+          value={formData.description}
+          onChange={handleFormChange}
         />
       );
     case 3:
       return (
         <FrameworkTypeStep 
-          formData={formData} 
-          handleFrameworkChange={handleFrameworkChange} 
+          selectedFramework={formData.framework_type}
+          onFrameworkChange={handleFrameworkChange}
         />
       );
     case 4:
       return (
         <OutputStep 
-          formData={formData} 
-          updateMetadata={updateMetadata}
-          handleConnect={handleConnect}
+          frameworkType={formData.framework_type}
+          metadata={formData.metadata}
+          onMetadataUpdate={updateMetadata}
+          onConnect={handleConnect}
           widgetId={widgetId}
         />
       );
