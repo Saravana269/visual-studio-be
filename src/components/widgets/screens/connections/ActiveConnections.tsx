@@ -2,13 +2,14 @@
 import React from "react";
 import { ScreenConnection } from "@/types/connection";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRightIcon, FileTextIcon, BoxIcon, XIcon, ImageIcon, ChevronsRightIcon } from "lucide-react";
+import { FileTextIcon, BoxIcon, XIcon, ImageIcon, ChevronsRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ConnectionBadge } from "./ConnectionBadge";
 
 interface ActiveConnectionsProps {
   screenId?: string;
@@ -73,6 +74,13 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
     }
   };
 
+  // Filter connections to only show those related to the current screen
+  // This includes connections where the current screen is either the source or destination
+  const relevantConnections = connections.filter(conn => 
+    !conn.is_screen_terminated && 
+    (conn.screen_ref === screenId || conn.nextScreen_Ref === screenId)
+  );
+
   // Connection card component
   const ConnectionCard = ({ connection }: { connection: ScreenConnection }) => (
     <Card className="bg-black border-gray-800 mb-2">
@@ -133,9 +141,6 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
     </Card>
   );
 
-  // Filter out terminated connections unless we're specifically viewing a terminated one
-  const activeConnections = connections.filter(conn => !conn.is_screen_terminated);
-
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -146,17 +151,17 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
     );
   }
 
-  if (activeConnections.length === 0) {
+  if (relevantConnections.length === 0) {
     return (
       <div className="text-center py-6 border border-dashed border-gray-800 rounded-md">
-        <p className="text-gray-400 text-sm">No active connections</p>
+        <p className="text-gray-400 text-sm">No active connections for this screen</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      {activeConnections.map((connection) => (
+      {relevantConnections.map((connection) => (
         <ConnectionCard key={connection.id} connection={connection} />
       ))}
     </div>
