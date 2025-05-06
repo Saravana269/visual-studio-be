@@ -13,6 +13,7 @@ interface ScreenFieldEditorProps {
   onSave?: (data: ScreenFormData) => void;
   autoSave?: boolean;
   currentStepperStep?: number;
+  screenId?: string;
 }
 
 export function ScreenFieldEditor({
@@ -20,7 +21,8 @@ export function ScreenFieldEditor({
   setFormData,
   onSave,
   autoSave = false,
-  currentStepperStep = 1
+  currentStepperStep = 1,
+  screenId
 }: ScreenFieldEditorProps) {
   const { id: widgetId } = useParams<{ id: string }>();
   
@@ -54,6 +56,7 @@ export function ScreenFieldEditor({
         updateMetadata={updateMetadata}
         handleConnect={handleConnect}
         widgetId={widgetId}
+        screenId={screenId}
       />
     </div>
   );

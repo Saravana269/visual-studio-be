@@ -17,9 +17,16 @@ interface OutputStepProps {
   metadata: Record<string, any>;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
+  screenId?: string;
 }
 
-export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: OutputStepProps) {
+export function OutputStep({ 
+  frameworkType, 
+  metadata, 
+  onConnect, 
+  widgetId,
+  screenId 
+}: OutputStepProps) {
   // Get current widget ID from URL if available
   const { id: urlWidgetId } = useParams<{ id: string }>();
   
@@ -29,7 +36,8 @@ export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: Out
   console.log("🖼️ Rendering OutputStep with:", { 
     frameworkType, 
     widgetId: effectiveWidgetId,
-    urlWidgetId
+    urlWidgetId,
+    screenId
   });
   
   if (!frameworkType) {
@@ -61,6 +69,7 @@ export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: Out
               isRadio={frameworkType === "Radio Button"}
               onConnect={handleConnect} 
               widgetId={effectiveWidgetId}
+              screenId={screenId}
             />
           ) : frameworkType === "Slider" ? (
             <SliderFramework 

@@ -18,6 +18,7 @@ interface ScreenDefinePanelContentProps {
   isEditing: boolean;
   isLoading: boolean;
   autosave?: boolean;
+  screenId?: string;
 }
 
 export function ScreenDefinePanelContent({
@@ -29,7 +30,8 @@ export function ScreenDefinePanelContent({
   lastSaved,
   isEditing,
   isLoading,
-  autosave = false
+  autosave = false,
+  screenId
 }: ScreenDefinePanelContentProps) {
   const { toast } = useToast();
   const { 
@@ -126,6 +128,7 @@ export function ScreenDefinePanelContent({
           onSave={() => onSave(formData)} 
           autoSave={autosave} 
           currentStepperStep={currentStep}
+          screenId={screenId}
         />
       </div>
       

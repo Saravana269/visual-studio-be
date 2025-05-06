@@ -1,4 +1,3 @@
-
 import { ScreenReviewPanel } from "./ScreenReviewPanel";
 import { ScreenDefinePanel } from "./ScreenDefinePanel";
 import { ScreenCarouselNav } from "./ScreenCarouselNav";
@@ -146,6 +145,7 @@ export function ScreenContent({
             isEditing={!!activeScreen}
             isLoading={isActionLoading}
             autosave={false}
+            screenId={activeScreen?.id}
           />
         </div>
         

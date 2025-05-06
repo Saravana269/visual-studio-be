@@ -30,10 +30,10 @@ export const FrameworkContentRenderer = memo(function FrameworkContentRenderer({
   // Render framework-specific content based on the type
   switch (screen.framework_type) {
     case "Multiple Options":
-      return <MultipleOptionsContent metadata={metadata} />;
+      return <MultipleOptionsContent metadata={metadata} screenId={screen.id} />;
       
     case "Radio Button":
-      return <RadioButtonContent metadata={metadata} />;
+      return <RadioButtonContent metadata={metadata} screenId={screen.id} />;
       
     case "Yes / No":
       return <YesNoContent metadata={metadata} />;

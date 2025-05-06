@@ -60,6 +60,21 @@ export function ExistingScreenDialog({
           .eq('screen_id', currentScreen.id)
           .single();
         
+        // Get connection context from session storage if available
+        let connectionContext: any = null;
+        let sourceValue: any = null;
+        
+        try {
+          const rawContext = window.sessionStorage.getItem('connectionContext');
+          if (rawContext) {
+            const parsedContext = JSON.parse(rawContext);
+            connectionContext = parsedContext.context || null;
+            sourceValue = parsedContext.value || null;
+          }
+        } catch (e) {
+          console.error("Error parsing connection context:", e);
+        }
+        
         // Prepare connection data
         const connectionData = {
           nextScreen_Ref: selectedScreenId,
@@ -69,7 +84,9 @@ export function ExistingScreenDialog({
           screen_name: currentScreen.name,
           screen_description: currentScreen.description,
           property_values: frameworkData?.property_values || {},
-          framework_type_ref: currentScreen.framework_id
+          framework_type_ref: currentScreen.framework_id,
+          connection_context: connectionContext,
+          source_value: sourceValue ? String(sourceValue) : null
         };
         
         // Insert the connection data into connect_screens table

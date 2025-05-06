@@ -13,6 +13,7 @@ interface ScreenDefinePanelProps {
   isEditing: boolean;
   isLoading: boolean;
   autosave?: boolean;
+  screenId?: string;
 }
 
 export function ScreenDefinePanel({
@@ -24,7 +25,8 @@ export function ScreenDefinePanel({
   onStepSave,
   isEditing,
   isLoading,
-  autosave = false
+  autosave = false,
+  screenId
 }: ScreenDefinePanelProps) {
   // Steps for the stepper - updated to 4 steps
   const steps = [
@@ -55,6 +57,7 @@ export function ScreenDefinePanel({
         isEditing={isEditing}
         isLoading={isLoading}
         autosave={autosave}
+        screenId={screenId}
       />
     </div>
   );

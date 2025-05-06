@@ -1,25 +1,37 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ConnectButton } from "./ConnectButton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ConnectButton } from "./ConnectButton";
+import { ConnectionBadge } from "../../../connections/ConnectionBadge";
+import { ConnectionDetailsModal } from "../../../connections/ConnectionDetailsModal";
+import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
 
 interface OptionsFrameworkProps {
   options: string[];
   isRadio?: boolean;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
+  screenId?: string;
 }
 
 export function OptionsFramework({ 
   options = [], 
   isRadio = false,
   onConnect,
-  widgetId 
+  widgetId,
+  screenId
 }: OptionsFrameworkProps) {
-  const [selectedOption, setSelectedOption] = React.useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Get current connections
+  const { 
+    isOptionConnected, 
+    getConnectionForOption 
+  } = useOptionConnections(screenId, isRadio ? "Radio Button" : "Multiple Options");
 
   // Generate all possible non-empty combinations of options for multiple select
   const generateCombinations = (opts: string[]): string[][] => {
@@ -44,6 +56,12 @@ export function OptionsFramework({
   };
   
   const combinations = generateCombinations(options);
+  
+  // Handle viewing a connection
+  const handleViewConnection = (connectionId: string) => {
+    setSelectedConnectionId(connectionId);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="p-4">
@@ -55,20 +73,33 @@ export function OptionsFramework({
 
       {isRadio ? (
         <div className="space-y-2 mt-4">
-          {options.map((option, index) => (
-            <div 
-              key={index} 
-              className="flex items-center justify-between p-2 rounded hover:bg-gray-800/30 border border-gray-700"
-            >
-              <span className="text-sm">{option}</span>
-              <ConnectButton 
-                value={option} 
-                context={`element_id_${index}`}
-                onConnect={onConnect}
-                widgetId={widgetId}
-              />
-            </div>
-          ))}
+          {options.map((option, index) => {
+            // Check if this option is connected
+            const connected = isOptionConnected(option);
+            const connection = connected ? getConnectionForOption(option) : null;
+            
+            return (
+              <div 
+                key={index} 
+                className="flex items-center justify-between p-2 rounded hover:bg-gray-800/30 border border-gray-700"
+              >
+                <span className="text-sm">{option}</span>
+                {connected ? (
+                  <ConnectionBadge 
+                    connectionId={connection?.id}
+                    onViewConnection={() => handleViewConnection(connection.id)}
+                  />
+                ) : (
+                  <ConnectButton 
+                    value={option} 
+                    context={`element_id_${index}`}
+                    onConnect={onConnect}
+                    widgetId={widgetId}
+                  />
+                )}
+              </div>
+            );
+          })}
           {options.length === 0 && (
             <p className="text-gray-500 text-sm">No options defined yet</p>
           )}
@@ -78,20 +109,33 @@ export function OptionsFramework({
           {options.length > 0 ? (
             <ScrollArea className="h-[350px]">
               <div className="space-y-2">
-                {combinations.map((combination, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center justify-between p-2 rounded hover:bg-[#00FF00]/10 border border-[#00FF00]/20 bg-black/30"
-                  >
-                    <span className="text-sm">{combination.join(", ")}</span>
-                    <ConnectButton 
-                      value={combination} 
-                      context={`combination_${index}`}
-                      onConnect={onConnect}
-                      widgetId={widgetId}
-                    />
-                  </div>
-                ))}
+                {combinations.map((combination, index) => {
+                  // Check if this combination is connected
+                  const connected = isOptionConnected(combination);
+                  const connection = connected ? getConnectionForOption(combination) : null;
+                  
+                  return (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between p-2 rounded hover:bg-[#00FF00]/10 border border-[#00FF00]/20 bg-black/30"
+                    >
+                      <span className="text-sm">{combination.join(", ")}</span>
+                      {connected ? (
+                        <ConnectionBadge 
+                          connectionId={connection?.id}
+                          onViewConnection={() => handleViewConnection(connection.id)}
+                        />
+                      ) : (
+                        <ConnectButton 
+                          value={combination} 
+                          context={`combination_${index}`}
+                          onConnect={onConnect}
+                          widgetId={widgetId}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </ScrollArea>
           ) : (
@@ -99,6 +143,13 @@ export function OptionsFramework({
           )}
         </div>
       )}
+      
+      {/* Connection details modal */}
+      <ConnectionDetailsModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        connectionId={selectedConnectionId}
+      />
     </div>
   );
 }
