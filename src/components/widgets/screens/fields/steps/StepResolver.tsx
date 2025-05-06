@@ -44,8 +44,8 @@ export function StepResolver({
     case 3:
       return (
         <FrameworkTypeStep 
-          selectedFramework={formData.framework_type}
-          onFrameworkChange={handleFrameworkChange}
+          value={formData.framework_type}
+          onChange={handleFrameworkChange}
         />
       );
     case 4:
@@ -53,7 +53,7 @@ export function StepResolver({
         <OutputStep 
           frameworkType={formData.framework_type}
           metadata={formData.metadata}
-          onMetadataUpdate={updateMetadata}
+          updateMetadata={updateMetadata}
           onConnect={handleConnect}
           widgetId={widgetId}
         />
