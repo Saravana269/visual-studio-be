@@ -15,7 +15,7 @@ import { useParams } from "react-router-dom";
 interface OutputStepProps {
   frameworkType: string | null;
   metadata: Record<string, any>;
-  onConnect: (frameworkType: string, value: any, context?: string) => void;
+  onConnect: (value: any, context?: string) => void;
   widgetId?: string;
 }
 
@@ -45,7 +45,7 @@ export function OutputStep({ frameworkType, metadata, onConnect, widgetId }: Out
     });
     
     if (frameworkType) {
-      onConnect(frameworkType, value, context);
+      onConnect(value, context);
     }
   };
 

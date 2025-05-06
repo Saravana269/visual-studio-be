@@ -30,7 +30,7 @@ export function StepResolver({
     case 1:
       return (
         <ScreenNameStep 
-          value={formData.name}
+          name={formData.name}
           onChange={(name: string) => {
             const syntheticEvent = {
               target: { name: 'name', value: name }
@@ -42,7 +42,7 @@ export function StepResolver({
     case 2:
       return (
         <DescriptionStep 
-          value={formData.description}
+          description={formData.description}
           onChange={(description: string) => {
             const syntheticEvent = {
               target: { name: 'description', value: description }
@@ -54,16 +54,17 @@ export function StepResolver({
     case 3:
       return (
         <FrameworkTypeStep 
-          selectedFramework={formData.framework_type}
-          onFrameworkSelect={handleFrameworkChange}
+          frameworkType={formData.framework_type}
+          metadata={formData.metadata || {}}
+          onFrameworkChange={handleFrameworkChange}
+          onMetadataUpdate={updateMetadata}
         />
       );
     case 4:
       return (
         <OutputStep 
           frameworkType={formData.framework_type}
-          metadata={formData.metadata}
-          onMetadataChange={updateMetadata}
+          metadata={formData.metadata || {}}
           onConnect={handleConnect}
           widgetId={widgetId}
         />

@@ -18,9 +18,10 @@ export function useStepContentHandlers({
 }: UseStepContentHandlersProps) {
   const { toast } = useToast();
   
-  // Handle form field changes
-  const handleFormChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  // Handle form field changes - updated to match ChangeEvent signature
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
     
     // If autoSave is enabled, trigger save after a short delay
     if (autoSave && onSave) {
@@ -33,7 +34,7 @@ export function useStepContentHandlers({
   };
 
   // Handle framework type change
-  const handleFrameworkChange = (value: string) => {
+  const handleFrameworkChange = (value: string | null) => {
     // When framework type changes, reset metadata to avoid mixing configuration
     let newMetadata = {};
     
