@@ -5,6 +5,7 @@ import { useConnectionHandlers } from "./connection/useConnectionHandlers";
 import { useConnectionStorage } from "./connection/useConnectionStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { CreateScreenConnectionParams } from "@/types/connection";
 
 export const useConnectionHandler = (widgetId?: string) => {
   const { toast } = useToast();

@@ -1,526 +1,256 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { useConnectionUIState } from "./useConnectionUIState";
-import { useScreenConnection } from "./useScreenConnection";
-import { useConnectionStorage } from "./useConnectionStorage";
-import { CreateScreenConnectionParams } from "@/types/connection";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useConnectionDialogs } from "@/context/connection";
+import { CreateScreenConnectionParams } from "@/types/connection";
 
-/**
- * Hook for handling option-specific connection logic
- */
-export const useConnectionHandlers = (widgetId?: string) => {
+export function useConnectionHandlers(widgetId?: string) {
   const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  const { 
-    setIsExistingScreenDialogOpen, 
-    setCurrentScreen, 
-    setConnectionContext 
-  } = useConnectionUIState();
-  
-  const { 
-    createNewScreen, 
-    fetchCurrentScreen 
-  } = useScreenConnection(widgetId);
-  
-  const { 
-    storeNewScreenConnectionInfo, 
-    storeFrameworkConnectionInfo
-  } = useConnectionStorage();
+  const { openExistingScreenDialog } = useConnectionDialogs();
 
-  // Helper function to get screen info for connection records
-  const getScreenInfo = async (screenId: string) => {
+  /**
+   * Element-specific connection handlers
+   */
+  // Handle creating a new screen for an element
+  const handleNewScreenForElement = async (elementId: string) => {
     try {
-      const { data: screenData } = await supabase
+      // For now, just show a toast notification
+      toast({
+        title: "Create New Screen",
+        description: `Create a new screen for element with ID: ${elementId}`,
+      });
+      
+      // In a real implementation, navigate to screen creation with context
+      return true;
+    } catch (error) {
+      console.error('Error handling new screen creation for element:', error);
+      return false;
+    }
+  };
+  
+  // Handle connecting to an existing screen for an element
+  const handleExistingScreenForElement = async (elementId: string) => {
+    try {
+      console.log("Opening dialog to select existing screen for element", elementId);
+      
+      // If we already have an element ID, use the openExistingScreenDialog function
+      if (elementId) {
+        openExistingScreenDialog(null, `element_id_${elementId}`, widgetId);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error handling existing screen connection for element:', error);
+      return false;
+    }
+  };
+  
+  // Handle connecting to another widget for an element
+  const handleConnectWidgetForElement = async (elementId: string) => {
+    try {
+      // For now, just show a toast notification
+      toast({
+        title: "Connect to Widget",
+        description: `Connect element with ID: ${elementId} to another widget`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error handling widget connection for element:', error);
+      return false;
+    }
+  };
+  
+  // Handle terminating connection for an element
+  const handleTerminateForElement = async (elementId: string) => {
+    try {
+      // Get current screen ID
+      const currentScreenId = localStorage.getItem('current_screen_id');
+      if (!currentScreenId) {
+        throw new Error('No current screen ID available');
+      }
+      
+      // Get current screen data
+      const { data: screenData, error: screenError } = await supabase
         .from('screens')
-        .select('name, description, framework_id')
-        .eq('id', screenId)
+        .select('*')
+        .eq('id', currentScreenId)
         .maybeSingle();
       
-      if (screenData) {
-        let propertyValues = null;
-        
-        // If we have a framework_id, fetch its property values
-        if (screenData.framework_id) {
-          const { data: frameworkData } = await supabase
-            .from('framework_types')
-            .select('property_values')
-            .eq('id', screenData.framework_id)
-            .maybeSingle();
-          
-          if (frameworkData) {
-            propertyValues = frameworkData.property_values;
-          }
-        }
-        
-        return {
-          screenName: screenData.name,
-          screenDescription: screenData.description,
-          propertyValues
-        };
-      }
-    } catch (e) {
-      console.error("Error fetching screen data:", e);
-    }
-    
-    return {
-      screenName: null,
-      screenDescription: null,
-      propertyValues: null
-    };
-  };
-
-  // Handle "new_screen" option for an element
-  const handleNewScreenForElement = async (elementId: string) => {
-    setIsProcessing(true);
-    try {
-      toast({
-        title: "Creating New Screen",
-        description: `Creating new screen connected to element: ${elementId}`,
-      });
-      
-      const newScreen = await createNewScreen();
-      
-      if (newScreen) {
-        // Store connection in Supabase
-        await storeNewScreenConnectionInfo(
-          newScreen.id, 
-          elementId, 
-          widgetId
-        );
-        
-        // Get screen info
-        const { screenName, screenDescription, propertyValues } = 
-          await getScreenInfo(newScreen.id);
-        
-        // Create element connection record
-        const connectionData: CreateScreenConnectionParams = {
-          element_ref: elementId,
-          screen_ref: newScreen.id,
-          widget_ref: widgetId || null,
-          framework_type: null,
-          framework_type_ref: null,
-          is_screen_terminated: false,
-          connection_context: "element_to_screen",
-          source_value: elementId,
-          screen_name: screenName,
-          screen_description: screenDescription,
-          property_values: propertyValues
-        };
-        
-        const { error } = await supabase
-          .from('connect_screens')
-          .insert(connectionData);
-          
-        if (error) {
-          console.error("Error storing element connection:", error);
-        }
-      }
-    } catch (error) {
-      console.error("Error creating new screen for element:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create new screen",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  
-  // Handle "existing_screen" option for an element
-  const handleExistingScreenForElement = async (elementId: string) => {
-    setIsProcessing(true);
-    try {
-      console.log("🔍 Handling existing screen for element", { elementId, widgetId });
-      
-      if (!widgetId) {
-        console.error("❌ Widget ID not available for existing screen selection");
-        toast({
-          title: "Error",
-          description: "Widget ID not available",
-          variant: "destructive"
-        });
-        return;
+      if (screenError || !screenData) {
+        throw new Error('Failed to fetch current screen data');
       }
       
-      const currentScreenId = localStorage.getItem('current_screen_id');
-      console.log("📋 Current screen ID from localStorage:", currentScreenId);
-      
-      try {
-        const screenData = await fetchCurrentScreen(currentScreenId);
-        console.log("📊 Current screen data:", screenData);
-        
-        if (screenData) {
-          setCurrentScreen(screenData);
-          setConnectionContext({ 
-            value: elementId, 
-            context: `element_id_${elementId}`,
-          });
-          setIsExistingScreenDialogOpen(true);
-        } else {
-          console.error("❌ Failed to fetch current screen data");
-          toast({
-            title: "Error",
-            description: "Could not load current screen information",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error("❌ Error fetching current screen:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load screen information",
-          variant: "destructive"
-        });
-      }
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  
-  // Handle "connect_widget" option for an element
-  const handleConnectWidgetForElement = async (elementId: string) => {
-    setIsProcessing(true);
-    try {
-      toast({
-        title: "Widget Connection",
-        description: `Connecting to another widget from element: ${elementId}`,
-      });
-      
-      // For demonstration purposes, just store a placeholder connection
+      // Store the terminated connection in the database
       const connectionData: CreateScreenConnectionParams = {
         element_ref: elementId,
-        screen_ref: null,
-        widget_ref: widgetId || null,
+        screen_ref: currentScreenId,
+        widget_ref: screenData.widget_id || null,
         framework_type: null,
         framework_type_ref: null,
-        is_screen_terminated: false,
-        connection_context: "element_to_widget",
-        source_value: elementId,
-        screen_name: null,
-        screen_description: null,
+        nextScreen_Ref: null,
+        is_screen_terminated: true,
+        connection_context: `element_id_${elementId}`,
+        source_value: "element_terminated",
+        screen_name: screenData.name,
+        screen_description: screenData.description,
         property_values: null
       };
       
+      // Store in database
       const { error } = await supabase
         .from('connect_screens')
         .insert(connectionData);
-        
-      if (error) {
-        console.error("Error storing widget connection:", error);
-        throw error;
-      }
-    } catch (error) {
-      console.error("Error connecting element to widget:", error);
-      toast({
-        title: "Error",
-        description: "Failed to connect to widget",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  
-  // Handle "terminate" option for an element
-  const handleTerminateForElement = async (elementId: string) => {
-    setIsProcessing(true);
-    try {
-      // Find any existing connections for this element
-      const { data: existingConnections, error: fetchError } = await supabase
-        .from('connect_screens')
-        .select('*')
-        .eq('element_ref', elementId);
-        
-      if (fetchError) {
-        console.error("Error fetching element connections:", fetchError);
-        throw fetchError;
-      }
       
-      if (existingConnections && existingConnections.length > 0) {
-        // Update connections to mark as terminated
-        const { error } = await supabase
-          .from('connect_screens')
-          .update({ is_screen_terminated: true })
-          .eq('element_ref', elementId);
-          
-        if (error) {
-          console.error("Error terminating connections:", error);
-          throw error;
-        }
-      } else {
-        // Create a terminated connection record
-        const connectionData: CreateScreenConnectionParams = {
-          element_ref: elementId,
-          screen_ref: null,
-          widget_ref: widgetId || null,
-          framework_type: null,
-          framework_type_ref: null,
-          is_screen_terminated: true,
-          connection_context: "terminated",
-          source_value: elementId,
-          screen_name: null,
-          screen_description: null,
-          property_values: null
-        };
-        
-        const { error } = await supabase
-          .from('connect_screens')
-          .insert(connectionData);
-          
-        if (error) {
-          console.error("Error creating terminated connection:", error);
-          throw error;
-        }
+      if (error) {
+        throw new Error(`Failed to store terminated connection: ${error.message}`);
       }
       
       toast({
         title: "Connection Terminated",
-        description: `Removed connection for element: ${elementId}`,
+        description: `Connection for element with ID: ${elementId} has been terminated`,
       });
+      
+      return true;
     } catch (error) {
-      console.error("Error terminating element connection:", error);
+      console.error('Error terminating element connection:', error);
+      
       toast({
-        title: "Error",
-        description: "Failed to terminate connection",
+        title: "Termination Error",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive"
       });
-    } finally {
-      setIsProcessing(false);
+      
+      return false;
     }
   };
   
-  // Handle new screen creation for framework
+  /**
+   * Framework-specific connection handlers
+   */
+  // Handle creating a new screen for a framework
   const handleNewScreenForFramework = async (frameworkType: string) => {
-    setIsProcessing(true);
     try {
+      // For now, just show a toast notification
       toast({
-        title: "Creating New Screen",
-        description: `Creating new screen connection for ${frameworkType}`,
+        title: "Create New Screen",
+        description: `Create a new screen for ${frameworkType}`,
       });
       
-      const newScreen = await createNewScreen();
-      
-      if (newScreen) {
-        // Store framework connection info
-        await storeFrameworkConnectionInfo(newScreen.id, frameworkType, widgetId);
-        
-        // Get screen info
-        const { screenName, screenDescription, propertyValues } = 
-          await getScreenInfo(newScreen.id);
-        
-        // Create framework connection record
-        const connectionData: CreateScreenConnectionParams = {
-          element_ref: null,
-          screen_ref: newScreen.id,
-          widget_ref: widgetId || null,
-          framework_type: frameworkType,
-          framework_type_ref: null,
-          is_screen_terminated: false,
-          connection_context: "framework_to_screen",
-          source_value: frameworkType,
-          screen_name: screenName,
-          screen_description: screenDescription,
-          property_values: propertyValues
-        };
-        
-        const { error } = await supabase
-          .from('connect_screens')
-          .insert(connectionData);
-          
-        if (error) {
-          console.error("Error storing framework connection:", error);
-          throw error;
-        }
-      }
+      // In a real implementation, navigate to screen creation with context
+      return true;
     } catch (error) {
-      console.error("Error creating new screen for framework:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create new screen",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
+      console.error('Error handling new screen creation for framework:', error);
+      return false;
     }
   };
   
-  // Handle existing screen selection for framework
-  const handleExistingScreenForFramework = async (baseContext: string, frameworkType: string, value: any) => {
-    setIsProcessing(true);
+  // Handle connecting to an existing screen for a framework
+  const handleExistingScreenForFramework = async (context: string, frameworkType: string, value: any) => {
     try {
-      console.log("🔍 Handling existing screen for framework", { baseContext, frameworkType, value, widgetId });
+      console.log("Opening dialog to select existing screen for framework", { context, frameworkType, value });
       
-      if (!widgetId) {
-        console.error("❌ Widget ID not available for existing screen selection");
-        toast({
-          title: "Error",
-          description: "Widget ID not available",
-          variant: "destructive"
-        });
-        return;
-      }
+      // Use the openExistingScreenDialog function
+      openExistingScreenDialog(value, context, widgetId);
       
-      const currentScreenId = localStorage.getItem('current_screen_id');
-      console.log("📋 Current screen ID from localStorage:", currentScreenId);
-      
-      try {
-        const screenData = await fetchCurrentScreen(currentScreenId);
-        console.log("📊 Current screen data:", screenData);
-        
-        if (screenData) {
-          setCurrentScreen(screenData);
-          setConnectionContext({ 
-            value, 
-            context: baseContext,
-            frameType: frameworkType
-          });
-          setIsExistingScreenDialogOpen(true);
-        } else {
-          console.error("❌ Failed to fetch current screen data");
-          toast({
-            title: "Error",
-            description: "Could not load current screen information",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error("❌ Error fetching current screen:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load screen information",
-          variant: "destructive"
-        });
-      }
-    } finally {
-      setIsProcessing(false);
+      return true;
+    } catch (error) {
+      console.error('Error handling existing screen connection for framework:', error);
+      return false;
     }
   };
   
-  // Handle connecting framework to another widget
+  // Handle connecting to another widget for a framework
   const handleConnectWidgetForFramework = async (frameworkType: string) => {
-    setIsProcessing(true);
     try {
+      // For now, just show a toast notification
       toast({
-        title: "Widget Connection",
-        description: `Connecting to another widget for ${frameworkType}`,
+        title: "Connect to Widget",
+        description: `Connect ${frameworkType} to another widget`,
       });
       
-      // For demonstration purposes, just store a placeholder connection
+      return true;
+    } catch (error) {
+      console.error('Error handling widget connection for framework:', error);
+      return false;
+    }
+  };
+  
+  // Handle terminating connection for a framework
+  const handleTerminateForFramework = async (frameworkType: string) => {
+    try {
+      // Get current screen ID
+      const currentScreenId = localStorage.getItem('current_screen_id');
+      if (!currentScreenId) {
+        throw new Error('No current screen ID available');
+      }
+      
+      // Get current screen data
+      const { data: screenData, error: screenError } = await supabase
+        .from('screens')
+        .select('*')
+        .eq('id', currentScreenId)
+        .maybeSingle();
+      
+      if (screenError || !screenData) {
+        throw new Error('Failed to fetch current screen data');
+      }
+      
+      // Store the terminated connection in the database
       const connectionData: CreateScreenConnectionParams = {
         element_ref: null,
         screen_ref: null,
-        widget_ref: widgetId || null,
+        widget_ref: screenData.widget_id || null,
         framework_type: frameworkType,
         framework_type_ref: null,
-        is_screen_terminated: false,
-        connection_context: "framework_to_widget",
-        source_value: frameworkType,
+        nextScreen_Ref: null,
+        is_screen_terminated: true,
+        connection_context: frameworkType,
+        source_value: "framework_terminated",
         screen_name: null,
         screen_description: null,
         property_values: null
       };
       
+      // Store in database
       const { error } = await supabase
         .from('connect_screens')
         .insert(connectionData);
-        
-      if (error) {
-        console.error("Error storing framework-to-widget connection:", error);
-        throw error;
-      }
-    } catch (error) {
-      console.error("Error connecting framework to widget:", error);
-      toast({
-        title: "Error",
-        description: "Failed to connect to widget",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  
-  // Handle terminating framework connection
-  const handleTerminateForFramework = async (frameworkType: string) => {
-    setIsProcessing(true);
-    try {
-      // Find any existing connections for this framework
-      const { data: existingConnections, error: fetchError } = await supabase
-        .from('connect_screens')
-        .select('*')
-        .eq('framework_type', frameworkType);
-        
-      if (fetchError) {
-        console.error("Error fetching framework connections:", fetchError);
-        throw fetchError;
-      }
       
-      if (existingConnections && existingConnections.length > 0) {
-        // Update connections to mark as terminated
-        const { error } = await supabase
-          .from('connect_screens')
-          .update({ is_screen_terminated: true })
-          .eq('framework_type', frameworkType);
-          
-        if (error) {
-          console.error("Error terminating framework connections:", error);
-          throw error;
-        }
-      } else {
-        // Create a terminated connection record
-        const connectionData: CreateScreenConnectionParams = {
-          element_ref: null,
-          screen_ref: null,
-          widget_ref: widgetId || null,
-          framework_type: frameworkType,
-          framework_type_ref: null,
-          is_screen_terminated: true,
-          connection_context: "terminated",
-          source_value: frameworkType,
-          screen_name: null,
-          screen_description: null,
-          property_values: null
-        };
-        
-        const { error } = await supabase
-          .from('connect_screens')
-          .insert(connectionData);
-          
-        if (error) {
-          console.error("Error creating terminated connection:", error);
-          throw error;
-        }
+      if (error) {
+        throw new Error(`Failed to store terminated connection: ${error.message}`);
       }
       
       toast({
         title: "Connection Terminated",
-        description: `Removed connection for ${frameworkType}`,
+        description: `Connection for ${frameworkType} has been terminated`,
       });
+      
+      return true;
     } catch (error) {
-      console.error("Error terminating framework connection:", error);
+      console.error('Error terminating framework connection:', error);
+      
       toast({
-        title: "Error",
-        description: "Failed to terminate connection",
+        title: "Termination Error",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive"
       });
-    } finally {
-      setIsProcessing(false);
+      
+      return false;
     }
   };
-
+  
   return {
+    // Element handlers
     handleNewScreenForElement,
     handleExistingScreenForElement,
     handleConnectWidgetForElement,
     handleTerminateForElement,
+    
+    // Framework handlers
     handleNewScreenForFramework,
     handleExistingScreenForFramework,
     handleConnectWidgetForFramework,
-    handleTerminateForFramework,
-    isProcessing
+    handleTerminateForFramework
   };
-};
+}

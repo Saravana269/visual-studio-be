@@ -11,6 +11,7 @@ export interface Screen {
   name: string;
   description?: string | null;
   framework_type?: string | null;
+  framework_id?: string | null;  // Added framework_id
   widget_id: string;
   created_at: string;
   updated_at: string;

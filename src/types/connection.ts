@@ -21,3 +21,11 @@ export type CreateScreenConnectionParams = Omit<
   ScreenConnection, 
   'id' | 'created_at' | 'updated_at'
 >;
+
+// Context type for passing connection value details between components
+export interface ConnectionValueContext {
+  value: any;
+  context?: string;
+  frameType?: string;
+  widgetId?: string;
+}

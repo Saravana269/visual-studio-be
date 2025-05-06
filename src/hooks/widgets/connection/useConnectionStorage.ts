@@ -1,357 +1,263 @@
 
+// This file needs updates to use the proper types
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { CreateScreenConnectionParams, ScreenConnection } from "@/types/connection";
+import { useToast } from "@/hooks/use-toast";
+import { CreateScreenConnectionParams } from "@/types/connection";
 
-/**
- * Hook to handle storing connection data between screens and elements
- */
-export const useConnectionStorage = () => {
+export function useConnectionStorage() {
   const { toast } = useToast();
   const [isStoring, setIsStoring] = useState(false);
 
-  // Store connection in Supabase
-  const storeConnection = async (connectionData: CreateScreenConnectionParams): Promise<boolean> => {
+  // Store connection between an element and a screen
+  const storeElementScreenConnection = async (elementId: string, screenId: string) => {
     setIsStoring(true);
     try {
-      const { data, error } = await supabase
-        .from('connect_screens')
-        .insert(connectionData)
-        .select()
-        .single();
+      console.log("🔗 Storing connection between element", elementId, "and screen", screenId);
       
-      if (error) {
-        console.error("Error storing connection data:", error);
-        toast({
-          title: "Connection Error",
-          description: "Failed to store connection data",
-          variant: "destructive",
-        });
-        return false;
+      // Get current screen data
+      const { data: currentScreenData, error: screenError } = await supabase
+        .from('screens')
+        .select('*')
+        .eq('id', localStorage.getItem('current_screen_id') || '')
+        .maybeSingle();
+        
+      if (screenError) {
+        throw new Error(`Error fetching current screen: ${screenError.message}`);
       }
       
-      console.log("🔗 Connection stored successfully:", data);
+      if (!currentScreenData) {
+        throw new Error('No current screen found');
+      }
+      
+      // Get property values for current screen
+      let propertyValues = null;
+      if (currentScreenData.framework_id) {
+        const { data: frameworkData } = await supabase
+          .from('framework_types')
+          .select('property_values')
+          .eq('id', currentScreenData.framework_id)
+          .maybeSingle();
+        
+        if (frameworkData) {
+          propertyValues = frameworkData.property_values;
+        }
+      }
+      
+      // Create the connection
+      const connectionData: CreateScreenConnectionParams = {
+        element_ref: elementId,
+        screen_ref: currentScreenData.id,
+        nextScreen_Ref: screenId,
+        widget_ref: null,
+        framework_type: null,
+        framework_type_ref: null,
+        is_screen_terminated: false,
+        connection_context: `element_id_${elementId}`,
+        source_value: "element_connection",
+        screen_name: currentScreenData.name,
+        screen_description: currentScreenData.description,
+        property_values: propertyValues
+      };
+      
+      const { error } = await supabase
+        .from('connect_screens')
+        .insert(connectionData);
+      
+      if (error) {
+        throw new Error(`Error storing connection: ${error.message}`);
+      }
+      
+      toast({
+        title: "Connection Saved",
+        description: `Element connected to screen ${screenId}`,
+      });
+      
       return true;
-    } catch (e) {
-      console.error("Error storing connection data:", e);
+    } catch (error) {
+      console.error('Error storing element-screen connection:', error);
+      toast({
+        title: "Connection Error",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive"
+      });
       return false;
     } finally {
       setIsStoring(false);
     }
   };
-  
-  // Store element connection to screen
-  const storeElementScreenConnection = async (elementId: string, screenId: string): Promise<boolean> => {
-    // First, get screen info for storing screen_name and screen_description
-    let screenName = null;
-    let screenDescription = null;
-    let propertyValues = null;
-    
+
+  // Store connection between a framework type and a screen
+  const storeFrameworkScreenConnection = async (frameworkType: string, value: any, screenId: string) => {
+    setIsStoring(true);
     try {
-      const { data: screenData } = await supabase
-        .from('screens')
-        .select('name, description, framework_id')
-        .eq('id', screenId)
-        .maybeSingle();
+      console.log("🔗 Storing framework connection for", frameworkType, "to screen", screenId);
       
-      if (screenData) {
-        screenName = screenData.name;
-        screenDescription = screenData.description;
-        
-        // If we have a framework_id, fetch its property values
-        if (screenData.framework_id) {
-          const { data: frameworkData } = await supabase
-            .from('framework_types')
-            .select('property_values')
-            .eq('id', screenData.framework_id)
-            .maybeSingle();
-          
-          if (frameworkData) {
-            propertyValues = frameworkData.property_values;
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Error fetching screen data:", e);
-    }
-    
-    const connectionData: CreateScreenConnectionParams = {
-      element_ref: elementId,
-      screen_ref: screenId,
-      widget_ref: null,
-      framework_type: null,
-      framework_type_ref: null,
-      is_screen_terminated: false,
-      connection_context: `element_connection_${elementId}`,
-      source_value: elementId,
-      screen_name: screenName,
-      screen_description: screenDescription,
-      property_values: propertyValues
-    };
-    
-    const success = await storeConnection(connectionData);
-    
-    if (success) {
-      toast({
-        title: "Connection Established",
-        description: `Connected element to screen "${screenName || screenId}"`,
-      });
-    }
-    
-    return success;
-  };
-  
-  // Store framework connection to screen
-  const storeFrameworkScreenConnection = async (
-    frameworkType: string, 
-    value: any, 
-    screenId: string
-  ): Promise<boolean> => {
-    // First, get screen info and framework property values
-    let screenName = null;
-    let screenDescription = null;
-    let propertyValues = null;
-    
-    try {
-      // Fetch screen data
-      const { data: screenData } = await supabase
+      // Get current screen data
+      const { data: currentScreenData, error: screenError } = await supabase
         .from('screens')
-        .select('name, description, framework_id')
-        .eq('id', screenId)
-        .maybeSingle();
-      
-      if (screenData) {
-        screenName = screenData.name;
-        screenDescription = screenData.description;
-        
-        // If we have a framework_id, fetch its property values
-        if (screenData.framework_id) {
-          const { data: frameworkData } = await supabase
-            .from('framework_types')
-            .select('property_values')
-            .eq('id', screenData.framework_id)
-            .maybeSingle();
-          
-          if (frameworkData) {
-            propertyValues = frameworkData.property_values;
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Error fetching screen or framework data:", e);
-    }
-    
-    const connectionData: CreateScreenConnectionParams = {
-      framework_type: frameworkType,
-      screen_ref: screenId,
-      widget_ref: null,
-      framework_type_ref: null,
-      is_screen_terminated: false,
-      element_ref: null,
-      connection_context: `framework_connection_${frameworkType}`,
-      source_value: String(value),
-      screen_name: screenName,
-      screen_description: screenDescription,
-      property_values: propertyValues
-    };
-    
-    const success = await storeConnection(connectionData);
-    
-    if (success) {
-      toast({
-        title: "Connection Established",
-        description: `Connected ${frameworkType} to screen "${screenName || screenId}"`,
-      });
-    }
-    
-    return success;
-  };
-  
-  // Store connection info for new screen
-  const storeNewScreenConnectionInfo = async (
-    screenId: string, 
-    connectionData: string, 
-    widgetId?: string
-  ): Promise<boolean> => {
-    // Get screen info
-    let screenName = null;
-    let screenDescription = null;
-    let propertyValues = null;
-    
-    try {
-      const { data: screenData } = await supabase
-        .from('screens')
-        .select('name, description, framework_id')
-        .eq('id', screenId)
-        .maybeSingle();
-      
-      if (screenData) {
-        screenName = screenData.name;
-        screenDescription = screenData.description;
-        
-        // If we have a framework_id, fetch its property values
-        if (screenData.framework_id) {
-          const { data: frameworkData } = await supabase
-            .from('framework_types')
-            .select('property_values')
-            .eq('id', screenData.framework_id)
-            .maybeSingle();
-          
-          if (frameworkData) {
-            propertyValues = frameworkData.property_values;
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Error fetching screen data:", e);
-    }
-    
-    const data: CreateScreenConnectionParams = {
-      screen_ref: screenId,
-      widget_ref: widgetId || null,
-      framework_type: null,
-      framework_type_ref: null,
-      is_screen_terminated: false,
-      element_ref: null,
-      connection_context: "new_screen_connection",
-      source_value: connectionData,
-      screen_name: screenName,
-      screen_description: screenDescription,
-      property_values: propertyValues
-    };
-    
-    return await storeConnection(data);
-  };
-  
-  // Store framework info for new screen
-  const storeFrameworkConnectionInfo = async (
-    screenId: string, 
-    frameworkType: string, 
-    widgetId?: string
-  ): Promise<boolean> => {
-    // Get screen info and possibly framework property values
-    let screenName = null;
-    let screenDescription = null;
-    let propertyValues = null;
-    
-    try {
-      // Get screen data and possibly framework data
-      const { data: screenData } = await supabase
-        .from('screens')
-        .select('name, description, framework_id')
-        .eq('id', screenId)
-        .maybeSingle();
-      
-      if (screenData) {
-        screenName = screenData.name;
-        screenDescription = screenData.description;
-        
-        // If framework_id exists, get property values
-        if (screenData.framework_id) {
-          const { data: frameworkData } = await supabase
-            .from('framework_types')
-            .select('property_values')
-            .eq('id', screenData.framework_id)
-            .maybeSingle();
-          
-          if (frameworkData) {
-            propertyValues = frameworkData.property_values;
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Error fetching screen or framework data:", e);
-    }
-    
-    const data: CreateScreenConnectionParams = {
-      screen_ref: screenId,
-      widget_ref: widgetId || null,
-      framework_type: frameworkType,
-      framework_type_ref: null,
-      is_screen_terminated: false,
-      element_ref: null,
-      connection_context: "framework_connection",
-      source_value: frameworkType,
-      screen_name: screenName,
-      screen_description: screenDescription,
-      property_values: propertyValues
-    };
-    
-    return await storeConnection(data);
-  };
-  
-  // Get connections for a screen
-  const getConnectionsForScreen = async (screenId: string): Promise<ScreenConnection[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('connect_screens')
         .select('*')
-        .eq('screen_ref', screenId);
+        .eq('id', localStorage.getItem('current_screen_id') || '')
+        .maybeSingle();
         
-      if (error) {
-        console.error("Error fetching connections:", error);
-        return [];
+      if (screenError) {
+        throw new Error(`Error fetching current screen: ${screenError.message}`);
       }
       
-      return data as ScreenConnection[];
-    } catch (e) {
-      console.error("Error fetching connections:", e);
-      return [];
-    }
-  };
-  
-  // Get connections for an element
-  const getConnectionsForElement = async (elementId: string): Promise<ScreenConnection[]> => {
-    try {
-      const { data, error } = await supabase
+      if (!currentScreenData) {
+        throw new Error('No current screen found');
+      }
+      
+      // Get property values for current screen
+      let propertyValues = null;
+      if (currentScreenData.framework_id) {
+        const { data: frameworkData } = await supabase
+          .from('framework_types')
+          .select('property_values')
+          .eq('id', currentScreenData.framework_id)
+          .maybeSingle();
+        
+        if (frameworkData) {
+          propertyValues = frameworkData.property_values;
+        }
+      }
+      
+      // Create the connection
+      const connectionData: CreateScreenConnectionParams = {
+        framework_type: frameworkType,
+        screen_ref: currentScreenData.id,
+        nextScreen_Ref: screenId,
+        widget_ref: null,
+        framework_type_ref: null,
+        is_screen_terminated: false,
+        element_ref: null,
+        connection_context: frameworkType,
+        source_value: String(value),
+        screen_name: currentScreenData.name,
+        screen_description: currentScreenData.description,
+        property_values: propertyValues
+      };
+      
+      const { error } = await supabase
         .from('connect_screens')
-        .select('*')
-        .eq('element_ref', elementId);
-        
+        .insert(connectionData);
+      
       if (error) {
-        console.error("Error fetching element connections:", error);
-        return [];
+        throw new Error(`Error storing connection: ${error.message}`);
       }
       
-      return data as ScreenConnection[];
-    } catch (e) {
-      console.error("Error fetching element connections:", e);
-      return [];
+      toast({
+        title: "Connection Saved",
+        description: `${frameworkType} connected to screen ${screenId}`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error storing framework-screen connection:', error);
+      toast({
+        title: "Connection Error",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsStoring(false);
     }
   };
-  
-  // Store selected element for screen (for demo purposes - legacy)
+
+  // Store selected element in local storage
   const storeSelectedElement = (elementId: string) => {
     try {
-      localStorage.setItem("selected_element_for_screen", elementId);
-      return true;
-    } catch (e) {
-      console.error("Error storing selected element:", e);
-      return false;
+      localStorage.setItem('selected_element_id', elementId);
+      
+      // Also update the current screen data to include this element
+      const currentScreenId = localStorage.getItem('current_screen_id');
+      
+      if (currentScreenId) {
+        // Get current screen data
+        supabase
+          .from('screens')
+          .select('*')
+          .eq('id', currentScreenId)
+          .maybeSingle()
+          .then(({ data, error }) => {
+            if (error || !data) return;
+            
+            // Create the connection for demo purposes
+            const connectionData: CreateScreenConnectionParams = {
+              screen_ref: data.id,
+              nextScreen_Ref: null,
+              widget_ref: data.widget_id,
+              framework_type: null,
+              framework_type_ref: null,
+              is_screen_terminated: false,
+              element_ref: null,
+              connection_context: `element_id_${elementId}`,
+              source_value: "element_selected",
+              screen_name: data.name,
+              screen_description: data.description,
+              property_values: null
+            };
+            
+            // Store in database
+            supabase.from('connect_screens').insert(connectionData);
+          });
+      }
+      
+    } catch (error) {
+      console.error('Error storing selected element ID:', error);
     }
   };
-  
-  // Store selected COE for screen (for demo purposes - legacy)
+
+  // Store selected COE in local storage
   const storeSelectedCOE = (coeId: string) => {
     try {
-      localStorage.setItem("selected_coe_for_screen", coeId);
-      return true;
-    } catch (e) {
-      console.error("Error storing selected COE:", e);
-      return false;
+      localStorage.setItem('selected_coe_id', coeId);
+      
+      // Also update the current screen data to include this COE
+      const currentScreenId = localStorage.getItem('current_screen_id');
+      
+      if (currentScreenId) {
+        // Get current screen data
+        supabase
+          .from('screens')
+          .select('*')
+          .eq('id', currentScreenId)
+          .maybeSingle()
+          .then(({ data, error }) => {
+            if (error || !data) return;
+            
+            // Create the connection for demo purposes
+            const connectionData: CreateScreenConnectionParams = {
+              screen_ref: data.id,
+              nextScreen_Ref: null,
+              widget_ref: data.widget_id,
+              framework_type: null,
+              framework_type_ref: null,
+              is_screen_terminated: false,
+              element_ref: null,
+              connection_context: "coe_id",
+              source_value: coeId,
+              screen_name: data.name,
+              screen_description: data.description,
+              property_values: null
+            };
+            
+            // Store in database
+            supabase.from('connect_screens').insert(connectionData);
+          });
+      }
+      
+    } catch (error) {
+      console.error('Error storing selected COE ID:', error);
     }
   };
 
   return {
     storeElementScreenConnection,
     storeFrameworkScreenConnection,
-    storeNewScreenConnectionInfo,
-    storeFrameworkConnectionInfo,
-    getConnectionsForScreen,
-    getConnectionsForElement,
     storeSelectedElement,
     storeSelectedCOE,
     isStoring
   };
-};
+}
