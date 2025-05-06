@@ -321,66 +321,60 @@ export type Database = {
       }
       connect_screens: {
         Row: {
-          connection_context: string | null
           created_at: string | null
-          element_ref: string | null
           framework_type: string | null
           framework_type_ref: string | null
           id: string
           is_screen_terminated: boolean | null
+          nextScreen_Ref: string | null
           property_values: Json | null
           screen_description: string | null
           screen_name: string | null
           screen_ref: string | null
-          source_value: string | null
           updated_at: string | null
           widget_ref: string | null
         }
         Insert: {
-          connection_context?: string | null
           created_at?: string | null
-          element_ref?: string | null
           framework_type?: string | null
           framework_type_ref?: string | null
           id?: string
           is_screen_terminated?: boolean | null
+          nextScreen_Ref?: string | null
           property_values?: Json | null
           screen_description?: string | null
           screen_name?: string | null
           screen_ref?: string | null
-          source_value?: string | null
           updated_at?: string | null
           widget_ref?: string | null
         }
         Update: {
-          connection_context?: string | null
           created_at?: string | null
-          element_ref?: string | null
           framework_type?: string | null
           framework_type_ref?: string | null
           id?: string
           is_screen_terminated?: boolean | null
+          nextScreen_Ref?: string | null
           property_values?: Json | null
           screen_description?: string | null
           screen_name?: string | null
           screen_ref?: string | null
-          source_value?: string | null
           updated_at?: string | null
           widget_ref?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "connect_screens_element_ref_fkey"
-            columns: ["element_ref"]
-            isOneToOne: false
-            referencedRelation: "elements"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "connect_screens_framework_type_ref_fkey"
             columns: ["framework_type_ref"]
             isOneToOne: false
             referencedRelation: "framework_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connect_screens_nextScreen_Ref_fkey"
+            columns: ["nextScreen_Ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
             referencedColumns: ["id"]
           },
           {

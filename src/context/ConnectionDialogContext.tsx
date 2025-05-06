@@ -103,11 +103,23 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
       return;
     }
     
+    if (!currentScreen) {
+      console.warn("⚠️ No current screen data available when trying to connect");
+      toast({
+        title: "Connection Error",
+        description: "No current screen data available. Please try again.",
+        variant: "destructive"
+      });
+      closeExistingScreenDialog();
+      return;
+    }
+    
     setIsConnecting(true);
     
     try {
       console.log("🔗 Global: Connecting to screen:", { 
-        screenId: selectedScreenId, 
+        selectedScreenId,
+        currentScreen,
         value: connectionValueContext.value,
         context: connectionValueContext.context,
         frameType: connectionValueContext.frameType
@@ -119,53 +131,44 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
         elementRef = connectionValueContext.context.replace('element_id_', '');
       }
       
-      // Fetch screen info for storing screen_name and screen_description
-      let screenName = null;
-      let screenDescription = null;
+      // Get current screen's framework type values if available
       let propertyValues = null;
-      
-      try {
-        const { data: screenData } = await supabase
-          .from('screens')
-          .select('name, description, framework_id')
-          .eq('id', selectedScreenId)
-          .maybeSingle();
-        
-        if (screenData) {
-          screenName = screenData.name;
-          screenDescription = screenData.description;
+      if (currentScreen?.framework_id) {
+        try {
+          const { data: frameworkData } = await supabase
+            .from('framework_types')
+            .select('property_values')
+            .eq('id', currentScreen.framework_id)
+            .maybeSingle();
           
-          // If we have a framework_id, fetch its property values
-          if (screenData.framework_id) {
-            const { data: frameworkData } = await supabase
-              .from('framework_types')
-              .select('property_values')
-              .eq('id', screenData.framework_id)
-              .maybeSingle();
-            
-            if (frameworkData) {
-              propertyValues = frameworkData.property_values;
-            }
+          if (frameworkData) {
+            propertyValues = frameworkData.property_values;
           }
+        } catch (e) {
+          console.error("Error fetching framework data:", e);
         }
-      } catch (e) {
-        console.error("Error fetching screen or framework data:", e);
       }
       
-      // Create connection record in database
+      // Create connection record in database with the updated field mappings
       const connectionData: CreateScreenConnectionParams = {
-        screen_ref: selectedScreenId,
-        widget_ref: connectionValueContext.widgetId || null,
-        framework_type: connectionValueContext.frameType || null,
-        framework_type_ref: null,
+        // The current screen is the source
+        screen_ref: currentScreen.id,
+        // The selected screen is the target/next screen
+        nextScreen_Ref: selectedScreenId,
+        // Current screen's properties
+        widget_ref: currentScreen.widget_id || null,
+        framework_type: currentScreen.framework_type || null,
+        framework_type_ref: currentScreen.framework_id || null,
         is_screen_terminated: false,
         element_ref: elementRef,
         connection_context: connectionValueContext.context || null,
         source_value: String(connectionValueContext.value),
-        screen_name: screenName,
-        screen_description: screenDescription,
+        screen_name: currentScreen.name,
+        screen_description: currentScreen.description || null,
         property_values: propertyValues
       };
+      
+      console.log("💾 Storing connection data:", connectionData);
       
       const { data, error } = await supabase
         .from('connect_screens')
@@ -186,7 +189,7 @@ export const ConnectionDialogProvider = ({ children }: ConnectionDialogProviderP
       
       toast({
         title: "Connection Established",
-        description: `Connected to screen "${selectedScreenId}"`,
+        description: `Connected "${currentScreen.name}" to "${selectedScreenId}"`,
       });
     } catch (error) {
       console.error("Error connecting to screen:", error);

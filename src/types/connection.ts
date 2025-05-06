@@ -14,6 +14,7 @@ export interface ScreenConnection {
   screen_name: string | null;
   screen_description: string | null;
   property_values: Record<string, any> | null;
+  nextScreen_Ref: string | null;
 }
 
 export type CreateScreenConnectionParams = Omit<
