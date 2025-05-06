@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useConnectionCore } from "./useConnectionCore";
 import { useConnectionStorage } from "./useConnectionStorage";
 import { useConnectionHandlers } from "./useConnectionHandlers";
-import { ConnectionValueContext } from "@/types/connection"; // Fixed the missing import
+import { ConnectionValueContext } from "@/types/connection";
 
 /**
  * Hook that provides operations for connecting elements and frameworks
@@ -51,16 +51,82 @@ export function useConnectionOperations(widgetId?: string) {
         return;
       }
       
+      // Get current screen information from localStorage
+      const currentScreenId = localStorage.getItem('current_screen_id');
+      if (!currentScreenId) {
+        throw new Error("Current screen ID not found in localStorage");
+      }
+      
+      // Fetch current screen details
+      const { data: currentScreen, error: screenError } = await supabase
+        .from('screens')
+        .select('*')
+        .eq('id', currentScreenId)
+        .single();
+      
+      if (screenError || !currentScreen) {
+        throw new Error("Failed to fetch current screen details");
+      }
+      
+      // Get the framework type data to retrieve property values
+      const { data: frameworkData, error: frameworkError } = await supabase
+        .from('framework_types')
+        .select('property_values, framework_Type')
+        .eq('screen_id', currentScreenId)
+        .single();
+      
+      if (frameworkError) {
+        console.warn("⚠️ Could not fetch framework data:", frameworkError.message);
+      }
+      
       if (connectionCtx.context?.startsWith('element_id_')) {
         const elementId = connectionCtx.context.replace('element_id_', '');
-        await storeElementScreenConnection(elementId, selectedScreenId);
+        
+        // Create connection record in connect_screens table
+        const connectionData = {
+          nextScreen_Ref: selectedScreenId,
+          framework_type: currentScreen.framework_type,
+          widget_ref: currentScreen.widget_id,
+          screen_ref: currentScreen.id,
+          screen_name: currentScreen.name,
+          screen_description: currentScreen.description,
+          property_values: frameworkData?.property_values || {},
+          framework_type_ref: currentScreen.framework_id,
+          element_ref: elementId,
+          source_value: "element_connection",
+          connection_context: connectionCtx.context
+        };
+        
+        const { error } = await supabase
+          .from('connect_screens')
+          .insert(connectionData);
+          
+        if (error) {
+          throw new Error(`Failed to create element connection: ${error.message}`);
+        }
       } else {
         // For framework-level connections
-        await storeFrameworkScreenConnection(
-          connectionCtx.frameType || 'unknown', 
-          connectionCtx.value, 
-          selectedScreenId
-        );
+        // Create connection record in connect_screens table
+        const connectionData = {
+          nextScreen_Ref: selectedScreenId,
+          framework_type: connectionCtx.frameType || currentScreen.framework_type,
+          widget_ref: currentScreen.widget_id,
+          screen_ref: currentScreen.id,
+          screen_name: currentScreen.name,
+          screen_description: currentScreen.description,
+          property_values: frameworkData?.property_values || {},
+          framework_type_ref: currentScreen.framework_id,
+          source_value: connectionCtx.value ? String(connectionCtx.value) : null,
+          connection_context: connectionCtx.context || null,
+        };
+        
+        const { error } = await supabase
+          .from('connect_screens')
+          .insert(connectionData);
+          
+        if (error) {
+          throw new Error(`Failed to create framework connection: ${error.message}`);
+        }
       }
       
       // Clear state
@@ -77,7 +143,7 @@ export function useConnectionOperations(widgetId?: string) {
       console.error("Error connecting to screen:", error);
       toast({
         title: "Connection Error",
-        description: "Failed to connect to selected screen",
+        description: error instanceof Error ? error.message : "Failed to connect to selected screen",
         variant: "destructive"
       });
     } finally {

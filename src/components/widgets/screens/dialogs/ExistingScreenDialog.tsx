@@ -8,6 +8,8 @@ import { ScreenSelectionList } from "./components/ScreenSelectionList";
 import { ScreenPreviewSection } from "./components/ScreenPreviewSection";
 import { useExistingScreensQuery } from "@/hooks/widgets/useExistingScreensQuery";
 import { useSelectedScreenQuery } from "@/hooks/widgets/useSelectedScreenQuery";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExistingScreenDialogProps {
   isOpen: boolean;
@@ -25,6 +27,8 @@ export function ExistingScreenDialog({
   widgetId
 }: ExistingScreenDialogProps) {
   const [selectedScreenId, setSelectedScreenId] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { toast } = useToast();
 
   // Use custom hooks for data fetching
   const { screens, isLoading } = useExistingScreensQuery({ 
@@ -45,10 +49,56 @@ export function ExistingScreenDialog({
   }, [isOpen]);
 
   // Handle connection
-  const handleConnect = () => {
-    if (selectedScreenId) {
-      onConnect(selectedScreenId);
-      onClose();
+  const handleConnect = async () => {
+    if (selectedScreenId && currentScreen) {
+      setIsConnecting(true);
+      try {
+        // Get the framework type data to retrieve property values
+        const { data: frameworkData } = await supabase
+          .from('framework_types')
+          .select('property_values, framework_Type')
+          .eq('screen_id', currentScreen.id)
+          .single();
+        
+        // Prepare connection data
+        const connectionData = {
+          nextScreen_Ref: selectedScreenId,
+          framework_type: currentScreen.framework_type,
+          widget_ref: currentScreen.widget_id,
+          screen_ref: currentScreen.id,
+          screen_name: currentScreen.name,
+          screen_description: currentScreen.description,
+          property_values: frameworkData?.property_values || {},
+          framework_type_ref: currentScreen.framework_id
+        };
+        
+        // Insert the connection data into connect_screens table
+        const { error } = await supabase
+          .from('connect_screens')
+          .insert(connectionData);
+          
+        if (error) {
+          throw new Error(`Failed to create connection: ${error.message}`);
+        }
+        
+        toast({
+          title: "Connection created",
+          description: "Screen connection has been successfully created",
+        });
+        
+        // Call the onConnect callback and close the dialog
+        onConnect(selectedScreenId);
+        onClose();
+      } catch (error) {
+        console.error("Error creating connection:", error);
+        toast({
+          title: "Connection failed",
+          description: error instanceof Error ? error.message : "An unknown error occurred",
+          variant: "destructive"
+        });
+      } finally {
+        setIsConnecting(false);
+      }
     }
   };
 
@@ -86,15 +136,16 @@ export function ExistingScreenDialog({
             variant="outline" 
             onClick={onClose}
             className="border-gray-700"
+            disabled={isConnecting}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleConnect}
-            disabled={!selectedScreenId}
+            disabled={!selectedScreenId || isConnecting}
             className="bg-[#00FF00] text-black hover:bg-[#00DD00]"
           >
-            Connect
+            {isConnecting ? "Connecting..." : "Connect"}
           </Button>
         </DialogFooter>
       </DialogContent>

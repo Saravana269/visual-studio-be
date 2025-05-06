@@ -5,6 +5,8 @@ import { ExistingScreenDialog } from "@/components/widgets/screens/dialogs/Exist
 import { Screen } from "@/types/screen";
 import { useScreenConnection } from "@/hooks/widgets/connection/useScreenConnection";
 import { ConnectionValueContext } from "@/types/connection";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ConnectionDialogProviderProps {
   children: ReactNode;
@@ -16,6 +18,7 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | undefined>(undefined);
   const [connectionValueContext, setConnectionValueContext] = useState<ConnectionValueContext | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen | null>(null);
+  const { toast } = useToast();
 
   // Get screen connection utilities
   const { fetchCurrentScreen } = useScreenConnection(selectedWidgetId);
@@ -40,7 +43,7 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
     
     // Store context in session storage for component communication
     try {
-      window.sessionStorage.setItem('connectionContext', JSON.stringify({ value, context }));
+      window.sessionStorage.setItem('connectionContext', JSON.stringify({ value, context, frameType: currentScreen?.framework_type }));
     } catch (e) {
       console.error("Error storing connection context in session storage:", e);
     }
@@ -55,11 +58,66 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
     setConnectionValueContext(null);
   };
 
-  // This function will be implementation in the consumer that uses this context
-  const handleExistingScreenConnect = (selectedScreenId: string) => {
-    // This is a placeholder - the actual implementation will be provided by the consumer
-    console.log("Selected screen:", selectedScreenId);
-    closeExistingScreenDialog();
+  // Handle connecting to an existing screen
+  const handleExistingScreenConnect = async (selectedScreenId: string) => {
+    console.log("🔗 Connecting to existing screen:", selectedScreenId);
+    
+    if (!currentScreen) {
+      toast({
+        title: "Connection Error",
+        description: "Current screen information not available",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Get the framework type data to retrieve property values
+      const { data: frameworkData } = await supabase
+        .from('framework_types')
+        .select('property_values, framework_Type')
+        .eq('screen_id', currentScreen.id)
+        .single();
+      
+      // Prepare connection data
+      const connectionData = {
+        nextScreen_Ref: selectedScreenId,
+        framework_type: currentScreen.framework_type,
+        widget_ref: currentScreen.widget_id,
+        screen_ref: currentScreen.id,
+        screen_name: currentScreen.name,
+        screen_description: currentScreen.description,
+        property_values: frameworkData?.property_values || {},
+        framework_type_ref: currentScreen.framework_id,
+        source_value: connectionValueContext?.value ? String(connectionValueContext.value) : null,
+        connection_context: connectionValueContext?.context || null,
+      };
+      
+      // Insert the connection data into connect_screens table
+      const { error } = await supabase
+        .from('connect_screens')
+        .insert(connectionData);
+        
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Connection created",
+        description: "Screen connection has been successfully created",
+      });
+      
+      // Close the dialog after success
+      closeExistingScreenDialog();
+      
+    } catch (error: any) {
+      console.error("Error creating connection:", error);
+      toast({
+        title: "Connection Error",
+        description: error.message || "Failed to create connection",
+        variant: "destructive"
+      });
+    }
   };
 
   // Context value
