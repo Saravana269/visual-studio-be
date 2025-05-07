@@ -33,6 +33,18 @@ export function OutputStep({
   // Use the URL widget ID if the prop is not provided
   const effectiveWidgetId = widgetId || urlWidgetId;
   
+  // Store the current screen ID in localStorage for connections
+  React.useEffect(() => {
+    if (screenId) {
+      try {
+        localStorage.setItem('current_screen_id', screenId);
+        console.log("💾 OutputStep stored current screen ID in localStorage:", screenId);
+      } catch (e) {
+        console.error("Error storing screen ID:", e);
+      }
+    }
+  }, [screenId]);
+  
   console.log("🖼️ Rendering OutputStep with:", { 
     frameworkType, 
     widgetId: effectiveWidgetId,
@@ -49,7 +61,8 @@ export function OutputStep({
       value, 
       context, 
       frameworkType, 
-      widgetId: effectiveWidgetId 
+      widgetId: effectiveWidgetId,
+      screenId
     });
     
     if (frameworkType) {
@@ -78,6 +91,7 @@ export function OutputStep({
               step={metadata?.step} 
               onConnect={handleConnect}
               widgetId={effectiveWidgetId}
+              screenId={screenId}
             />
           ) : frameworkType === "Information" ? (
             <InformationFramework 
@@ -91,6 +105,7 @@ export function OutputStep({
               value={metadata?.value} 
               onConnect={handleConnect} 
               widgetId={effectiveWidgetId}
+              screenId={screenId}
             />
           ) : frameworkType === "Image Upload" ? (
             <ImageUploadFramework 
@@ -104,6 +119,7 @@ export function OutputStep({
               coeId={metadata?.coe_id} 
               onConnect={handleConnect}
               widgetId={effectiveWidgetId}
+              screenId={screenId}
             />
           ) : (
             <p className="text-gray-400">No preview available for this framework type.</p>

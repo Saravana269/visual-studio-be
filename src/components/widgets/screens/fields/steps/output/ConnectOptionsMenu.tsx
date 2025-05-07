@@ -14,16 +14,17 @@ interface ConnectOptionsMenuProps {
   trigger: React.ReactNode;
   onOptionSelect: (option: string) => void;
   widgetId?: string;
+  screenId?: string; // Add screenId prop
 }
 
-export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: ConnectOptionsMenuProps) => {
+export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId, screenId }: ConnectOptionsMenuProps) => {
   const location = useLocation();
   const { openExistingScreenDialog } = useConnectionDialogs();
   
   // Determine if we're on the elements page
   const isOnElementsPage = location.pathname.includes('/elements');
   
-  console.log("🔄 ConnectOptionsMenu rendered with widgetId:", widgetId, "on path:", location.pathname);
+  console.log("🔄 ConnectOptionsMenu rendered with widgetId:", widgetId, "screenId:", screenId, "on path:", location.pathname);
 
   const [open, setOpen] = React.useState(false);
 
@@ -56,7 +57,7 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
 
   // Handle menu option selection with special handling for elements page
   const handleMenuItemClick = (option: string, event: React.MouseEvent<HTMLDivElement>) => {
-    console.log("🔘 Menu option clicked:", option, "widgetId:", widgetId, "path:", location.pathname);
+    console.log("🔘 Menu option clicked:", option, "widgetId:", widgetId, "screenId:", screenId, "path:", location.pathname);
     
     // Close the menu immediately
     setOpen(false);
@@ -66,8 +67,19 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
       event.preventDefault();
       event.stopPropagation();
       
-      console.log("🌍 Using global dialog for existing screen on elements page");
-      // Fixed: Pass only the required parameters according to the function signature
+      console.log("🌍 Using global dialog for existing screen on elements page with screenId:", screenId);
+      // Use screenId directly from props if available (helps ensure we have the current screen context)
+      if (screenId) {
+        // Store current screen ID in localStorage for the connection dialogs
+        try {
+          localStorage.setItem('current_screen_id', screenId);
+          console.log("📌 Stored current_screen_id in localStorage:", screenId);
+        } catch (e) {
+          console.error("Error storing current screen ID:", e);
+        }
+      }
+      
+      // Pass the screenId to openExistingScreenDialog to ensure we have the right context
       openExistingScreenDialog(null, "imageUpload", widgetId);
     } 
     // Special handling for "existing_screen" on the screens page - use the panel layout
@@ -75,10 +87,21 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId }: Connec
       event.preventDefault();
       event.stopPropagation();
       
-      console.log("🌍 Using panel layout for existing screen on screens page");
+      console.log("🌍 Using panel layout for existing screen on screens page with screenId:", screenId);
+      
+      // Store current screen ID in localStorage if available
+      if (screenId) {
+        try {
+          localStorage.setItem('current_screen_id', screenId);
+          console.log("📌 Stored current_screen_id in localStorage:", screenId);
+        } catch (e) {
+          console.error("Error storing current screen ID:", e);
+        }
+      }
+      
       // Dispatch a custom event with connection mode detail
       const customEvent = new CustomEvent('openConnectionPanel', { 
-        detail: { connectionMode: "existingScreen" } 
+        detail: { connectionMode: "existingScreen", screenId: screenId } 
       });
       window.dispatchEvent(customEvent);
     }

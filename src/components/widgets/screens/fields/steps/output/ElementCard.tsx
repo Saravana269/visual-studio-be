@@ -17,6 +17,7 @@ interface ElementCardProps {
   isConnected?: boolean;
   connectionId?: string;
   onViewConnection?: () => void;
+  screenId?: string; // Added screenId prop
 }
 
 export const ElementCard = ({ 
@@ -25,7 +26,8 @@ export const ElementCard = ({
   widgetId, 
   isConnected = false, 
   connectionId,
-  onViewConnection
+  onViewConnection,
+  screenId // Include screenId in props destructuring
 }: ElementCardProps) => {
   return (
     <div className="border border-gray-800 rounded-md p-2 flex items-center">
@@ -58,7 +60,8 @@ export const ElementCard = ({
           }} 
           context={`element_${element.id}`} 
           onConnect={onConnect}
-          widgetId={widgetId} 
+          widgetId={widgetId}
+          screenId={screenId} // Pass screenId to ConnectButton
         />
       )}
     </div>

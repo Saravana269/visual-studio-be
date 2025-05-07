@@ -15,9 +15,10 @@ interface ConnectButtonProps {
   context?: string;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
+  screenId?: string; // Add screenId prop
 }
 
-export const ConnectButton = ({ value, context, onConnect, widgetId }: ConnectButtonProps) => {
+export const ConnectButton = ({ value, context, onConnect, widgetId, screenId }: ConnectButtonProps) => {
   const handleOptionSelect = (option: string) => {
     // Pass the selected option along with value and context
     onConnect(value, context ? `${context}:${option}` : option);
@@ -42,6 +43,7 @@ export const ConnectButton = ({ value, context, onConnect, widgetId }: ConnectBu
             trigger={connectButton}
             onOptionSelect={handleOptionSelect}
             widgetId={widgetId}
+            screenId={screenId} // Pass screenId to ConnectOptionsMenu
           />
         </TooltipTrigger>
         <TooltipContent side="top">

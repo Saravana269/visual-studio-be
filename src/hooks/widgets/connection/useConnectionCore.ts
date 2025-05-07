@@ -21,6 +21,17 @@ export function useConnectionCore(widgetId?: string) {
     if (ctx) {
       try {
         console.log("💾 Storing connection context:", ctx);
+        
+        // Make sure we have the current screen ID
+        const currentScreenId = localStorage.getItem('current_screen_id');
+        if (currentScreenId) {
+          // Add screenId to context if it's not already there
+          if (!ctx.screenId) {
+            ctx = { ...ctx, screenId: currentScreenId };
+          }
+          console.log("🔍 Added current screenId to context:", currentScreenId);
+        }
+        
         window.sessionStorage.setItem('connectionContext', JSON.stringify(ctx));
       } catch (e) {
         console.error("Error storing connection context in session storage:", e);
@@ -37,14 +48,14 @@ export function useConnectionCore(widgetId?: string) {
   };
   
   // Fetch current screen data when needed
-  const fetchCurrentScreen = async () => {
+  const fetchCurrentScreen = async (screenId?: string) => {
     try {
-      // Try to get screen ID from localStorage first
-      const currentScreenId = localStorage.getItem('current_screen_id');
-      console.log("🔍 Fetching current screen with ID from localStorage:", currentScreenId);
+      // Try to get screen ID from param first, then localStorage
+      const currentScreenId = screenId || localStorage.getItem('current_screen_id');
+      console.log("🔍 Fetching current screen with ID:", currentScreenId);
       
       if (!currentScreenId) {
-        console.warn("⚠️ No current screen ID found in localStorage");
+        console.warn("⚠️ No current screen ID found");
         return null;
       }
       
@@ -62,6 +73,19 @@ export function useConnectionCore(widgetId?: string) {
       if (data) {
         console.log("✅ Current screen data retrieved:", data);
         setCurrentScreen(data);
+        
+        // Store the screen ID in localStorage for safety
+        try {
+          localStorage.setItem('current_screen_id', currentScreenId);
+          
+          // Also store widget_id to ensure we have both pieces of information available
+          if (data.widget_id) {
+            localStorage.setItem('current_widget_id', data.widget_id);
+          }
+        } catch (e) {
+          console.error("Error storing screen ID in localStorage:", e);
+        }
+        
         return data;
       }
       
