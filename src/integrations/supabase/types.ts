@@ -198,6 +198,7 @@ export type Database = {
           field_value: string | null
           id: string
           is_unit_required: boolean | null
+          si_unit_definition_id: string | null
           unit_type: string | null
         }
         Insert: {
@@ -208,6 +209,7 @@ export type Database = {
           field_value?: string | null
           id?: string
           is_unit_required?: boolean | null
+          si_unit_definition_id?: string | null
           unit_type?: string | null
         }
         Update: {
@@ -218,6 +220,7 @@ export type Database = {
           field_value?: string | null
           id?: string
           is_unit_required?: boolean | null
+          si_unit_definition_id?: string | null
           unit_type?: string | null
         }
         Relationships: [
@@ -226,6 +229,13 @@ export type Database = {
             columns: ["component_type_head_id"]
             isOneToOne: false
             referencedRelation: "component_type_head"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_type_si_unit_definition_id_fkey"
+            columns: ["si_unit_definition_id"]
+            isOneToOne: false
+            referencedRelation: "si_unit_definitions"
             referencedColumns: ["id"]
           },
         ]
@@ -711,6 +721,7 @@ export type Database = {
           id: string
           is_template: boolean | null
           is_unit_required: boolean | null
+          si_unit_definition_id: string | null
           unit_type: string | null
         }
         Insert: {
@@ -722,6 +733,7 @@ export type Database = {
           id?: string
           is_template?: boolean | null
           is_unit_required?: boolean | null
+          si_unit_definition_id?: string | null
           unit_type?: string | null
         }
         Update: {
@@ -733,6 +745,7 @@ export type Database = {
           id?: string
           is_template?: boolean | null
           is_unit_required?: boolean | null
+          si_unit_definition_id?: string | null
           unit_type?: string | null
         }
         Relationships: [
@@ -748,6 +761,13 @@ export type Database = {
             columns: ["component_id"]
             isOneToOne: false
             referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specific_details_si_unit_definition_id_fkey"
+            columns: ["si_unit_definition_id"]
+            isOneToOne: false
+            referencedRelation: "si_unit_definitions"
             referencedColumns: ["id"]
           },
         ]
