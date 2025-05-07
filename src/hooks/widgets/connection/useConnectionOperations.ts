@@ -68,15 +68,28 @@ export function useConnectionOperations(widgetId?: string) {
         throw new Error("Failed to fetch current screen details");
       }
       
-      // Get the framework type data to retrieve property values
-      const { data: frameworkData, error: frameworkError } = await supabase
-        .from('framework_types')
-        .select('property_values, framework_Type')
-        .eq('screen_id', currentScreenId)
-        .single();
+      // Extract property values and source value
+      let propertyValues = {};
+      let sourceValue = connectionCtx.value;
       
-      if (frameworkError) {
-        console.warn("⚠️ Could not fetch framework data:", frameworkError.message);
+      // Check if the value is an object containing value and propertyValues
+      if (typeof connectionCtx.value === 'object' && connectionCtx.value !== null) {
+        if (connectionCtx.value.value !== undefined) {
+          sourceValue = connectionCtx.value.value;
+          
+          // Extract property values if present
+          if (connectionCtx.value.propertyValues) {
+            propertyValues = connectionCtx.value.propertyValues;
+          }
+        }
+      }
+      
+      // If propertyValues exists directly in the connectionCtx, use that too
+      if (connectionCtx.propertyValues) {
+        propertyValues = {
+          ...propertyValues,
+          ...connectionCtx.propertyValues
+        };
       }
       
       if (connectionCtx.context?.startsWith('element_id_')) {
@@ -90,7 +103,7 @@ export function useConnectionOperations(widgetId?: string) {
           screen_ref: currentScreen.id,
           screen_name: currentScreen.name,
           screen_description: currentScreen.description,
-          property_values: frameworkData?.property_values || {},
+          property_values: propertyValues, // Store only the selected value
           framework_type_ref: currentScreen.framework_id,
           element_ref: elementId,
           source_value: "element_connection",
@@ -114,9 +127,9 @@ export function useConnectionOperations(widgetId?: string) {
           screen_ref: currentScreen.id,
           screen_name: currentScreen.name,
           screen_description: currentScreen.description,
-          property_values: frameworkData?.property_values || {},
+          property_values: propertyValues, // Store only the selected value
           framework_type_ref: currentScreen.framework_id,
-          source_value: connectionCtx.value ? String(connectionCtx.value) : null,
+          source_value: sourceValue ? String(sourceValue) : null,
           connection_context: connectionCtx.context || null,
         };
         

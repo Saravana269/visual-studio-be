@@ -32,4 +32,5 @@ export interface ConnectionValueContext {
   frameType?: string;
   widgetId?: string;
   screenId?: string;
+  propertyValues?: Record<string, any>; // Add explicit property for propertyValues
 }

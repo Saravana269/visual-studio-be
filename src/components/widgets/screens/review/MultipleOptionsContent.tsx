@@ -32,7 +32,18 @@ export function MultipleOptionsContent({
   const handleConnect = (option: string[] | string, context?: string) => {
     if (onConnect) {
       // We can now directly pass the option since our interface accepts both types
-      onConnect(option, context);
+      // Store just the option value itself
+      if (Array.isArray(option)) {
+        onConnect({
+          value: option,
+          propertyValues: { selectedOptions: option } // Only store the selected option
+        }, context);
+      } else {
+        onConnect({
+          value: option,
+          propertyValues: { selectedOption: option } // Only store the selected option
+        }, context);
+      }
     }
   };
 

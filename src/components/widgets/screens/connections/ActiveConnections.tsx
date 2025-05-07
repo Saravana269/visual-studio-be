@@ -144,9 +144,9 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
                   </Badge>
                 )}
 
-                {/* Display the source value if available */}
+                {/* Display the selected value prominently if available */}
                 {displayValue && (
-                  <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
+                  <Badge variant="outline" className="bg-green-500/30 text-green-300 border-green-500/40 font-medium">
                     {typeof displayValue === 'string' && displayValue.length > 20 
                       ? `${displayValue.substring(0, 20)}...` 
                       : displayValue}

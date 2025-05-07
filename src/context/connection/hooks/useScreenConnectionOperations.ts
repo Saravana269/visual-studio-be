@@ -93,13 +93,6 @@ export const useScreenConnectionOperations = () => {
         throw new Error("Current screen information not available");
       }
       
-      // Get the framework type data to retrieve property values
-      const { data: frameworkData } = await supabase
-        .from('framework_types')
-        .select('property_values, framework_Type')
-        .eq('screen_id', currentScreen.id)
-        .single();
-      
       // Get connection context from session storage
       let connectionCtx: ConnectionValueContext | null = connectionContext;
       try {
@@ -134,7 +127,17 @@ export const useScreenConnectionOperations = () => {
         }
       }
       
-      // Prepare connection data
+      // If propertyValues exists directly in the connectionCtx, use that too
+      if (connectionCtx.propertyValues) {
+        propertyValues = {
+          ...propertyValues,
+          ...connectionCtx.propertyValues
+        };
+      }
+      
+      console.log("📦 Connection property values to insert:", propertyValues);
+      
+      // Prepare connection data - ONLY include the propertyValues, not merging with framework data
       const connectionData = {
         nextScreen_Ref: selectedScreenId,
         framework_type: currentScreen.framework_type,
@@ -142,10 +145,7 @@ export const useScreenConnectionOperations = () => {
         screen_ref: currentScreen.id,
         screen_name: currentScreen.name,
         screen_description: currentScreen.description,
-        property_values: {
-          ...frameworkData?.property_values || {},
-          ...propertyValues
-        },
+        property_values: propertyValues, // Only include the selected values
         framework_type_ref: currentScreen.framework_id,
         source_value: sourceValue ? String(sourceValue) : null,
         connection_context: connectionCtx?.context || null,

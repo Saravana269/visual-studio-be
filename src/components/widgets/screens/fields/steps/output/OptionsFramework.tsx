@@ -102,7 +102,7 @@ export function OptionsFramework({
                     value={option} 
                     context={`element_id_${index}`}
                     onConnect={(value) => {
-                      // Pass option value as property values for proper display in connections
+                      // Only store the selected option in propertyValues
                       onConnect({
                         value,
                         propertyValues: { selectedOption: option }
@@ -146,7 +146,7 @@ export function OptionsFramework({
                           value={combination} 
                           context={`combination_${index}`}
                           onConnect={(value) => {
-                            // Pass the combination value as property values for proper display in connections
+                            // Only store the selected combination in propertyValues
                             onConnect({
                               value,
                               propertyValues: { selectedOptions: combination }

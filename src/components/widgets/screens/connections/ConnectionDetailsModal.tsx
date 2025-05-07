@@ -138,8 +138,8 @@ export function ConnectionDetailsModal({
         ) : connection ? (
           <div className="space-y-4">
             <div className="border border-gray-800 rounded-md p-4 bg-black/20">
-              <h3 className="text-sm font-medium text-gray-200 mb-3">Source Option:</h3>
-              <div className="text-[#00FF00] bg-[#00FF00]/10 p-2 rounded border border-[#00FF00]/20">
+              <h3 className="text-sm font-medium text-gray-200 mb-3">Selected Option:</h3>
+              <div className="text-[#00FF00] bg-[#00FF00]/10 p-3 rounded border border-[#00FF00]/20 text-lg font-medium">
                 {sourceValue || "No source value available"}
               </div>
             </div>
