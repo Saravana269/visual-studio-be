@@ -3,8 +3,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "./ConnectButton";
 import { ConnectOptionsMenu } from "./ConnectOptionsMenu";
-import { useLocation } from "react-router-dom";
-import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
+import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
+import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
 
 interface ImageUploadFrameworkProps {
   imageUrl: string | null;
@@ -14,16 +14,11 @@ interface ImageUploadFrameworkProps {
 }
 
 export function ImageUploadFramework({ imageUrl, onConnect, widgetId, screenId }: ImageUploadFrameworkProps) {
-  const location = useLocation();
+  // Use the hook to check for existing connections specific to Image Upload framework
+  const { isFrameworkConnected, connections } = useOptionConnections(screenId, "Image Upload");
   
-  // Use the hook to check for existing connections
-  const { connections } = useScreenConnections({
-    screenId,
-    enabled: !!screenId
-  });
-  
-  // Check if there is an active connection for this framework type
-  const hasActiveConnection = connections.some(conn => 
+  // Get first connection if any exists
+  const existingConnection = connections.find(conn => 
     conn.framework_type === "Image Upload" && 
     !conn.is_screen_terminated
   );
@@ -33,9 +28,8 @@ export function ImageUploadFramework({ imageUrl, onConnect, widgetId, screenId }
     imageUrl, 
     widgetId,
     screenId,
-    pathname: location.pathname,
-    hasActiveConnection,
-    connections
+    isFrameworkConnected: isFrameworkConnected("Image Upload"),
+    existingConnection
   });
 
   const handleOptionSelect = (option: string) => {
@@ -65,7 +59,16 @@ export function ImageUploadFramework({ imageUrl, onConnect, widgetId, screenId }
       </div>
 
       <div className="flex justify-center">
-        {!hasActiveConnection && (
+        {isFrameworkConnected("Image Upload") && existingConnection ? (
+          <ConnectionBadge 
+            connectionId={existingConnection.id}
+            onViewConnection={() => {
+              console.log("View Image Upload connection:", existingConnection.id);
+              // Connection view logic could be added here
+            }}
+            className="h-8 px-3 py-1"
+          />
+        ) : (
           <ConnectOptionsMenu 
             trigger={
               <Button 
@@ -79,11 +82,6 @@ export function ImageUploadFramework({ imageUrl, onConnect, widgetId, screenId }
             onOptionSelect={handleOptionSelect}
             widgetId={widgetId}
           />
-        )}
-        {hasActiveConnection && (
-          <div className="text-sm text-gray-400 italic">
-            This framework is already connected
-          </div>
         )}
       </div>
     </div>

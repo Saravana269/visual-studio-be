@@ -1,6 +1,7 @@
 
 import React from "react";
 import { ConnectButton } from "./ConnectButton";
+import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
 
 interface Element {
   id: string;
@@ -13,9 +14,19 @@ interface ElementCardProps {
   element: Element;
   onConnect: (value: any) => void;
   widgetId?: string;
+  isConnected?: boolean;
+  connectionId?: string;
+  onViewConnection?: () => void;
 }
 
-export const ElementCard = ({ element, onConnect, widgetId }: ElementCardProps) => {
+export const ElementCard = ({ 
+  element, 
+  onConnect, 
+  widgetId, 
+  isConnected = false, 
+  connectionId,
+  onViewConnection
+}: ElementCardProps) => {
   return (
     <div className="border border-gray-800 rounded-md p-2 flex items-center">
       {element.image_url && (
@@ -33,16 +44,23 @@ export const ElementCard = ({ element, onConnect, widgetId }: ElementCardProps) 
           <p className="text-xs text-gray-400 line-clamp-1">{element.description}</p>
         )}
       </div>
-      <ConnectButton 
-        value={{ 
-          id: element.id, 
-          name: element.name, 
-          image: element.image_url 
-        }} 
-        context={`element_${element.id}`} 
-        onConnect={onConnect}
-        widgetId={widgetId} 
-      />
+      {isConnected && connectionId ? (
+        <ConnectionBadge 
+          connectionId={connectionId} 
+          onViewConnection={onViewConnection}
+        />
+      ) : (
+        <ConnectButton 
+          value={{ 
+            id: element.id, 
+            name: element.name, 
+            image: element.image_url 
+          }} 
+          context={`element_${element.id}`} 
+          onConnect={onConnect}
+          widgetId={widgetId} 
+        />
+      )}
     </div>
   );
 };

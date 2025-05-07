@@ -62,6 +62,13 @@ export function OptionsFramework({
     setSelectedConnectionId(connectionId);
     setIsModalOpen(true);
   };
+  
+  console.log("🔄 Options framework rendering:", {
+    isRadio,
+    screenId,
+    optionsCount: options.length,
+    combinationsCount: combinations.length
+  });
 
   return (
     <div className="p-4">
@@ -84,10 +91,10 @@ export function OptionsFramework({
                 className="flex items-center justify-between p-2 rounded hover:bg-gray-800/30 border border-gray-700"
               >
                 <span className="text-sm">{option}</span>
-                {connected ? (
+                {connected && connection ? (
                   <ConnectionBadge 
-                    connectionId={connection?.id || ''}
-                    onViewConnection={() => connection && handleViewConnection(connection.id)}
+                    connectionId={connection.id}
+                    onViewConnection={() => handleViewConnection(connection.id)}
                   />
                 ) : (
                   <ConnectButton 
@@ -122,10 +129,10 @@ export function OptionsFramework({
                       className="flex items-center justify-between p-2 rounded hover:bg-[#00FF00]/10 border border-[#00FF00]/20 bg-black/30"
                     >
                       <span className="text-sm">{combination.join(", ")}</span>
-                      {connected ? (
+                      {connected && connection ? (
                         <ConnectionBadge 
-                          connectionId={connection?.id || ''}
-                          onViewConnection={() => connection && handleViewConnection(connection.id)}
+                          connectionId={connection.id}
+                          onViewConnection={() => handleViewConnection(connection.id)}
                         />
                       ) : (
                         <ConnectButton 
