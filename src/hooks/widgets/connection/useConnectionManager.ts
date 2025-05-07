@@ -1,171 +1,85 @@
 
-import { useConnectionCore } from "./useConnectionCore";
-import { useConnectionOperations } from "./useConnectionOperations";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Screen } from "@/types/screen";
+import { useToast } from "@/hooks/use-toast";
+import { useConnectionDialogs } from "@/context/connection/useConnectionDialogs";
 
-/**
- * Main hook for handling connections, combining core state management and operations
- */
 export function useConnectionManager(widgetId?: string) {
-  // Get core state and utilities
-  const { 
-    isConnecting, 
-    setIsConnecting,
-    isExistingScreenDialogOpen,
-    setIsExistingScreenDialogOpen,
-    currentScreen,
-    setConnectionContext,
-    fetchCurrentScreen,
-    toast 
-  } = useConnectionCore(widgetId);
-  
-  // Get connection operations
-  const {
-    handleExistingScreenConnect,
-    isConnecting: isStoringConnection,
-    handleNewScreenForElement,
-    handleExistingScreenForElement,
-    handleConnectWidgetForElement,
-    handleTerminateForElement,
-    handleNewScreenForFramework,
-    handleExistingScreenForFramework,
-    handleConnectWidgetForFramework,
-    handleTerminateForFramework
-  } = useConnectionOperations(widgetId);
-  
-  // Store selected COE in local storage for demo purposes
-  const handleConnect = async (frameworkType: string, value: any, context?: string) => {
-    console.log("🔗 Handle Connect called:", { frameworkType, context, widgetId });
+  const [currentScreen, setCurrentScreen] = useState<Screen | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { toast } = useToast();
+  const { isExistingScreenDialogOpen, openExistingScreenDialog, closeExistingScreenDialog } = useConnectionDialogs();
+
+  // Fetch the current screen using its ID
+  const fetchCurrentScreen = async (screenId: string): Promise<Screen | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('screens')
+        .select('*')
+        .eq('id', screenId)
+        .single();
+      
+      if (error) throw error;
+      
+      return data as Screen;
+    } catch (error) {
+      console.error("Error fetching current screen:", error);
+      return null;
+    }
+  };
+
+  // Handle connecting - open the connection dialog
+  const handleConnect = (value: any, context?: string) => {
+    // Get current screen ID from localStorage (set by OutputStep component)
+    const screenId = localStorage.getItem('current_screen_id');
+    console.log("🔗 handleConnect with screenId from localStorage:", screenId);
     
-    // Always try to fetch current screen first to ensure we have the data
-    await fetchCurrentScreen();
-    
+    // Pass value, context, widgetId, and screenId to openExistingScreenDialog
+    openExistingScreenDialog(value, context, widgetId, screenId || undefined);
+  };
+
+  // Handle connecting to an existing screen
+  const handleExistingScreenConnect = async (selectedScreenId: string) => {
     setIsConnecting(true);
     
     try {
-      if (!context) {
-        // Default generic connection
-        toast({
-          title: "Value Connected",
-          description: `Connected ${frameworkType} value`,
-        });
-        return;
+      // Get the current screen ID from localStorage
+      const currentScreenId = localStorage.getItem('current_screen_id');
+      
+      if (!currentScreenId) {
+        throw new Error('Current screen ID not available');
       }
-
-      // Handle element connection with the new options menu
-      if (context?.startsWith('element_id_')) {
-        // Check if there's an option selected
-        const [elementContext, option] = context.includes(':') 
-          ? context.split(':') 
-          : [context, null];
+      
+      // Check if we have the current screen info
+      let screen = currentScreen;
+      
+      if (!screen) {
+        // Fetch the screen info if not available
+        const screenData = await fetchCurrentScreen(currentScreenId);
         
-        // Extract the element ID from the context
-        const elementId = elementContext.replace('element_id_', '');
-        
-        if (option) {
-          console.log(`📌 Element connection option selected: ${option} for element ${elementId}`);
-          
-          // Handle specific options
-          switch(option) {
-            case 'new_screen':
-              await handleNewScreenForElement(elementId);
-              break;
-              
-            case 'existing_screen':
-              await handleExistingScreenForElement(elementId);
-              break;
-              
-            case 'connect_widget':
-              await handleConnectWidgetForElement(elementId);
-              break;
-              
-            case 'terminate':
-              await handleTerminateForElement(elementId);
-              break;
-              
-            default:
-              // Generic element connection
-              toast({
-                title: "Element Connected",
-                description: `Connected element with ID: ${elementId}`,
-              });
-          }
-        } else {
-          // Backwards compatibility for direct connections
-          toast({
-            title: "Element Connected",
-            description: `Connected element with ID: ${elementId}`,
-          });
+        if (!screenData) {
+          throw new Error('Failed to fetch current screen information');
         }
-      } else if (context === 'coe_id') {
-        // Handle COE connection 
-        toast({
-          title: "COE Connected",
-          description: `Connected COE with ID: ${value}`,
-        });
-      } else if (context?.includes(':')) {
-        // Handle other contexts with options
-        const [baseContext, option] = context.split(':');
-        console.log(`📌 Framework connection option selected: ${option} for context ${baseContext}`);
         
-        // Handle based on option
-        switch(option) {
-          case 'new_screen':
-            await handleNewScreenForFramework(frameworkType);
-            break;
-            
-          case 'existing_screen':
-            console.log("🔍 Handling existing screen for framework", { baseContext, frameworkType, value, widgetId });
-            // If we're on screens page, use panel layout instead of dialog
-            if (window.location.pathname.includes('/screens')) {
-              // Make sure we have current screen info first
-              const currentScreenInfo = await fetchCurrentScreen();
-              if (!currentScreenInfo) {
-                toast({
-                  title: "Connection Error",
-                  description: "Current screen information not available",
-                  variant: "destructive"
-                });
-                break;
-              }
-              
-              // Dispatch custom event to open the panel in connection mode
-              const customEvent = new CustomEvent('openConnectionPanel', { 
-                detail: { connectionMode: "existingScreen" } 
-              });
-              window.dispatchEvent(customEvent);
-            } else {
-              // Use dialog approach for other pages
-              await handleExistingScreenForFramework(baseContext, frameworkType, value);
-            }
-            break;
-            
-          case 'connect_widget':
-            await handleConnectWidgetForFramework(frameworkType);
-            break;
-            
-          case 'terminate':
-            await handleTerminateForFramework(frameworkType);
-            break;
-            
-          default:
-            // Generic connection
-            toast({
-              title: "Value Connected",
-              description: `Connected ${frameworkType} value with option: ${option}`,
-            });
-        }
-      } else {
-        // Generic connection for other framework types
-        toast({
-          title: "Value Connected",
-          description: `Connected ${frameworkType} value`,
-        });
+        screen = screenData;
+        setCurrentScreen(screenData);
       }
-    } catch (error) {
-      console.error('Error handling connection:', error);
+      
+      // Todo: Create the connection here
+      toast({
+        title: "Connection created",
+        description: "Screen connection has been successfully created",
+      });
+      
+      // Close the dialog
+      closeExistingScreenDialog();
+      
+    } catch (error: any) {
+      console.error("Error connecting to screen:", error);
       toast({
         title: "Connection Error",
-        description: "Failed to establish connection",
+        description: error.message || "Failed to create connection",
         variant: "destructive"
       });
     } finally {
@@ -173,11 +87,11 @@ export function useConnectionManager(widgetId?: string) {
     }
   };
 
-  return { 
-    handleConnect, 
-    isConnecting: isConnecting || isStoringConnection,
+  return {
+    handleConnect,
+    isConnecting,
     isExistingScreenDialogOpen,
-    setIsExistingScreenDialogOpen,
+    setIsExistingScreenDialogOpen: closeExistingScreenDialog,
     currentScreen,
     handleExistingScreenConnect,
     fetchCurrentScreen

@@ -25,19 +25,19 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
   const { fetchCurrentScreen } = useScreenConnection(selectedWidgetId);
 
   // Handle opening the existing screen dialog
-  const openExistingScreenDialog = async (value: any, context?: string, widgetId?: string) => {
-    console.log("🖼️ Opening existing screen dialog with context:", { value, context, widgetId });
+  const openExistingScreenDialog = async (value: any, context?: string, widgetId?: string, screenId?: string) => {
+    console.log("🖼️ Opening existing screen dialog with context:", { value, context, widgetId, screenId });
     
     // Store connection context information
-    setConnectionValueContext({ value, context, widgetId });
+    setConnectionValueContext({ value, context, widgetId, screenId });
     setSelectedWidgetId(widgetId);
     
-    // Try to fetch the current screen information
-    const currentScreenId = localStorage.getItem('current_screen_id');
-    console.log("🔍 Fetching current screen with ID from localStorage:", currentScreenId);
+    // Try to fetch the current screen information - first from passed screenId, then from localStorage
+    const currentScreenId = screenId || localStorage.getItem('current_screen_id');
+    console.log("🔍 Fetching current screen with ID:", currentScreenId, "from screenId param:", screenId);
     
     if (!currentScreenId) {
-      console.warn("⚠️ No current screen ID available in localStorage");
+      console.warn("⚠️ No current screen ID available from params or localStorage");
       toast({
         title: "Warning",
         description: "Current screen information not available",

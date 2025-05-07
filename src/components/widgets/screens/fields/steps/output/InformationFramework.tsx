@@ -24,6 +24,14 @@ export const InformationFramework = ({ text, onConnect, widgetId, screenId }: In
     conn.source_value === text
   );
 
+  // Find the connection for displaying the badge
+  const existingConnection = connections.find(conn => 
+    conn.screen_ref === screenId &&
+    conn.framework_type === "Information" && 
+    !conn.is_screen_terminated &&
+    conn.source_value === text
+  );
+  
   console.log("Information framework connections:", {
     hasExistingConnection,
     connections,
@@ -43,11 +51,17 @@ export const InformationFramework = ({ text, onConnect, widgetId, screenId }: In
               <p className="text-gray-500 text-sm">No information text provided</p>
             )}
             {text && !hasExistingConnection && (
-              <ConnectButton value={text} context="info_text" onConnect={onConnect} widgetId={widgetId} />
+              <ConnectButton 
+                value={text} 
+                context="info_text" 
+                onConnect={onConnect} 
+                widgetId={widgetId} 
+                screenId={screenId}
+              />
             )}
-            {text && hasExistingConnection && (
+            {text && hasExistingConnection && existingConnection && (
               <ConnectionBadge 
-                connectionId="info-connected" 
+                connectionId={existingConnection.id} 
                 className="h-6 w-auto px-2 flex-shrink-0"
               />
             )}
@@ -56,4 +70,4 @@ export const InformationFramework = ({ text, onConnect, widgetId, screenId }: In
       </div>
     </div>
   );
-}
+};

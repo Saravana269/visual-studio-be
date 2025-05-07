@@ -15,7 +15,7 @@ interface ConnectButtonProps {
   context?: string;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
-  screenId?: string; // Add screenId prop
+  screenId?: string;
 }
 
 export const ConnectButton = ({ value, context, onConnect, widgetId, screenId }: ConnectButtonProps) => {
@@ -35,6 +35,8 @@ export const ConnectButton = ({ value, context, onConnect, widgetId, screenId }:
     </Button>
   );
 
+  console.log("ConnectButton rendered with screenId:", screenId, "and widgetId:", widgetId);
+
   return (
     <TooltipProvider>
       <Tooltip delayDuration={300}>
@@ -43,7 +45,7 @@ export const ConnectButton = ({ value, context, onConnect, widgetId, screenId }:
             trigger={connectButton}
             onOptionSelect={handleOptionSelect}
             widgetId={widgetId}
-            screenId={screenId} // Pass screenId to ConnectOptionsMenu
+            screenId={screenId}
           />
         </TooltipTrigger>
         <TooltipContent side="top">
