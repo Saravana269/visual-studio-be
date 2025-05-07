@@ -14,7 +14,7 @@ interface InformationFrameworkProps {
 
 export const InformationFramework = ({ text, onConnect, widgetId, screenId }: InformationFrameworkProps) => {
   // Use the custom hook to check for existing Information framework connections
-  const { connections, isFrameworkConnected } = useOptionConnections(screenId, "Information");
+  const { connections, isFrameworkConnected, isOptionConnected } = useOptionConnections(screenId, "Information");
   
   // Check if this specific text content is already connected
   const hasExistingConnection = connections.some(conn => 

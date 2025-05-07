@@ -3,11 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScreenConnection } from "@/types/connection";
 
-interface UseOptionConnectionsProps {
-  screenId?: string;
-  frameworkType?: string;
-}
-
 /**
  * Hook to fetch and manage connections for options (radio buttons, multiple options, etc.)
  */
