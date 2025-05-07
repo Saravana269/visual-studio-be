@@ -1,6 +1,7 @@
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultipleOptionsCombinationsContent } from "./MultipleOptionsCombinationsContent";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConnectionDetailsModal } from "../connections/ConnectionDetailsModal";
 import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
 import { ConnectionBadge } from "../connections/ConnectionBadge";
@@ -18,6 +19,7 @@ export function MultipleOptionsContent({
 }: MultipleOptionsContentProps) {
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   
   // Get connection data for options
   const { isOptionConnected, getConnectionForOption } = useOptionConnections(screenId, "Multiple Options");
@@ -26,6 +28,20 @@ export function MultipleOptionsContent({
   const handleViewConnection = (connectionId: string) => {
     setSelectedConnectionId(connectionId);
     setIsModalOpen(true);
+  };
+
+  // Load selected option from localStorage on component mount
+  useEffect(() => {
+    const storedOption = localStorage.getItem('selected_option_value');
+    if (storedOption && metadata.options?.includes(storedOption)) {
+      setSelectedOption(storedOption);
+    }
+  }, [metadata.options]);
+
+  // Handle selecting an individual option
+  const handleOptionSelect = (option: string) => {
+    setSelectedOption(option);
+    localStorage.setItem('selected_option_value', option);
   };
 
   // Create a wrapper for onConnect to handle the parameter type conversion
@@ -71,20 +87,34 @@ export function MultipleOptionsContent({
               {metadata.options.map((option: string, index: number) => {
                 // Check if this individual option is connected
                 const isConnected = isOptionConnected(option);
+                const connection = isConnected ? getConnectionForOption(option) : null;
+                
+                // Determine if this option is selected
+                const isSelected = selectedOption === option;
+                
+                // Build the className based on selection and hover states
+                let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer ";
+                
+                // Add selection styling
+                if (isSelected) {
+                  rowClassName += "border border-[#00FF00] bg-[#00FF00]/20";
+                } else {
+                  rowClassName += "border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
+                }
                 
                 return (
                   <div 
                     key={`option-${index}`} 
-                    className="flex items-center justify-between p-2 rounded 
-                              border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10"
+                    className={rowClassName}
+                    onClick={() => handleOptionSelect(option)}
                   >
                     <span className="text-sm">{option}</span>
                     <div className="flex items-center space-x-2">
                       {isConnected ? (
                         <ConnectionBadge 
-                          connectionId={`option_${index}`} 
-                          onViewConnection={() => {
-                            const connection = getConnectionForOption(option);
+                          connectionId={connection?.id || `option_${index}`}
+                          onViewConnection={(e) => {
+                            e.stopPropagation(); // Prevent row selection when clicking view connection
                             if (connection?.id) {
                               handleViewConnection(connection.id);
                             }
@@ -93,7 +123,10 @@ export function MultipleOptionsContent({
                       ) : (
                         onConnect && (
                           <button 
-                            onClick={() => handleConnect(option, "Multiple Options - Individual")}
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent row selection when clicking connect
+                              handleConnect(option, "Multiple Options - Individual");
+                            }}
                             className="text-xs bg-[#00FF00]/20 text-[#00FF00] hover:bg-[#00FF00]/30 px-2 py-1 rounded-md flex items-center gap-1"
                           >
                             Connect
