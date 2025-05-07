@@ -29,23 +29,23 @@ export function StepResolver({
   switch (currentStep) {
     case 1:
       return <ScreenNameStep 
-        screenName={formData.name || ""}
-        onScreenNameChange={(value) => handleFormChange('name', value)} 
+        name={formData.name || ""}
+        onChange={(value) => handleFormChange('name', value)} 
       />;
     case 2:
       return <DescriptionStep
         description={formData.description || ""}
-        onDescriptionChange={(value) => handleFormChange('description', value)}
+        onChange={(value) => handleFormChange('description', value)}
       />;
     case 3:
       return <FrameworkTypeStep
-        selectedFramework={formData.frameworkType || null}
-        onFrameworkSelect={handleFrameworkChange}
+        frameworkType={formData.framework_type || null}
+        onChange={handleFrameworkChange}
       />;
     case 4:
       return (
         <OutputStep
-          frameworkType={formData.frameworkType || null}
+          frameworkType={formData.framework_type || null}
           metadata={formData.metadata || {}}
           onConnect={handleConnect}
           widgetId={widgetId}
@@ -54,8 +54,8 @@ export function StepResolver({
       );
     default:
       return <ScreenNameStep
-        screenName={formData.name || ""}
-        onScreenNameChange={(value) => handleFormChange('name', value)}
+        name={formData.name || ""}
+        onChange={(value) => handleFormChange('name', value)}
       />;
   }
 }

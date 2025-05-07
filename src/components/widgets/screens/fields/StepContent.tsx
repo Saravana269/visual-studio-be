@@ -11,6 +11,8 @@ interface StepContentProps {
   setFormData: React.Dispatch<React.SetStateAction<ScreenFormData>>;
   onSave?: () => void;
   autoSave?: boolean;
+  screenId?: string;
+  widgetId?: string;
 }
 
 export function StepContent({
@@ -18,7 +20,9 @@ export function StepContent({
   formData, 
   setFormData,
   onSave,
-  autoSave = false
+  autoSave = false,
+  screenId,
+  widgetId
 }: StepContentProps) {
   // Extract handlers to a separate hook
   const { handleFormChange, handleFrameworkChange, updateMetadata } = useStepContentHandlers({
@@ -39,6 +43,8 @@ export function StepContent({
       handleFrameworkChange={handleFrameworkChange}
       updateMetadata={updateMetadata}
       handleConnect={handleConnect}
+      screenId={screenId}
+      widgetId={widgetId}
     />
   );
 }

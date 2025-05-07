@@ -2,7 +2,7 @@
 import React from "react";
 import { ConnectButton } from "./ConnectButton";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
-import { ConnectionBadge } from "../../connections/ConnectionBadge";
+import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
 
 interface InformationFrameworkProps {
   text: string | undefined;
