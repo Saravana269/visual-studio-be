@@ -33,7 +33,7 @@ export function StepContent({
   });
 
   // Extract connection handler to a separate hook
-  const { handleConnect } = useConnectionHandler();
+  const { handleConnect } = useConnectionHandler(widgetId);
 
   return (
     <StepResolver

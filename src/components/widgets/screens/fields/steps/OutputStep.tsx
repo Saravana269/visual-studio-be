@@ -84,6 +84,7 @@ export function OutputStep({
               text={metadata?.text} 
               onConnect={handleConnect}
               widgetId={effectiveWidgetId}
+              screenId={screenId}
             />
           ) : frameworkType === "Yes / No" ? (
             <YesNoFramework 

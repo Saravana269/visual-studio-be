@@ -26,6 +26,13 @@ export const InformationFramework = ({ text, onConnect, widgetId, screenId }: In
     conn.source_value === text
   );
 
+  console.log("Information framework connections:", {
+    hasExistingConnection,
+    connections,
+    screenId,
+    text
+  });
+
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium">Information Content</h4>
