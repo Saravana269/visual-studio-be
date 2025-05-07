@@ -5,7 +5,7 @@ import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnec
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileTextIcon, BoxIcon, XIcon, ImageIcon, ChevronsRightIcon } from "lucide-react";
+import { FileTextIcon, BoxIcon, XIcon, ImageIcon, ChevronsRightIcon, ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,23 +94,28 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
     const connectedScreenDesc = isCurrentScreenSource
       ? connection.nextScreen_Description
       : connection.screen_description;
+
+    // Get connection direction arrow
+    const DirectionArrow = isCurrentScreenSource 
+      ? ArrowRightIcon 
+      : ArrowLeftIcon;
       
     return (
       <Card className="bg-black border-gray-800 mb-2">
         <CardContent className="p-4">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col">
+            <div className="flex flex-col w-full">
               <div className="flex items-center space-x-2">
                 {getFrameworkIcon(connection.framework_type)}
                 
                 <span className="font-medium">
-                  {connection.framework_type || "Screen"}
+                  {isCurrentScreenSource ? "This Screen" : connection.screen_name || "Source Screen"}
                 </span>
                 
-                <ChevronsRightIcon size={16} className="text-gray-500" />
+                <DirectionArrow size={16} className="text-[#00FF00]" />
                 
                 <span className="font-medium">
-                  {connectedScreenName}
+                  {!isCurrentScreenSource ? "This Screen" : connectedScreenName}
                 </span>
               </div>
               
@@ -132,6 +137,14 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
                     {connection.connection_context?.split(':')?.[1] || connection.connection_context}
                   </Badge>
                 )}
+
+                {connection.source_value && (
+                  <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
+                    {typeof connection.source_value === 'string' && connection.source_value.length > 20 
+                      ? `${connection.source_value.substring(0, 20)}...` 
+                      : connection.source_value}
+                  </Badge>
+                )}
               </div>
             </div>
             
@@ -139,7 +152,7 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
               variant="ghost" 
               size="icon"
               onClick={() => handleRemoveConnection(connection.id)}
-              className="h-7 w-7 rounded-full hover:bg-red-500/10 hover:text-red-400"
+              className="h-7 w-7 rounded-full hover:bg-red-500/10 hover:text-red-400 ml-2 flex-shrink-0"
             >
               <XIcon size={14} />
             </Button>

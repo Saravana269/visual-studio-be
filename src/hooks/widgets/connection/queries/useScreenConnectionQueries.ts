@@ -13,20 +13,38 @@ export function useScreenConnectionQueries(screenId?: string, enabled = true) {
       if (!screenId) return [];
       
       try {
-        // Get connections for this screen
-        const { data, error } = await supabase
+        // Get connections where this screen is the source
+        const { data: sourceConnections, error: sourceError } = await supabase
           .from('connect_screens')
-          .select('*, next_screen:nextScreen_Ref(name, description)')
+          .select('*, next_screen:nextScreen_Ref(id, name, description)')
           .eq('screen_ref', screenId);
           
-        if (error) throw error;
+        if (sourceError) throw sourceError;
         
-        // Transform to include next screen info in the connection object
-        return data.map((conn: any) => ({
+        // Get connections where this screen is the destination
+        const { data: destinationConnections, error: destError } = await supabase
+          .from('connect_screens')
+          .select('*, source_screen:screen_ref(id, name, description)')
+          .eq('nextScreen_Ref', screenId);
+          
+        if (destError) throw destError;
+        
+        // Transform source connections to include next screen info
+        const transformedSourceConnections = sourceConnections.map((conn: any) => ({
           ...conn,
           nextScreen_Name: conn.next_screen?.name,
           nextScreen_Description: conn.next_screen?.description
-        })) as ScreenConnection[];
+        }));
+        
+        // Transform destination connections
+        const transformedDestConnections = destinationConnections.map((conn: any) => ({
+          ...conn,
+          screen_name: conn.source_screen?.name,
+          screen_description: conn.source_screen?.description
+        }));
+        
+        // Combine both connection types
+        return [...transformedSourceConnections, ...transformedDestConnections] as ScreenConnection[];
       } catch (error) {
         console.error("Error fetching screen connections:", error);
         return [];
