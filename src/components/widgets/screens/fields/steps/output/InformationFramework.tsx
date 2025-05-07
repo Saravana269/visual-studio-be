@@ -3,6 +3,7 @@ import React from "react";
 import { ConnectButton } from "./ConnectButton";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
 import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
+import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
 
 interface InformationFrameworkProps {
   text: string | undefined;
@@ -12,15 +13,12 @@ interface InformationFrameworkProps {
 }
 
 export const InformationFramework = ({ text, onConnect, widgetId, screenId }: InformationFrameworkProps) => {
-  // Fetch existing connections for this screen
-  const { connections } = useScreenConnections({
-    screenId,
-    enabled: !!screenId
-  });
+  // Use the custom hook to check for existing Information framework connections
+  const { connections, isFrameworkConnected } = useOptionConnections(screenId, "Information");
   
-  // Check if this framework is already connected to another screen
+  // Check if this specific text content is already connected
   const hasExistingConnection = connections.some(conn => 
-    conn.screen_ref === screenId && 
+    conn.screen_ref === screenId &&
     conn.framework_type === "Information" && 
     !conn.is_screen_terminated &&
     conn.source_value === text

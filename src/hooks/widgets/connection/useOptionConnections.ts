@@ -86,6 +86,14 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     return false;
   };
   
+  // Check if a framework is connected
+  const isFrameworkConnected = (frameworkType: string): boolean => {
+    return connections.some(conn => 
+      conn.framework_type === frameworkType && 
+      !conn.is_screen_terminated
+    );
+  };
+  
   // Get connection for an option
   const getConnectionForOption = (option: string): ScreenConnection | null => {
     const connectionMap = getConnectionMap();
@@ -96,6 +104,7 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     connections,
     isLoading,
     isOptionConnected,
+    isFrameworkConnected,
     getConnectionForOption
   };
 }

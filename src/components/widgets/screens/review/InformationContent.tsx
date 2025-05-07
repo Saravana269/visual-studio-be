@@ -4,9 +4,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface InformationContentProps {
   metadata: Record<string, any>;
   onConnect?: (text: string) => void;
+  screenId?: string;
 }
 
-export function InformationContent({ metadata, onConnect }: InformationContentProps) {
+export function InformationContent({ metadata, onConnect, screenId }: InformationContentProps) {
   const text = metadata.text || "No information text provided.";
   
   return (

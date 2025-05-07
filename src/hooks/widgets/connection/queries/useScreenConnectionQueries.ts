@@ -13,6 +13,8 @@ export function useScreenConnectionQueries(screenId?: string, enabled = true) {
       if (!screenId) return [];
       
       try {
+        console.log("🔍 Fetching connections for screen ID:", screenId);
+        
         // Get connections where this screen is the source
         const { data: sourceConnections, error: sourceError } = await supabase
           .from('connect_screens')
@@ -21,17 +23,20 @@ export function useScreenConnectionQueries(screenId?: string, enabled = true) {
           
         if (sourceError) throw sourceError;
         
-        // Transform source connections to include next screen info
+        console.log("📊 Found source connections:", sourceConnections.length);
+        
+        // Transform source connections to include next screen info and ensure source_value is included
         const transformedSourceConnections = sourceConnections.map((conn: any) => ({
           ...conn,
           nextScreen_Name: conn.next_screen?.name,
           nextScreen_Description: conn.next_screen?.description,
-          nextScreen_FrameworkType: conn.next_screen?.framework_type
+          nextScreen_FrameworkType: conn.next_screen?.framework_type,
+          source_value: conn.source_value || null // Ensure source_value is included
         }));
         
         return transformedSourceConnections as ScreenConnection[];
       } catch (error) {
-        console.error("Error fetching screen connections:", error);
+        console.error("❌ Error fetching screen connections:", error);
         return [];
       }
     },
