@@ -87,14 +87,12 @@ export function MultipleOptionsCombinationsContent({
             // Determine the appropriate class names based on selection and connection status
             let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer transition-colors ";
             
-            // Base styling
-            rowClassName += "border border-[#00FF00]/20 bg-black/30 ";
-            
-            // Selection styling
+            // Enhanced styling for selected combinations
             if (isSelected) {
-              rowClassName += "border-[#00FF00] bg-[#00FF00]/20 ";
+              // Use the same bright orange styling as in individual options
+              rowClassName += "border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
             } else {
-              rowClassName += "hover:bg-[#00FF00]/10 ";
+              rowClassName += "border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
             }
 
             return (
@@ -103,7 +101,14 @@ export function MultipleOptionsCombinationsContent({
                 className={rowClassName}
                 onClick={() => handleRowClick(combination)}
               >
-                <span className="text-sm">{combination.join(", ")}</span>
+                <div className="flex items-center">
+                  {isSelected && (
+                    <span className="text-[#F97316] mr-2">●</span>
+                  )}
+                  <span className={`text-sm ${isSelected ? 'text-white' : ''}`}>
+                    {combination.join(", ")}
+                  </span>
+                </div>
                 <div className="flex items-center space-x-2">
                   {isConnected ? (
                     <ConnectionBadge 

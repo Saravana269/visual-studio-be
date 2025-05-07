@@ -93,11 +93,12 @@ export function MultipleOptionsContent({
                 const isSelected = selectedOption === option;
                 
                 // Build the className based on selection and hover states
-                let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer ";
+                let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer transition-colors ";
                 
-                // Add selection styling
+                // Add selection styling with enhanced visibility for selected option
                 if (isSelected) {
-                  rowClassName += "border border-[#00FF00] bg-[#00FF00]/20";
+                  // Enhanced styling for selected option - brighter colors, bolder appearance
+                  rowClassName += "border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
                 } else {
                   rowClassName += "border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
                 }
@@ -108,7 +109,12 @@ export function MultipleOptionsContent({
                     className={rowClassName}
                     onClick={() => handleOptionSelect(option)}
                   >
-                    <span className="text-sm">{option}</span>
+                    <div className="flex items-center">
+                      {isSelected && (
+                        <span className="text-[#F97316] mr-2">●</span>
+                      )}
+                      <span className={`text-sm ${isSelected ? 'text-white' : ''}`}>{option}</span>
+                    </div>
                     <div className="flex items-center space-x-2">
                       {isConnected ? (
                         <ConnectionBadge 
