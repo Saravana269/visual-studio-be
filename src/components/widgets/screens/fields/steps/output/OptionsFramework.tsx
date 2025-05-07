@@ -29,6 +29,7 @@ export function OptionsFramework({
   
   // Get current connections
   const { 
+    connections,
     isOptionConnected, 
     getConnectionForOption 
   } = useOptionConnections(screenId, isRadio ? "Radio Button" : "Multiple Options");
@@ -100,7 +101,13 @@ export function OptionsFramework({
                   <ConnectButton 
                     value={option} 
                     context={`element_id_${index}`}
-                    onConnect={onConnect}
+                    onConnect={(value) => {
+                      // Pass option value as property values for proper display in connections
+                      onConnect({
+                        value,
+                        propertyValues: { selectedOption: option }
+                      }, `element_id_${index}`);
+                    }}
                     widgetId={widgetId}
                   />
                 )}
@@ -138,7 +145,13 @@ export function OptionsFramework({
                         <ConnectButton 
                           value={combination} 
                           context={`combination_${index}`}
-                          onConnect={onConnect}
+                          onConnect={(value) => {
+                            // Pass the combination value as property values for proper display in connections
+                            onConnect({
+                              value,
+                              propertyValues: { selectedOptions: combination }
+                            }, `combination_${index}`);
+                          }}
                           widgetId={widgetId}
                         />
                       )}

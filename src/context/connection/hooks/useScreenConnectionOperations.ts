@@ -118,6 +118,22 @@ export const useScreenConnectionOperations = () => {
         throw new Error("Connection context not available");
       }
       
+      // Extract property values if passed in the value object
+      let propertyValues = {};
+      let sourceValue = connectionCtx.value;
+      
+      // Check if the value is an object containing value and propertyValues
+      if (typeof connectionCtx.value === 'object' && connectionCtx.value !== null) {
+        if (connectionCtx.value.value !== undefined) {
+          sourceValue = connectionCtx.value.value;
+          
+          // Extract property values if present
+          if (connectionCtx.value.propertyValues) {
+            propertyValues = connectionCtx.value.propertyValues;
+          }
+        }
+      }
+      
       // Prepare connection data
       const connectionData = {
         nextScreen_Ref: selectedScreenId,
@@ -126,9 +142,12 @@ export const useScreenConnectionOperations = () => {
         screen_ref: currentScreen.id,
         screen_name: currentScreen.name,
         screen_description: currentScreen.description,
-        property_values: frameworkData?.property_values || {},
+        property_values: {
+          ...frameworkData?.property_values || {},
+          ...propertyValues
+        },
         framework_type_ref: currentScreen.framework_id,
-        source_value: connectionCtx?.value ? String(connectionCtx.value) : null,
+        source_value: sourceValue ? String(sourceValue) : null,
         connection_context: connectionCtx?.context || null,
         element_ref: connectionCtx?.context?.startsWith('element_') ? 
           connectionCtx.context.replace('element_', '') : null

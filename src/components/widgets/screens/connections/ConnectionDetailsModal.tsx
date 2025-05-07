@@ -75,6 +75,27 @@ export function ConnectionDetailsModal({
     }
   }, [connection]);
 
+  // Get display value for the source option based on property_values
+  const getConnectionSourceValue = () => {
+    if (!connection) return null;
+    
+    // For Multiple Options or Radio Button frameworks
+    if (connection.framework_type === "Multiple Options" || connection.framework_type === "Radio Button") {
+      if (connection.property_values) {
+        const propertyValues = connection.property_values as Record<string, any>;
+        if (propertyValues.selectedOption) {
+          return propertyValues.selectedOption;
+        }
+        if (propertyValues.selectedOptions && Array.isArray(propertyValues.selectedOptions)) {
+          return propertyValues.selectedOptions.join(", ");
+        }
+      }
+    }
+    
+    // Fallback to source_value for other frameworks
+    return connection.source_value;
+  };
+
   // Handle removing the connection
   const handleRemoveConnection = async () => {
     if (!connectionId) return;
@@ -82,14 +103,14 @@ export function ConnectionDetailsModal({
     try {
       const { error } = await supabase
         .from('connect_screens')
-        .delete()
+        .update({ is_screen_terminated: true })
         .eq('id', connectionId);
         
       if (error) throw error;
       
       toast({
         title: "Connection removed",
-        description: "The connection has been successfully removed",
+        description: "The connection has been successfully terminated",
       });
       
       onClose();
@@ -97,11 +118,13 @@ export function ConnectionDetailsModal({
       console.error("Error removing connection:", error);
       toast({
         title: "Error",
-        description: "Failed to remove connection",
+        description: "Failed to terminate connection",
         variant: "destructive"
       });
     }
   };
+
+  const sourceValue = getConnectionSourceValue();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -117,7 +140,7 @@ export function ConnectionDetailsModal({
             <div className="border border-gray-800 rounded-md p-4 bg-black/20">
               <h3 className="text-sm font-medium text-gray-200 mb-3">Source Option:</h3>
               <div className="text-[#00FF00] bg-[#00FF00]/10 p-2 rounded border border-[#00FF00]/20">
-                {connection.source_value}
+                {sourceValue || "No source value available"}
               </div>
             </div>
             

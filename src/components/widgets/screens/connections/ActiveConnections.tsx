@@ -80,8 +80,30 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
     !conn.is_screen_terminated && conn.screen_ref === screenId
   );
 
+  // Get display value for the source option based on property_values
+  const getConnectionValue = (connection: ScreenConnection) => {
+    // For Multiple Options or Radio Button frameworks, display the selected option from property_values
+    if (connection.framework_type === "Multiple Options" || connection.framework_type === "Radio Button") {
+      if (connection.property_values) {
+        const propertyValues = connection.property_values as Record<string, any>;
+        if (propertyValues.selectedOption) {
+          return propertyValues.selectedOption;
+        }
+        if (propertyValues.selectedOptions && Array.isArray(propertyValues.selectedOptions)) {
+          return propertyValues.selectedOptions.join(", ");
+        }
+      }
+    }
+    
+    // Fallback to source_value for other frameworks
+    return connection.source_value;
+  };
+
   // Connection card component
   const ConnectionCard = ({ connection }: { connection: ScreenConnection }) => {
+    // Extract the source value from property_values or source_value
+    const displayValue = getConnectionValue(connection);
+    
     return (
       <Card className="bg-black border-gray-800 mb-2">
         <CardContent className="p-4">
@@ -122,11 +144,12 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
                   </Badge>
                 )}
 
-                {connection.source_value && (
+                {/* Display the source value if available */}
+                {displayValue && (
                   <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
-                    {typeof connection.source_value === 'string' && connection.source_value.length > 20 
-                      ? `${connection.source_value.substring(0, 20)}...` 
-                      : connection.source_value}
+                    {typeof displayValue === 'string' && displayValue.length > 20 
+                      ? `${displayValue.substring(0, 20)}...` 
+                      : displayValue}
                   </Badge>
                 )}
               </div>
