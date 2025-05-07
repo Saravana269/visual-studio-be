@@ -113,8 +113,8 @@ export function MultipleOptionsContent({
                       {isConnected ? (
                         <ConnectionBadge 
                           connectionId={connection?.id || `option_${index}`}
-                          onViewConnection={(e) => {
-                            e.stopPropagation(); // Prevent row selection when clicking view connection
+                          onViewConnection={() => {
+                            // Modified this to remove the event parameter
                             if (connection?.id) {
                               handleViewConnection(connection.id);
                             }
