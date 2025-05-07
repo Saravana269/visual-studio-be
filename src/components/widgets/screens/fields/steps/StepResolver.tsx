@@ -1,5 +1,4 @@
 
-import React from "react";
 import { ScreenNameStep } from "./ScreenNameStep";
 import { DescriptionStep } from "./DescriptionStep";
 import { FrameworkTypeStep } from "./FrameworkTypeStep";
@@ -9,9 +8,9 @@ import { ScreenFormData } from "@/types/screen";
 interface StepResolverProps {
   currentStep: number;
   formData: ScreenFormData;
-  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleFrameworkChange: (value: string | null) => void;
-  updateMetadata: (updates: Record<string, any>) => void;
+  handleFormChange: (field: keyof ScreenFormData, value: any) => void;
+  handleFrameworkChange: (value: string) => void;
+  updateMetadata: (key: string, value: any) => void;
   handleConnect: (value: any, context?: string) => void;
   widgetId?: string;
   screenId?: string;
@@ -27,70 +26,36 @@ export function StepResolver({
   widgetId,
   screenId
 }: StepResolverProps) {
-  // Create wrapper handlers for ScreenNameStep and DescriptionStep
-  const handleNameChange = (name: string) => {
-    // Create a synthetic event-like object to work with handleFormChange
-    const syntheticEvent = {
-      target: {
-        name: "name",
-        value: name
-      }
-    } as React.ChangeEvent<HTMLInputElement>;
-    
-    handleFormChange(syntheticEvent);
-  };
-
-  const handleDescriptionChange = (description: string) => {
-    // Create a synthetic event-like object to work with handleFormChange
-    const syntheticEvent = {
-      target: {
-        name: "description",
-        value: description
-      }
-    } as React.ChangeEvent<HTMLTextAreaElement>;
-    
-    handleFormChange(syntheticEvent);
-  };
-
   switch (currentStep) {
     case 1:
-      return (
-        <ScreenNameStep
-          name={formData.name}
-          onChange={handleNameChange}
-        />
-      );
-      
+      return <ScreenNameStep 
+        screenName={formData.name || ""}
+        onScreenNameChange={(value) => handleFormChange('name', value)} 
+      />;
     case 2:
-      return (
-        <DescriptionStep
-          description={formData.description}
-          onChange={handleDescriptionChange}
-        />
-      );
-      
+      return <DescriptionStep
+        description={formData.description || ""}
+        onDescriptionChange={(value) => handleFormChange('description', value)}
+      />;
     case 3:
-      return (
-        <FrameworkTypeStep
-          frameworkType={formData.framework_type}
-          metadata={formData.metadata || {}}
-          onFrameworkChange={handleFrameworkChange}
-          onMetadataUpdate={updateMetadata}
-        />
-      );
-      
+      return <FrameworkTypeStep
+        selectedFramework={formData.frameworkType || null}
+        onFrameworkSelect={handleFrameworkChange}
+      />;
     case 4:
       return (
         <OutputStep
-          frameworkType={formData.framework_type}
+          frameworkType={formData.frameworkType || null}
           metadata={formData.metadata || {}}
           onConnect={handleConnect}
           widgetId={widgetId}
           screenId={screenId}
         />
       );
-      
     default:
-      return <div>Unknown step</div>;
+      return <ScreenNameStep
+        screenName={formData.name || ""}
+        onScreenNameChange={(value) => handleFormChange('name', value)}
+      />;
   }
 }
