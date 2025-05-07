@@ -14,16 +14,25 @@ interface UseOptionConnectionsProps {
 export function useOptionConnections(screenId?: string, frameworkType?: string) {
   // Fetch all connections for this screen
   const { data: connections = [], isLoading } = useQuery({
-    queryKey: ["screen-connections", screenId],
+    queryKey: ["screen-connections", screenId, frameworkType],
     queryFn: async () => {
       if (!screenId) return [];
       
       try {
         console.log(`🔍 Fetching connections for screen: ${screenId} and framework: ${frameworkType}`);
-        const { data, error } = await supabase
+        
+        const query = supabase
           .from('connect_screens')
           .select('*')
-          .eq('screen_ref', screenId);
+          .eq('screen_ref', screenId)
+          .eq('is_screen_terminated', false);
+          
+        // Add framework type filter if provided
+        if (frameworkType) {
+          query.eq('framework_type', frameworkType);
+        }
+        
+        const { data, error } = await query;
           
         if (error) {
           console.error("Error fetching connections:", error);
@@ -37,7 +46,8 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
         return [];
       }
     },
-    enabled: !!screenId
+    enabled: !!screenId,
+    staleTime: 30000 // Cache results for 30 seconds
   });
   
   // Process connections to create a map of option -> connection

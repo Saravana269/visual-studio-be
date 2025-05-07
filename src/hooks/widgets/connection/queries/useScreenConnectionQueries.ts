@@ -35,6 +35,7 @@ export function useScreenConnectionQueries(screenId?: string, enabled = true) {
         return [];
       }
     },
-    enabled: !!screenId && enabled
+    enabled: !!screenId && enabled,
+    staleTime: 30000 // Cache results for 30 seconds to reduce unnecessary refetching
   });
 }
