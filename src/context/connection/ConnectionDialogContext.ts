@@ -1,15 +1,16 @@
 
 import { createContext } from "react";
-import { Screen } from "@/types/screen";
+import { ConnectionValueContext } from "@/types/connection";
 
-// Define the context type
-export interface ConnectionDialogContextType {
+interface ConnectionDialogContextType {
   isExistingScreenDialogOpen: boolean;
-  openExistingScreenDialog: (value: any, context?: string, widgetId?: string) => void;
-  closeExistingScreenDialog: () => void;
-  handleExistingScreenConnect: (selectedScreenId: string) => void;
-  isConnecting: boolean;
+  setIsExistingScreenDialogOpen: (isOpen: boolean) => void;
+  
+  selectedScreenId: string | null;
+  setSelectedScreenId: (screenId: string | null) => void;
+  
+  connectionContext: ConnectionValueContext | null;
+  setConnectionContext: (context: ConnectionValueContext | null) => void;
 }
 
-// Create the context with a default value
 export const ConnectionDialogContext = createContext<ConnectionDialogContextType | undefined>(undefined);

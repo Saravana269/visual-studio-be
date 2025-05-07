@@ -35,8 +35,16 @@ export function useConnectionManager(widgetId?: string) {
     const screenId = localStorage.getItem('current_screen_id');
     console.log("🔗 handleConnect with screenId from localStorage:", screenId);
     
-    // Pass value, context, widgetId, and screenId to openExistingScreenDialog
-    openExistingScreenDialog(value, context, widgetId, screenId || undefined);
+    // Create a context object with all needed values
+    const connectionValueContext = {
+      value,
+      context,
+      widgetId,
+      screenId: screenId || undefined
+    };
+    
+    // Pass the whole context object to openExistingScreenDialog
+    openExistingScreenDialog(connectionValueContext);
   };
 
   // Handle connecting to an existing screen
