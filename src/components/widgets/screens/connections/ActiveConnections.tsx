@@ -5,7 +5,7 @@ import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnec
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileTextIcon, BoxIcon, XIcon, ImageIcon, ChevronsRightIcon, ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { FileTextIcon, BoxIcon, XIcon, ImageIcon, ArrowRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,32 +74,14 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
     }
   };
 
-  // Filter connections to only show those related to the current screen
-  // This includes connections where the current screen is either the source or destination
+  // Filter connections to only show outgoing connections from the current screen
+  // This means only showing connections where the current screen is the source
   const relevantConnections = connections.filter(conn => 
-    !conn.is_screen_terminated && 
-    (conn.screen_ref === screenId || conn.nextScreen_Ref === screenId)
+    !conn.is_screen_terminated && conn.screen_ref === screenId
   );
 
   // Connection card component
   const ConnectionCard = ({ connection }: { connection: ScreenConnection }) => {
-    // Determine if the current screen is the source or destination
-    const isCurrentScreenSource = connection.screen_ref === screenId;
-    
-    // Get the name/description of the connected screen (either source or destination)
-    const connectedScreenName = isCurrentScreenSource 
-      ? connection.nextScreen_Name || "Connected Screen"
-      : connection.screen_name || "Source Screen";
-      
-    const connectedScreenDesc = isCurrentScreenSource
-      ? connection.nextScreen_Description
-      : connection.screen_description;
-
-    // Get connection direction arrow
-    const DirectionArrow = isCurrentScreenSource 
-      ? ArrowRightIcon 
-      : ArrowLeftIcon;
-      
     return (
       <Card className="bg-black border-gray-800 mb-2">
         <CardContent className="p-4">
@@ -109,19 +91,19 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
                 {getFrameworkIcon(connection.framework_type)}
                 
                 <span className="font-medium">
-                  {isCurrentScreenSource ? "This Screen" : connection.screen_name || "Source Screen"}
+                  This Screen
                 </span>
                 
-                <DirectionArrow size={16} className="text-[#00FF00]" />
+                <ArrowRightIcon size={16} className="text-[#00FF00]" />
                 
                 <span className="font-medium">
-                  {!isCurrentScreenSource ? "This Screen" : connectedScreenName}
+                  {connection.nextScreen_Name || "Connected Screen"}
                 </span>
               </div>
               
-              {connectedScreenDesc && (
+              {connection.nextScreen_Description && (
                 <div className="mt-1 text-sm text-gray-400">
-                  {connectedScreenDesc}
+                  {connection.nextScreen_Description}
                 </div>
               )}
               
@@ -175,7 +157,7 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
   if (relevantConnections.length === 0) {
     return (
       <div className="text-center py-6 border border-dashed border-gray-800 rounded-md">
-        <p className="text-gray-400 text-sm">No active connections for this screen</p>
+        <p className="text-gray-400 text-sm">No outgoing connections from this screen</p>
       </div>
     );
   }

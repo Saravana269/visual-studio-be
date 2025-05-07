@@ -50,7 +50,7 @@ export function ConnectionsPanel({ currentScreen, widgetId, onClose }: Connectio
           </Card>
           
           <div className="mb-4">
-            <h3 className="text-sm font-medium mb-2">Active Connections</h3>
+            <h3 className="text-sm font-medium mb-2">Outgoing Connections</h3>
             <ActiveConnections 
               screenId={currentScreen?.id} 
               widgetId={widgetId} 
