@@ -8,7 +8,7 @@ interface FrameworkTypeStepProps {
   frameworkType: string | null;
   metadata: Record<string, any>;
   onFrameworkChange: (value: string) => void;
-  onMetadataUpdate: (updates: Record<string, any>) => void;
+  onMetadataUpdate: (key: string, value: any) => void;
 }
 
 export function FrameworkTypeStep({
@@ -52,7 +52,12 @@ export function FrameworkTypeStep({
           <FrameworkFields 
             frameworkType={frameworkType}
             frameworkConfig={metadata || {}}
-            onUpdateMetadata={onMetadataUpdate}
+            onUpdateMetadata={(updates) => {
+              // Handle each key-value pair individually
+              Object.entries(updates).forEach(([key, value]) => {
+                onMetadataUpdate(key, value);
+              });
+            }}
           />
         </div>
       )}

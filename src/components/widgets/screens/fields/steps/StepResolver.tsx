@@ -40,7 +40,9 @@ export function StepResolver({
     case 3:
       return <FrameworkTypeStep
         frameworkType={formData.framework_type || null}
-        onChange={handleFrameworkChange}
+        metadata={formData.metadata || {}}
+        onFrameworkChange={handleFrameworkChange}
+        onMetadataUpdate={updateMetadata}
       />;
     case 4:
       return (

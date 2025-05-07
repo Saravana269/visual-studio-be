@@ -18,10 +18,9 @@ export function useStepContentHandlers({
 }: UseStepContentHandlersProps) {
   const { toast } = useToast();
   
-  // Handle form field changes - updated to match ChangeEvent signature
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  // Handle form field changes - updated to match expected signature
+  const handleFormChange = (field: keyof ScreenFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
     
     // If autoSave is enabled, trigger save after a short delay
     if (autoSave && onSave) {
@@ -72,13 +71,13 @@ export function useStepContentHandlers({
     }));
   };
 
-  // Update metadata function - standardized format
-  const updateMetadata = (updates: Record<string, any>) => {
+  // Update metadata function - updated to match expected signature
+  const updateMetadata = (key: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       metadata: {
         ...prev.metadata,
-        ...updates
+        [key]: value
       }
     }));
     
