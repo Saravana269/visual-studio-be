@@ -17,6 +17,7 @@ export interface ScreenConnection {
   nextScreen_Ref: string | null;
   nextScreen_Name?: string | null;
   nextScreen_Description?: string | null;
+  nextScreen_FrameworkType?: string | null;
 }
 
 export type CreateScreenConnectionParams = Omit<

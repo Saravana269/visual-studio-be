@@ -16,7 +16,7 @@ export function useScreenConnectionQueries(screenId?: string, enabled = true) {
         // Get connections where this screen is the source
         const { data: sourceConnections, error: sourceError } = await supabase
           .from('connect_screens')
-          .select('*, next_screen:nextScreen_Ref(id, name, description)')
+          .select('*, next_screen:nextScreen_Ref(id, name, description, framework_type)')
           .eq('screen_ref', screenId);
           
         if (sourceError) throw sourceError;
@@ -25,7 +25,8 @@ export function useScreenConnectionQueries(screenId?: string, enabled = true) {
         const transformedSourceConnections = sourceConnections.map((conn: any) => ({
           ...conn,
           nextScreen_Name: conn.next_screen?.name,
-          nextScreen_Description: conn.next_screen?.description
+          nextScreen_Description: conn.next_screen?.description,
+          nextScreen_FrameworkType: conn.next_screen?.framework_type
         }));
         
         return transformedSourceConnections as ScreenConnection[];

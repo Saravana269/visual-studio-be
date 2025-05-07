@@ -108,12 +108,14 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
               )}
               
               <div className="mt-2 space-x-2">
+                {/* Source Screen Framework Type Badge */}
                 {connection.framework_type && (
-                  <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                  <Badge variant="outline" className="bg-[#00FF00]/10 text-[#00FF00] border-[#00FF00]/30">
                     {connection.framework_type}
                   </Badge>
                 )}
                 
+                {/* Destination Screen Framework Type */}
                 {connection.connection_context && (
                   <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
                     {connection.connection_context?.split(':')?.[1] || connection.connection_context}
