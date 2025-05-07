@@ -92,8 +92,12 @@ export function useConnectionOperations(widgetId?: string) {
         };
       }
       
-      // Check for selected combination in localStorage for Multiple Options
+      // Check for selected combination or individual option in localStorage
       const selectedCombination = localStorage.getItem('selected_combination_value');
+      const selectedOption = localStorage.getItem('selected_option_value');
+      let contextType = connectionCtx.context;
+      
+      // Handle Multiple Options combinations
       if (selectedCombination && 
           (connectionCtx.context === "Multiple Options" || 
            (propertyValues as any)?.contextType === "Multiple Options")) {
@@ -105,6 +109,20 @@ export function useConnectionOperations(widgetId?: string) {
           selectedOptions: selectedCombination.split(', '),
           combinationString: selectedCombination
         };
+      }
+      
+      // Handle individual options 
+      if (selectedOption && 
+          (connectionCtx.context === "Multiple Options - Individual" || 
+           (propertyValues as any)?.contextType === "Multiple Options - Individual")) {
+        
+        // Add the selected option to source value and property values
+        sourceValue = selectedOption;
+        propertyValues = {
+          ...propertyValues,
+          selectedOption: selectedOption
+        };
+        contextType = "Multiple Options - Individual";
       }
       
       if (connectionCtx.context?.startsWith('element_id_')) {
@@ -137,7 +155,7 @@ export function useConnectionOperations(widgetId?: string) {
         // Create connection record in connect_screens table
         const connectionData = {
           nextScreen_Ref: selectedScreenId,
-          framework_type: connectionCtx.frameType || currentScreen.framework_type,
+          framework_type: contextType || connectionCtx.frameType || currentScreen.framework_type,
           widget_ref: currentScreen.widget_id,
           screen_ref: currentScreen.id,
           screen_name: currentScreen.name,
@@ -159,6 +177,10 @@ export function useConnectionOperations(widgetId?: string) {
       
       // Clear state
       setConnectionContext(null);
+      
+      // Clear localStorage values
+      localStorage.removeItem('selected_combination_value');
+      localStorage.removeItem('selected_option_value');
       
       // Close dialog after connection
       setIsExistingScreenDialogOpen(false);

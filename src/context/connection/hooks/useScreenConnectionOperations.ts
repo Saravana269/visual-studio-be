@@ -135,9 +135,10 @@ export const useScreenConnectionOperations = () => {
         };
       }
       
-      // Check for selected combination in localStorage for Multiple Options
+      // Check for selected combination or individual option in localStorage
       const contextType = (propertyValues as any)?.contextType || connectionCtx.context;
       const selectedCombination = localStorage.getItem('selected_combination_value');
+      const selectedOption = localStorage.getItem('selected_option_value');
       
       if (selectedCombination && contextType === "Multiple Options") {
         // Add the selected combination to source value and property values
@@ -149,12 +150,23 @@ export const useScreenConnectionOperations = () => {
         };
       }
       
+      if (selectedOption && contextType === "Multiple Options - Individual") {
+        // Handle individual options
+        sourceValue = selectedOption;
+        propertyValues = {
+          ...propertyValues,
+          selectedOption: selectedOption
+        };
+      }
+      
       console.log("📦 Connection property values to insert:", propertyValues);
       
       // Prepare connection data - ONLY include the propertyValues, not merging with framework data
       const connectionData = {
         nextScreen_Ref: selectedScreenId,
-        framework_type: currentScreen.framework_type,
+        framework_type: contextType === "Multiple Options - Individual" 
+          ? "Multiple Options - Individual" 
+          : currentScreen.framework_type,
         widget_ref: currentScreen.widget_id,
         screen_ref: currentScreen.id,
         screen_name: currentScreen.name,
@@ -176,6 +188,15 @@ export const useScreenConnectionOperations = () => {
         
       if (error) {
         throw error;
+      }
+      
+      // Clean up localStorage
+      if (selectedCombination) {
+        localStorage.removeItem('selected_combination_value');
+      }
+      
+      if (selectedOption) {
+        localStorage.removeItem('selected_option_value');
       }
       
       toast({

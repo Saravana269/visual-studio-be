@@ -24,7 +24,12 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
           
         // Add framework type filter if provided
         if (frameworkType) {
-          query.eq('framework_type', frameworkType);
+          // Use a like query to match both "Multiple Options" and "Multiple Options - Individual"
+          if (frameworkType === "Multiple Options") {
+            query.like('framework_type', `${frameworkType}%`);
+          } else {
+            query.eq('framework_type', frameworkType);
+          }
         }
         
         const { data, error } = await query;
