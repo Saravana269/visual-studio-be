@@ -116,9 +116,9 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
                 )}
                 
                 {/* Destination Screen Framework Type */}
-                {connection.connection_context && (
-                  <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                    {connection.connection_context?.split(':')?.[1] || connection.connection_context}
+                {connection.nextScreen_FrameworkType && (
+                  <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/30">
+                    {connection.nextScreen_FrameworkType}
                   </Badge>
                 )}
 
