@@ -31,4 +31,5 @@ export interface ConnectionValueContext {
   context?: string;
   frameType?: string;
   widgetId?: string;
+  screenId?: string; // Added screenId property
 }
