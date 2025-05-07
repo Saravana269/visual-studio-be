@@ -56,6 +56,20 @@ export function InformationContent({ metadata, onConnect, screenId }: Informatio
           </div>
         </ScrollArea>
       </div>
+      
+      {/* Add the connected status badge at the bottom when a connection exists */}
+      {hasExistingConnection && existingConnection && (
+        <div className="flex justify-center py-2 border-t border-[#00FF00]/20">
+          <div className="bg-[#00FF00]/20 text-[#00FF00] px-4 py-1 rounded-full flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+            Connected
+          </div>
+        </div>
+      )}
     </div>
   );
 }
