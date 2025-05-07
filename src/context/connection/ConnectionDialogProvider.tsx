@@ -1,6 +1,5 @@
-
 import { useState, useEffect, ReactNode } from "react";
-import { ConnectionDialogContext, ConnectionDialogContextType } from "./ConnectionDialogContext";
+import { ConnectionDialogContext } from "./ConnectionDialogContext";
 import { ExistingScreenDialog } from "@/components/widgets/screens/dialogs/ExistingScreenDialog";
 import { Screen } from "@/types/screen";
 import { useScreenConnection } from "@/hooks/widgets/connection/useScreenConnection";
@@ -15,26 +14,26 @@ interface ConnectionDialogProviderProps {
 export function ConnectionDialogProvider({ children }: ConnectionDialogProviderProps) {
   // Dialog state
   const [isExistingScreenDialogOpen, setIsExistingScreenDialogOpen] = useState(false);
-  const [selectedWidgetId, setSelectedWidgetId] = useState<string | undefined>(undefined);
+  const [selectedScreenId, setSelectedScreenId] = useState<string | null>(null);
   const [connectionValueContext, setConnectionValueContext] = useState<ConnectionValueContext | null>(null);
   const [currentScreen, setCurrentScreen] = useState<Screen | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const { toast } = useToast();
 
   // Get screen connection utilities
-  const { fetchCurrentScreen } = useScreenConnection(selectedWidgetId);
+  const { fetchCurrentScreen } = useScreenConnection(selectedScreenId);
 
   // Handle opening the existing screen dialog
-  const openExistingScreenDialog = async (value: any, context?: string, widgetId?: string, screenId?: string) => {
-    console.log("🖼️ Opening existing screen dialog with context:", { value, context, widgetId, screenId });
+  const openExistingScreenDialog = async (connectionContext: ConnectionValueContext) => {
+    console.log("🖼️ Opening existing screen dialog with context:", connectionContext);
     
     // Store connection context information
-    setConnectionValueContext({ value, context, widgetId, screenId });
-    setSelectedWidgetId(widgetId);
+    setConnectionValueContext(connectionContext);
+    setSelectedScreenId(connectionContext.widgetId);
     
     // Try to fetch the current screen information - first from passed screenId, then from localStorage
-    const currentScreenId = screenId || localStorage.getItem('current_screen_id');
-    console.log("🔍 Fetching current screen with ID:", currentScreenId, "from screenId param:", screenId);
+    const currentScreenId = connectionContext.screenId || localStorage.getItem('current_screen_id');
+    console.log("🔍 Fetching current screen with ID:", currentScreenId);
     
     if (!currentScreenId) {
       console.warn("⚠️ No current screen ID available from params or localStorage");
@@ -57,10 +56,10 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
         // Store context in session storage for component communication
         try {
           window.sessionStorage.setItem('connectionContext', JSON.stringify({ 
-            value, 
-            context, 
+            value: connectionContext.value, 
+            context: connectionContext.context, 
             frameType: screen.framework_type,
-            widgetId,
+            widgetId: connectionContext.widgetId,
             screenId: currentScreenId // Store the screenId explicitly
           }));
           console.log("💾 Stored connection context in session storage with screenId:", currentScreenId);
@@ -227,12 +226,13 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
   };
 
   // Context value
-  const contextValue: ConnectionDialogContextType = {
+  const contextValue = {
     isExistingScreenDialogOpen,
-    openExistingScreenDialog,
-    closeExistingScreenDialog,
-    handleExistingScreenConnect,
-    isConnecting
+    setIsExistingScreenDialogOpen,
+    selectedScreenId,
+    setSelectedScreenId,
+    connectionContext: connectionValueContext,
+    setConnectionContext: setConnectionValueContext
   };
 
   // Clean up any session storage on unmount
@@ -258,13 +258,13 @@ export function ConnectionDialogProvider({ children }: ConnectionDialogProviderP
       {children}
       
       {/* Render the dialog */}
-      {isExistingScreenDialogOpen && selectedWidgetId && (
+      {isExistingScreenDialogOpen && selectedScreenId && (
         <ExistingScreenDialog
           isOpen={isExistingScreenDialogOpen}
           onClose={closeExistingScreenDialog}
           onConnect={handleExistingScreenConnect}
           currentScreen={currentScreen}
-          widgetId={selectedWidgetId}
+          widgetId={selectedScreenId}
           isConnecting={isConnecting}
         />
       )}

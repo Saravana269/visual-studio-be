@@ -2,7 +2,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnectionDialogs } from "@/context/connection";
-import { CreateScreenConnectionParams } from "@/types/connection";
+import { ConnectionValueContext, CreateScreenConnectionParams } from "@/types/connection";
 
 export function useFrameworkConnectionHandlers(widgetId?: string) {
   const { toast } = useToast();
@@ -33,8 +33,15 @@ export function useFrameworkConnectionHandlers(widgetId?: string) {
     try {
       console.log("Opening dialog to select existing screen for framework", { context, frameworkType, value });
       
-      // Use the openExistingScreenDialog function
-      openExistingScreenDialog(value, context, widgetId);
+      // Create a connection context object for the openExistingScreenDialog
+      const connectionContext: ConnectionValueContext = {
+        value,
+        context,
+        widgetId
+      };
+      
+      // Use the openExistingScreenDialog function with the context object
+      openExistingScreenDialog(connectionContext);
       
       return true;
     } catch (error) {

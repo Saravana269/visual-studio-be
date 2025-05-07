@@ -9,6 +9,7 @@ import {
 import { Plus, FileText, Link, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useConnectionDialogs } from "@/context/ConnectionDialogContext";
+import { ConnectionValueContext } from "@/types/connection";
 
 interface ConnectOptionsMenuProps {
   trigger: React.ReactNode;
@@ -79,8 +80,16 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId, screenId
         }
       }
       
-      // Pass the screenId to openExistingScreenDialog to ensure we have the right context
-      openExistingScreenDialog(null, "imageUpload", widgetId);
+      // Create connection context object for the openExistingScreenDialog
+      const connectionContext: ConnectionValueContext = {
+        value: null,
+        context: "imageUpload",
+        widgetId,
+        screenId
+      };
+      
+      // Pass the connection context to openExistingScreenDialog
+      openExistingScreenDialog(connectionContext);
     } 
     // Special handling for "existing_screen" on the screens page - use the panel layout
     else if (option === "existing_screen" && !isOnElementsPage) {

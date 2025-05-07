@@ -2,7 +2,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnectionDialogs } from "@/context/connection";
-import { CreateScreenConnectionParams } from "@/types/connection";
+import { ConnectionValueContext, CreateScreenConnectionParams } from "@/types/connection";
 
 export function useElementConnectionHandlers(widgetId?: string) {
   const { toast } = useToast();
@@ -33,9 +33,15 @@ export function useElementConnectionHandlers(widgetId?: string) {
     try {
       console.log("Opening dialog to select existing screen for element", elementId);
       
-      // If we already have an element ID, use the openExistingScreenDialog function
+      // If we already have an element ID, create connection context and use openExistingScreenDialog
       if (elementId) {
-        openExistingScreenDialog(null, `element_id_${elementId}`, widgetId);
+        const connectionContext: ConnectionValueContext = {
+          value: null,
+          context: `element_id_${elementId}`,
+          widgetId
+        };
+        
+        openExistingScreenDialog(connectionContext);
       }
       
       return true;
