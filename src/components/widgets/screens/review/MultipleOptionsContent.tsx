@@ -8,7 +8,7 @@ import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnec
 interface MultipleOptionsContentProps {
   metadata: Record<string, any>;
   screenId?: string;
-  onConnect?: (option: string[] | string, context?: string) => void; // Updated to accept both string[] and string
+  onConnect?: (option: string[] | string, context?: string) => void;
 }
 
 export function MultipleOptionsContent({
@@ -31,19 +31,29 @@ export function MultipleOptionsContent({
   // Create a wrapper for onConnect to handle the parameter type conversion
   const handleConnect = (option: string[] | string, context?: string) => {
     if (onConnect) {
-      // We can now directly pass the option since our interface accepts both types
+      // We store the selected combination in localStorage as a string for external components to use
       if (Array.isArray(option)) {
-        // Fix: For array options, we need to pass the option directly
+        localStorage.setItem('selected_combination_value', option.join(', '));
+        
+        // Pass the properly formatted data to onConnect
         onConnect({
           value: option,
-          propertyValues: { selectedOptions: option } // Only store the selected option
-        } as any, context);
+          propertyValues: { 
+            selectedOptions: option,
+            contextType: context || "Multiple Options"
+          }
+        } as any, context || "Multiple Options");
       } else {
-        // Fix: For string options, we need to pass the option directly
+        localStorage.setItem('selected_combination_value', option);
+        
+        // For string options, we format differently
         onConnect({
           value: option,
-          propertyValues: { selectedOption: option } // Only store the selected option
-        } as any, context);
+          propertyValues: { 
+            selectedOption: option,
+            contextType: context || "Multiple Options" 
+          }
+        } as any, context || "Multiple Options");
       }
     }
   };

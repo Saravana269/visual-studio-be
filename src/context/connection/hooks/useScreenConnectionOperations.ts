@@ -135,6 +135,20 @@ export const useScreenConnectionOperations = () => {
         };
       }
       
+      // Check for selected combination in localStorage for Multiple Options
+      const contextType = (propertyValues as any)?.contextType || connectionCtx.context;
+      const selectedCombination = localStorage.getItem('selected_combination_value');
+      
+      if (selectedCombination && contextType === "Multiple Options") {
+        // Add the selected combination to source value and property values
+        sourceValue = selectedCombination;
+        propertyValues = {
+          ...propertyValues,
+          selectedOptions: selectedCombination.split(', '),
+          combinationString: selectedCombination
+        };
+      }
+      
       console.log("📦 Connection property values to insert:", propertyValues);
       
       // Prepare connection data - ONLY include the propertyValues, not merging with framework data

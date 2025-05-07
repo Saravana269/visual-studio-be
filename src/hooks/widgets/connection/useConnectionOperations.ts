@@ -92,6 +92,21 @@ export function useConnectionOperations(widgetId?: string) {
         };
       }
       
+      // Check for selected combination in localStorage for Multiple Options
+      const selectedCombination = localStorage.getItem('selected_combination_value');
+      if (selectedCombination && 
+          (connectionCtx.context === "Multiple Options" || 
+           (propertyValues as any)?.contextType === "Multiple Options")) {
+        
+        // Add the selected combination to source value and property values
+        sourceValue = selectedCombination;
+        propertyValues = {
+          ...propertyValues,
+          selectedOptions: selectedCombination.split(', '),
+          combinationString: selectedCombination
+        };
+      }
+      
       if (connectionCtx.context?.startsWith('element_id_')) {
         const elementId = connectionCtx.context.replace('element_id_', '');
         
