@@ -1,96 +1,106 @@
 
-import React from "react";
+import React, { useState } from 'react';
+import { Slider } from "@/components/ui/slider";
 import { ConnectButton } from "./ConnectButton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
-import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
+import { ConnectionBadge } from "../../../connections/ConnectionBadge";
 
 interface SliderFrameworkProps {
-  min: number;
-  max: number;
-  step: number;
+  min?: number;
+  max?: number;
+  step?: number;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
   screenId?: string;
+  isReviewMode?: boolean;
 }
 
-export const SliderFramework = ({ min, max, step, onConnect, widgetId, screenId }: SliderFrameworkProps) => {
-  // Set default values if not provided
-  const minValue = min || 0;
-  const maxValue = max || 100;
-  const stepValue = step || 1;
+export const SliderFramework: React.FC<SliderFrameworkProps> = ({
+  min = 0,
+  max = 100,
+  step = 1,
+  onConnect,
+  widgetId,
+  screenId,
+  isReviewMode = false
+}) => {
+  // Use provided values with fallbacks
+  const actualMin = min ?? 0;
+  const actualMax = max ?? 100;
+  const actualStep = step ?? 1;
   
-  // Use the option connections hook to check for existing connections
-  const { 
-    isOptionConnected, 
-    getConnectionForOption 
-  } = useOptionConnections(screenId, "Slider");
+  // Set initial value to the middle of the range
+  const initialValue = Math.round((actualMin + actualMax) / 2);
   
-  // Generate the list of values based on min, max, and step
-  const generateValues = () => {
-    const values = [];
-    for (let i = minValue + stepValue; i <= maxValue; i += stepValue) {
-      values.push(i);
-    }
-    return values;
+  const [value, setValue] = useState<number>(initialValue);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionId, setConnectionId] = useState<string | null>(null);
+  
+  // Format the value for display
+  const formattedValue = value.toLocaleString();
+  
+  // Handle slider value change
+  const handleValueChange = (newValue: number[]) => {
+    setValue(newValue[0]);
   };
   
-  const values = generateValues();
-
-  // For logging/debugging
-  console.log("🎚️ Slider framework rendering:", {
-    screenId,
-    valueCount: values.length,
-    minValue,
-    maxValue,
-    stepValue
-  });
+  // Handle connect button click
+  const handleConnect = () => {
+    onConnect(value, "Slider");
+    setIsConnected(true);
+    setConnectionId("slider-value");
+  };
+  
+  // Handle viewing connection details
+  const handleViewConnection = () => {
+    // In a real implementation, this would open a modal or navigate to a details page
+    console.log("View connection for value:", value);
+  };
 
   return (
-    <div className="space-y-3">
-      <h4 className="text-base font-medium">Slider Values</h4>
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-medium">Slider Selection</h2>
+        
+        {/* Show connection badge if connected, otherwise show connect button */}
+        {isConnected && connectionId ? (
+          <ConnectionBadge 
+            type="value"
+            label={`Value: ${formattedValue}`}
+            connectionId={connectionId} 
+            onViewConnection={handleViewConnection} 
+          />
+        ) : (
+          !isReviewMode && (
+            <ConnectButton
+              value={value}
+              context="Slider"
+              onConnect={onConnect}
+              widgetId={widgetId}
+              screenId={screenId}
+            />
+          )
+        )}
+      </div>
       
-      <ScrollArea className="h-60 pr-4">
-        <div className="space-y-2">
-          {values.length > 0 ? (
-            values.map((value, index) => {
-              // Convert value to string for connection checking
-              const valueStr = value.toString();
-              // Check if this value is already connected
-              const isConnected = isOptionConnected(valueStr);
-              // Get connection details if connected
-              const connection = isConnected ? getConnectionForOption(valueStr) : null;
-              
-              return (
-                <div 
-                  key={index} 
-                  className="flex items-center justify-between p-2 rounded hover:bg-gray-800/30 border border-gray-700"
-                >
-                  <span className="text-sm">{value}</span>
-                  {isConnected && connection ? (
-                    <ConnectionBadge 
-                      connectionId={connection.id}
-                      onViewConnection={() => {
-                        console.log("View connection:", connection.id);
-                        // Connection view logic could be added here
-                      }}
-                    />
-                  ) : (
-                    <ConnectButton 
-                      value={value} 
-                      context={`slider_value_${value}`}
-                      onConnect={onConnect}
-                      widgetId={widgetId} 
-                    />
-                  )}
-                </div>
-              );
-            })
-          ) : (
-            <p className="text-gray-500 text-sm">No values available with current configuration</p>
-          )}
+      <div className="space-y-6">
+        <div className="mt-4">
+          <Slider
+            disabled={isReviewMode}
+            value={[value]}
+            min={actualMin}
+            max={actualMax}
+            step={actualStep}
+            onValueChange={handleValueChange}
+            className="my-6"
+          />
+          
+          <div className="flex justify-between text-sm text-gray-400">
+            <span>{actualMin}</span>
+            <span className="font-medium text-white">{formattedValue}</span>
+            <span>{actualMax}</span>
+          </div>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };

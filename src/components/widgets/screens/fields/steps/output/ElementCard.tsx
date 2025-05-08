@@ -1,69 +1,63 @@
 
 import React from "react";
-import { ConnectButton } from "./ConnectButton";
-import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
-
-interface Element {
-  id: string;
-  name: string;
-  description?: string;
-  image_url?: string;
-}
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ConnectionBadge } from "../../../connections/ConnectionBadge";
 
 interface ElementCardProps {
-  element: Element;
-  onConnect: (value: any) => void;
-  widgetId?: string;
+  elementName: string;
+  elementId: string;
+  isSelected: boolean;
   isConnected?: boolean;
-  connectionId?: string;
+  connectionId?: string | null;
+  onSelect: () => void;
   onViewConnection?: () => void;
-  screenId?: string; // Added screenId prop
 }
 
-export const ElementCard = ({ 
-  element, 
-  onConnect, 
-  widgetId, 
-  isConnected = false, 
-  connectionId,
-  onViewConnection,
-  screenId // Include screenId in props destructuring
-}: ElementCardProps) => {
+export function ElementCard({ 
+  elementName,
+  elementId,
+  isSelected,
+  isConnected = false,
+  connectionId = null,
+  onSelect,
+  onViewConnection
+}: ElementCardProps) {
+  // Determine row class based on selected and connected status
+  let rowClasses = "cursor-pointer flex items-center justify-between p-3 rounded mb-2 transition-all";
+  
+  // If element is selected
+  if (isSelected) {
+    rowClasses += " border-2 border-orange-500 bg-orange-500/10";
+  } 
+  // If element is connected but not selected
+  else if (isConnected) {
+    rowClasses += " border border-gray-600 bg-gray-800";
+  } 
+  // Default state - not selected or connected
+  else {
+    rowClasses += " border border-gray-700 bg-black hover:border-gray-600";
+  }
+
   return (
-    <div className="border border-gray-800 rounded-md p-2 flex items-center">
-      {element.image_url && (
-        <div className="w-10 h-10 rounded overflow-hidden mr-3">
-          <img 
-            src={element.image_url} 
-            alt={element.name} 
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-      <div className="flex-1">
-        <p className="text-sm font-medium">{element.name}</p>
-        {element.description && (
-          <p className="text-xs text-gray-400 line-clamp-1">{element.description}</p>
+    <Card className={rowClasses} onClick={onSelect}>
+      <div className="flex items-center">
+        {/* Selection indicator */}
+        {isSelected && (
+          <div className="w-2 h-2 rounded-full bg-orange-500 mr-2"></div>
         )}
+        <span className="text-sm font-medium">{elementName}</span>
       </div>
-      {isConnected && connectionId ? (
-        <ConnectionBadge 
-          connectionId={connectionId} 
+      
+      {/* Show connection badge if connected */}
+      {isConnected && connectionId && onViewConnection && (
+        <ConnectionBadge
+          type="screen" 
+          label="Connected"
+          connectionId={connectionId}
           onViewConnection={onViewConnection}
         />
-      ) : (
-        <ConnectButton 
-          value={{ 
-            id: element.id, 
-            name: element.name, 
-            image: element.image_url 
-          }} 
-          context={`element_${element.id}`} 
-          onConnect={onConnect}
-          widgetId={widgetId}
-          screenId={screenId} // Pass screenId to ConnectButton
-        />
       )}
-    </div>
+    </Card>
   );
 }

@@ -1,17 +1,16 @@
 
 import React from 'react';
-import { ConnectionBadge } from '../../../../connections/ConnectionBadge';
 import { ConnectButton } from '../ConnectButton';
-import { buildRowClassName } from './optionUtils';
+import { ConnectionBadge } from '../../../../connections/ConnectionBadge';
 
 interface CombinationRowProps {
   combination: string[];
   index: number;
   isSelected: boolean;
-  isReviewMode: boolean;
   isConnected: boolean;
+  isReviewMode?: boolean;
   connectionId?: string;
-  onSelect?: () => void;
+  onSelect: () => void;
   onViewConnection?: (connectionId: string) => void;
   onConnect?: (value: any, context?: string) => void;
   widgetId?: string;
@@ -22,8 +21,8 @@ export const CombinationRow: React.FC<CombinationRowProps> = ({
   combination,
   index,
   isSelected,
-  isReviewMode,
   isConnected,
+  isReviewMode = false,
   connectionId,
   onSelect,
   onViewConnection,
@@ -31,41 +30,58 @@ export const CombinationRow: React.FC<CombinationRowProps> = ({
   widgetId,
   screenId
 }) => {
-  const rowClassName = buildRowClassName(isSelected, isReviewMode);
+  // Row click handler
+  const handleClick = () => {
+    if (!isReviewMode) {
+      onSelect();
+    }
+  };
+  
+  // View connection details handler
+  const handleViewConnection = () => {
+    if (connectionId && onViewConnection) {
+      onViewConnection(connectionId);
+    }
+  };
+  
+  // Connect handler
+  const handleConnect = (value: any, context?: string) => {
+    if (onConnect) {
+      onConnect(value, context);
+    }
+  };
   
   return (
-    <div 
-      className={rowClassName}
-      onClick={!isReviewMode && onSelect ? onSelect : undefined}
+    <div
+      className={`
+        p-3 rounded-md cursor-pointer flex justify-between items-center
+        ${isSelected ? 'bg-green-500/20 border-2 border-green-500' : 'bg-gray-900 border border-gray-800 hover:bg-gray-800'}
+        ${isSelected ? 'mb-4' : 'mb-2'}
+        transition-all duration-150
+      `}
+      onClick={handleClick}
     >
       <div className="flex items-center">
-        {isSelected && !isReviewMode && (
-          <span className="text-[#F97316] mr-2">●</span>
-        )}
-        <span className={`text-sm ${isSelected && !isReviewMode ? 'text-white' : ''}`}>
+        <span className="text-sm">
           {combination.join(", ")}
         </span>
       </div>
-      <div className="flex items-center space-x-2">
-        {isConnected && connectionId && onViewConnection ? (
+      
+      <div className="flex items-center">
+        {isConnected && connectionId && onViewConnection && (
           <ConnectionBadge 
-            connectionId={connectionId}
-            onViewConnection={() => onViewConnection(connectionId)}
+            type="option"
+            label="Connected"
+            connectionId={connectionId} 
+            onViewConnection={handleViewConnection} 
           />
-        ) : !isReviewMode && onConnect && (
-          <ConnectButton 
-            value={combination} 
-            context={`combination_${index}`}
-            onConnect={(value) => {
-              // Only store the selected combination in propertyValues
-              onConnect({
-                value,
-                propertyValues: { 
-                  selectedOptions: combination,
-                  combinationString: combination.join(', ')
-                }
-              }, `combination_${index}`);
-            }}
+        )}
+        
+        {!isConnected && isSelected && onConnect && !isReviewMode && (
+          <ConnectButton
+            value={combination.join(', ')}
+            context="Multiple Options"
+            onConnect={handleConnect}
             widgetId={widgetId}
             screenId={screenId}
           />

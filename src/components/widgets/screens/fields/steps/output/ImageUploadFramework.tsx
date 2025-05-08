@@ -1,89 +1,122 @@
 
-import React from "react";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ImageIcon, Upload } from "lucide-react";
 import { ConnectButton } from "./ConnectButton";
-import { ConnectOptionsMenu } from "./ConnectOptionsMenu";
-import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
-import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
+import { useToast } from "@/hooks/use-toast";
+import { ConnectionBadge } from "../../../connections/ConnectionBadge";
 
 interface ImageUploadFrameworkProps {
-  imageUrl: string | null;
+  imageUrl?: string | null;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
   screenId?: string;
+  isReviewMode?: boolean;
 }
 
-export function ImageUploadFramework({ imageUrl, onConnect, widgetId, screenId }: ImageUploadFrameworkProps) {
-  // Use the hook to check for existing connections specific to Image Upload framework
-  const { isFrameworkConnected, connections } = useOptionConnections(screenId, "Image Upload");
+export const ImageUploadFramework: React.FC<ImageUploadFrameworkProps> = ({
+  imageUrl,
+  onConnect,
+  widgetId,
+  screenId,
+  isReviewMode = false
+}) => {
+  const [uploadedImage, setUploadedImage] = useState<string | null>(imageUrl || null);
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
+  const [isConnected, setIsConnected] = useState(false);
   
-  // Get first connection if any exists
-  const existingConnection = connections.find(conn => 
-    conn.framework_type === "Image Upload" && 
-    !conn.is_screen_terminated
-  );
-  
-  // Log debug info
-  console.log("🖼️ Rendering ImageUploadFramework with:", { 
-    imageUrl, 
-    widgetId,
-    screenId,
-    isFrameworkConnected: isFrameworkConnected("Image Upload"),
-    existingConnection
-  });
-
-  const handleOptionSelect = (option: string) => {
-    // Log the option selection and widget ID
-    console.log("🔘 Image Upload option selected:", { option, widgetId });
+  // Mock function to simulate image upload
+  // In a real implementation, this would use proper file selection and upload to a storage service
+  const handleUpload = () => {
+    if (isReviewMode) return;
     
-    // Append the selected option to the context
-    onConnect(imageUrl || null, `imageUpload:${option}`);
+    setIsUploading(true);
+    
+    // Simulate upload delay
+    setTimeout(() => {
+      // For demo purposes, we'll just set a placeholder image
+      const mockImageUrl = "https://example.com/placeholder-image.jpg";
+      setUploadedImage(mockImageUrl);
+      setIsUploading(false);
+      
+      // Notify user
+      toast({
+        title: "Image uploaded",
+        description: "Your image has been uploaded successfully.",
+      });
+    }, 1500);
+  };
+  
+  const handleConnect = () => {
+    if (uploadedImage) {
+      onConnect(uploadedImage, "Image Upload");
+      setIsConnected(true);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-center">
-        {imageUrl ? (
-          <div className="border border-gray-700 rounded overflow-hidden w-48 h-48 flex items-center justify-center">
-            <img 
-              src={imageUrl} 
-              alt="Uploaded preview"
-              className="max-w-full max-h-full object-contain"
-            />
-          </div>
-        ) : (
-          <div className="border border-gray-700 rounded bg-black/50 w-48 h-48 flex items-center justify-center">
-            <p className="text-gray-500 text-sm">No image uploaded</p>
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-center">
-        {isFrameworkConnected("Image Upload") && existingConnection ? (
-          <ConnectionBadge 
-            connectionId={existingConnection.id}
-            onViewConnection={() => {
-              console.log("View Image Upload connection:", existingConnection.id);
-              // Connection view logic could be added here
-            }}
-            className="h-8 px-3 py-1"
-          />
-        ) : (
-          <ConnectOptionsMenu 
-            trigger={
+    <div className="p-4 space-y-4">
+      <h2 className="text-lg font-medium">Image Upload</h2>
+      
+      <div className="flex flex-col items-center space-y-4">
+        {uploadedImage ? (
+          <>
+            <Card className="w-full aspect-video flex items-center justify-center bg-gray-900 relative overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                <ImageIcon size={64} className="text-gray-400" />
+                <span className="mt-2 text-gray-400">Image Preview</span>
+              </div>
+            </Card>
+            
+            <div className="flex items-center justify-between w-full">
               <Button 
                 variant="outline" 
-                className="border-[#00FF00] text-[#00FF00] hover:bg-[#00FF00]/10"
-                onClick={() => console.log("📱 Image Upload Connect button clicked with widgetId:", widgetId)}
+                size="sm"
+                onClick={handleUpload}
+                disabled={isUploading || isReviewMode}
               >
-                Connect
+                Change Image
               </Button>
-            }
-            onOptionSelect={handleOptionSelect}
-            widgetId={widgetId}
-          />
+              
+              {isConnected ? (
+                <ConnectionBadge 
+                  type="value"
+                  label="Image Connected"
+                  connectionId="image-upload" 
+                  onViewConnection={handleConnect}
+                  className="ml-2" 
+                />
+              ) : (
+                <ConnectButton
+                  value={uploadedImage}
+                  context="Image Upload"
+                  onConnect={onConnect}
+                  widgetId={widgetId}
+                  screenId={screenId}
+                />
+              )}
+            </div>
+          </>
+        ) : (
+          <Card 
+            className="w-full aspect-video flex flex-col items-center justify-center bg-gray-900 cursor-pointer hover:bg-gray-800 transition-colors border-dashed border-2 border-gray-700"
+            onClick={!isReviewMode ? handleUpload : undefined}
+          >
+            <Upload size={48} className="text-gray-500 mb-2" />
+            <p className="text-gray-500">{isReviewMode ? "No image uploaded" : "Click to upload an image"}</p>
+            
+            {isUploading && (
+              <div className="mt-4">
+                <div className="w-32 h-1 bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#00FF00] animate-pulse"></div>
+                </div>
+              </div>
+            )}
+          </Card>
         )}
       </div>
     </div>
   );
-}
+};

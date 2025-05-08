@@ -1,103 +1,106 @@
 
-import React from "react";
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Check, X } from "lucide-react";
 import { ConnectButton } from "./ConnectButton";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
-import { ConnectionBadge } from "@/components/widgets/screens/connections/ConnectionBadge";
+import { ConnectionBadge } from "../../../connections/ConnectionBadge";
 
 interface YesNoFrameworkProps {
-  value: boolean | null | string;
+  value?: boolean;
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
   screenId?: string;
+  isReviewMode?: boolean;
 }
 
-export const YesNoFramework = ({ value, onConnect, widgetId, screenId }: YesNoFrameworkProps) => {
-  // Convert string or boolean values to boolean for the toggle
-  const isEnabled = value === true || value === "yes" || value === "true";
+export const YesNoFramework: React.FC<YesNoFrameworkProps> = ({
+  value,
+  onConnect,
+  widgetId,
+  screenId,
+  isReviewMode = false
+}) => {
+  const [selectedValue, setSelectedValue] = useState<boolean | null>(value ?? null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionId, setConnectionId] = useState<string | null>(null);
   
-  // Use the option connections hook to check for existing connections
-  const { 
-    isOptionConnected, 
-    getConnectionForOption 
-  } = useOptionConnections(screenId, "Yes / No");
+  // Handle yes/no button click
+  const handleSelect = (newValue: boolean) => {
+    if (isReviewMode) return;
+    setSelectedValue(newValue);
+    setIsConnected(false); // Reset connection status when value changes
+  };
   
-  // Check if Yes or No options are already connected
-  const yesConnected = isOptionConnected("true");
-  const noConnected = isOptionConnected("false");
+  // Handle connect button click
+  const handleConnect = () => {
+    if (selectedValue !== null) {
+      onConnect(selectedValue, "Yes / No");
+      setIsConnected(true);
+      setConnectionId(`yes-no-${selectedValue}`);
+    }
+  };
   
-  // Get connection details if connected
-  const yesConnection = yesConnected ? getConnectionForOption("true") : null;
-  const noConnection = noConnected ? getConnectionForOption("false") : null;
-  
-  console.log("🔄 Yes/No framework rendering:", {
-    screenId,
-    value,
-    yesConnected,
-    noConnected,
-    yesConnectionId: yesConnection?.id,
-    noConnectionId: noConnection?.id
-  });
-  
+  // Handle viewing connection
+  const handleViewConnection = () => {
+    console.log("View connection for value:", selectedValue);
+  };
+
   return (
-    <div className="space-y-3">
-      <h4 className="text-base font-medium">Yes/No Configuration</h4>
-      
-      <div className="mb-4 p-3 border border-gray-800 rounded-md bg-black/30">
-        <div className="flex items-center">
-          <Switch id="yes-no-toggle" checked={isEnabled} disabled />
-          <Label htmlFor="yes-no-toggle" className="text-sm text-gray-300 ml-3">
-            {isEnabled ? 'Yes' : 'No'}
-          </Label>
-        </div>
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-medium">Yes / No Selection</h2>
+        
+        {isConnected && connectionId ? (
+          <ConnectionBadge 
+            type="value"
+            label={selectedValue ? "Yes" : "No"}
+            connectionId={connectionId} 
+            onViewConnection={handleViewConnection} 
+          />
+        ) : (
+          selectedValue !== null && !isReviewMode && (
+            <ConnectButton
+              value={selectedValue}
+              context="Yes / No"
+              onConnect={onConnect}
+              widgetId={widgetId}
+              screenId={screenId}
+            />
+          )
+        )}
       </div>
       
-      <div className="flex space-x-3">
-        <div className="p-2 border border-gray-800 rounded-md flex-1 bg-black/30">
-          <div className="flex items-center justify-between">
-            <p className="text-sm">Yes</p>
-            {yesConnected && yesConnection ? (
-              <ConnectionBadge 
-                connectionId={yesConnection.id}
-                onViewConnection={() => {
-                  console.log("View Yes connection:", yesConnection.id);
-                  // Connection view logic could be added here
-                }}
-              />
-            ) : (
-              <ConnectButton 
-                value={true} 
-                context="yes_option" 
-                onConnect={onConnect} 
-                widgetId={widgetId} 
-              />
-            )}
-          </div>
-        </div>
-        <div className="p-2 border border-gray-800 rounded-md flex-1 bg-black/30">
-          <div className="flex items-center justify-between">
-            <p className="text-sm">No</p>
-            {noConnected && noConnection ? (
-              <ConnectionBadge 
-                connectionId={noConnection.id}
-                onViewConnection={() => {
-                  console.log("View No connection:", noConnection.id);
-                  // Connection view logic could be added here
-                }}
-              />
-            ) : (
-              <ConnectButton 
-                value={false} 
-                context="no_option" 
-                onConnect={onConnect} 
-                widgetId={widgetId} 
-              />
-            )}
-          </div>
-        </div>
+      <div className="flex justify-center space-x-6 mt-8">
+        <Button
+          size="lg"
+          variant={selectedValue === true ? "default" : "outline"}
+          className={`px-8 py-6 text-lg ${
+            selectedValue === true
+              ? "bg-green-600 hover:bg-green-700 border-2 border-green-500"
+              : "border-2 hover:border-green-500/50 hover:text-green-500"
+          }`}
+          onClick={() => handleSelect(true)}
+          disabled={isReviewMode}
+        >
+          <Check className="mr-2" size={20} />
+          Yes
+        </Button>
+        
+        <Button
+          size="lg"
+          variant={selectedValue === false ? "default" : "outline"}
+          className={`px-8 py-6 text-lg ${
+            selectedValue === false
+              ? "bg-red-600 hover:bg-red-700 border-2 border-red-500"
+              : "border-2 hover:border-red-500/50 hover:text-red-500"
+          }`}
+          onClick={() => handleSelect(false)}
+          disabled={isReviewMode}
+        >
+          <X className="mr-2" size={20} />
+          No
+        </Button>
       </div>
-      <p className="text-xs text-gray-400">Default value: {value === null ? 'Not set' : (value === true || value === "yes" || value === "true") ? 'Yes' : 'No'}</p>
     </div>
   );
 };

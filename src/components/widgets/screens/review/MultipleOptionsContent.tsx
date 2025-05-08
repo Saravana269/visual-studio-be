@@ -118,6 +118,8 @@ export function MultipleOptionsContent({
                     <div className="flex items-center space-x-2">
                       {isConnected && connection?.id && (
                         <ConnectionBadge 
+                          type="option"
+                          label="Connected"
                           connectionId={connection.id}
                           onViewConnection={() => handleViewConnection(connection.id as string)} 
                         />

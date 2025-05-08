@@ -1,76 +1,76 @@
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
-import { ConnectionDetailsModal } from "../connections/ConnectionDetailsModal";
+import React, { useState } from "react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { ConnectionBadge } from "../connections/ConnectionBadge";
-import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
 
 interface RadioButtonContentProps {
   metadata: Record<string, any>;
   screenId?: string;
-  onConnect?: (option: string, index: number) => void;
+  onConnect?: (option: string) => void;
 }
 
-export function RadioButtonContent({
-  metadata,
-  screenId,
-  onConnect
-}: RadioButtonContentProps) {
-  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export function RadioButtonContent({ metadata, screenId, onConnect }: RadioButtonContentProps) {
+  // Get options from metadata
+  const options = metadata.options || [];
   
-  // Get connection data for options
-  const { isOptionConnected, getConnectionForOption } = useOptionConnections(screenId, "Radio Button");
+  // State for selected value
+  const [value, setValue] = useState<string | null>(null);
   
-  // Handle viewing a connection
-  const handleViewConnection = (connectionId: string) => {
-    setSelectedConnectionId(connectionId);
-    setIsModalOpen(true);
+  // State for tracking connections
+  const [connectedOption, setConnectedOption] = useState<string | null>(null);
+  
+  // Handle radio selection
+  const handleValueChange = (newValue: string) => {
+    setValue(newValue);
+    
+    // If onConnect is provided, call it with the selected option
+    if (onConnect) {
+      onConnect(newValue);
+      setConnectedOption(newValue);
+    }
+  };
+  
+  // Handle connection view
+  const handleViewConnection = () => {
+    console.log("View connection for", connectedOption);
   };
 
   return (
-    <div className="space-y-2 mt-2">
-      <h4 className="text-xs font-medium text-gray-400">Options:</h4>
+    <div className="space-y-4 mt-2">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium text-gray-300">Radio Button Selection</h3>
+        
+        {connectedOption && (
+          <ConnectionBadge 
+            type="option"
+            label={connectedOption}
+            connectionId={`radio_${connectedOption}`} 
+            onViewConnection={handleViewConnection} 
+          />
+        )}
+      </div>
       
-      {/* Only the options list is scrollable */}
-      <ScrollArea className="h-[200px]">
-        <div className="space-y-2 pr-1">
-          {(metadata.options || []).map((option: string, index: number) => {
-            const isConnected = isOptionConnected(option);
-            const connection = getConnectionForOption(option);
-            
-            return (
-              <div 
-                key={index} 
-                className="flex items-center justify-between p-2 rounded border border-[#00FF00]/20 bg-black/30"
-              >
-                <span className="text-sm">{option}</span>
-                {isConnected ? (
-                  <ConnectionBadge 
-                    connectionId={`option_${index}`}
-                    onViewConnection={() => handleViewConnection(connection.id)}
-                  />
-                ) : onConnect && (
-                  <button 
-                    onClick={() => onConnect(option, index)}
-                    className="px-2 py-1 text-xs text-[#00FF00] hover:bg-[#00FF00]/20 rounded"
-                  >
-                    Connect
-                  </button>
-                )}
-              </div>
-            );
-          })}
-          {(metadata.options || []).length === 0 && <div className="text-gray-500 italic text-sm">No options added yet</div>}
+      {options.length > 0 ? (
+        <div className="border border-[#00FF00]/20 bg-black/30 p-4 rounded">
+          <RadioGroup value={value || undefined} onValueChange={handleValueChange}>
+            <div className="space-y-3">
+              {options.map((option: string, index: number) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option} id={`option-${index}`} />
+                  <Label htmlFor={`option-${index}`} className="text-sm cursor-pointer">
+                    {option}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </RadioGroup>
         </div>
-      </ScrollArea>
-      
-      {/* Connection details modal */}
-      <ConnectionDetailsModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        connectionId={selectedConnectionId}
-      />
+      ) : (
+        <div className="text-gray-500 italic border border-[#00FF00]/20 bg-black/30 p-4 rounded">
+          No options defined
+        </div>
+      )}
     </div>
   );
 }
