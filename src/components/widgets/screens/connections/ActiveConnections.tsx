@@ -1,15 +1,10 @@
 
 import React from "react";
-import { ScreenConnection } from "@/types/connection";
 import { useScreenConnections } from "@/hooks/widgets/connection/useScreenConnections";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { FileTextIcon, BoxIcon, XIcon, ImageIcon, ArrowRightIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { ConnectionBadge } from "./ConnectionBadge";
+import { ConnectionCard } from "./ConnectionCard";
+import { EmptyConnections } from "./EmptyConnections";
+import { ConnectionsLoading } from "./ConnectionsLoading";
+import { useConnectionRemoval } from "./utils/connection-utils";
 
 interface ActiveConnectionsProps {
   screenId?: string;
@@ -19,8 +14,14 @@ interface ActiveConnectionsProps {
   isLoading?: boolean;
 }
 
-export function ActiveConnections({ screenId, elementId, widgetId, refetch, isLoading: externalIsLoading }: ActiveConnectionsProps) {
-  const { toast } = useToast();
+export function ActiveConnections({ 
+  screenId, 
+  elementId, 
+  widgetId, 
+  refetch, 
+  isLoading: externalIsLoading 
+}: ActiveConnectionsProps) {
+  // Get connections data
   const { 
     connections, 
     isLoading: internalIsLoading, 
@@ -32,6 +33,9 @@ export function ActiveConnections({ screenId, elementId, widgetId, refetch, isLo
     enabled: !!(screenId || elementId || widgetId)
   });
   
+  // Get connection removal utility
+  const { removeConnection } = useConnectionRemoval();
+  
   // Use external loading state if provided, otherwise use internal loading state
   const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading;
   
@@ -40,50 +44,7 @@ export function ActiveConnections({ screenId, elementId, widgetId, refetch, isLo
 
   // Handle removing a connection
   const handleRemoveConnection = async (connectionId: string) => {
-    try {
-      // Update the connection to mark it as terminated
-      const { error } = await supabase
-        .from('connect_screens')
-        .update({ is_screen_terminated: true })
-        .eq('id', connectionId);
-        
-      if (error) {
-        console.error("Error removing connection:", error);
-        toast({
-          title: "Error",
-          description: "Failed to remove connection",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      toast({
-        title: "Connection Removed",
-        description: "The connection has been terminated",
-      });
-      
-      // Refresh the connections list
-      handleRefetch();
-    } catch (error) {
-      console.error("Error removing connection:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove connection",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Get the appropriate icon for a framework type
-  const getFrameworkIcon = (frameworkType: string | null) => {
-    switch(frameworkType) {
-      case "Image Upload":
-        return <ImageIcon size={16} className="text-[#00FF00]" />;
-      case "COE Manager":
-        return <BoxIcon size={16} className="text-[#00FF00]" />;
-      default:
-        return <FileTextIcon size={16} className="text-[#00FF00]" />;
-    }
+    await removeConnection(connectionId, handleRefetch);
   };
 
   // Filter connections to only show outgoing connections from the current screen
@@ -92,109 +53,25 @@ export function ActiveConnections({ screenId, elementId, widgetId, refetch, isLo
     !conn.is_screen_terminated && conn.screen_ref === screenId
   );
 
-  // Get display value for the source option based on property_values
-  const getConnectionValue = (connection: ScreenConnection) => {
-    // For Multiple Options or Radio Button frameworks, display the selected option from property_values
-    if (connection.framework_type === "Multiple Options" || connection.framework_type === "Radio Button") {
-      if (connection.property_values) {
-        const propertyValues = connection.property_values as Record<string, any>;
-        if (propertyValues.selectedOption) {
-          return propertyValues.selectedOption;
-        }
-        if (propertyValues.selectedOptions && Array.isArray(propertyValues.selectedOptions)) {
-          return propertyValues.selectedOptions.join(", ");
-        }
-      }
-    }
-    
-    // Fallback to source_value for other frameworks
-    return connection.source_value;
-  };
-
-  // Connection card component
-  const ConnectionCard = ({ connection }: { connection: ScreenConnection }) => {
-    // Extract the source value from property_values or source_value
-    const displayValue = getConnectionValue(connection);
-    
-    return (
-      <Card className="bg-black border-gray-800 mb-2">
-        <CardContent className="p-4">
-          <div className="flex justify-between items-start">
-            <div className="flex flex-col w-full">
-              <div className="flex items-center space-x-2">
-                {getFrameworkIcon(connection.framework_type)}
-                
-                <span className="font-medium">
-                  This Screen
-                </span>
-                
-                <ArrowRightIcon size={16} className="text-[#00FF00]" />
-                
-                <span className="font-medium">
-                  {connection.nextScreen_Name || "Connected Screen"}
-                </span>
-              </div>
-              
-              {connection.nextScreen_Description && (
-                <div className="mt-1 text-sm text-gray-400">
-                  {connection.nextScreen_Description}
-                </div>
-              )}
-              
-              <div className="mt-2 space-x-2">
-                {/* Source Screen Framework Type Badge */}
-                {connection.framework_type && (
-                  <ConnectionBadge type="framework" label={connection.framework_type} />
-                )}
-                
-                {/* Destination Screen Framework Type */}
-                {connection.nextScreen_FrameworkType && (
-                  <ConnectionBadge type="screen" label={connection.nextScreen_FrameworkType} />
-                )}
-
-                {/* Display the selected value prominently if available */}
-                {displayValue && (
-                  <ConnectionBadge type="value" label={displayValue} />
-                )}
-              </div>
-            </div>
-            
-            <Button
-              variant="ghost" 
-              size="icon"
-              onClick={() => handleRemoveConnection(connection.id)}
-              className="h-7 w-7 rounded-full hover:bg-red-500/10 hover:text-red-400 ml-2 flex-shrink-0"
-            >
-              <XIcon size={14} />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
+  // Show loading state
   if (isLoading) {
-    return (
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-full bg-gray-800" />
-        <Skeleton className="h-24 w-full bg-gray-800" />
-        <Skeleton className="h-24 w-full bg-gray-800" />
-      </div>
-    );
+    return <ConnectionsLoading />;
   }
 
+  // Show empty state
   if (relevantConnections.length === 0) {
-    return (
-      <div className="text-center py-6 border border-dashed border-gray-800 rounded-md">
-        <p className="text-gray-400 text-sm">No outgoing connections from this screen</p>
-      </div>
-    );
+    return <EmptyConnections />;
   }
 
+  // Show connections list
   return (
     <div className="space-y-2">
       {relevantConnections.map((connection) => (
-        <ConnectionCard key={connection.id} connection={connection} />
+        <ConnectionCard 
+          key={connection.id} 
+          connection={connection} 
+          onRemove={handleRemoveConnection}
+        />
       ))}
     </div>
   );
