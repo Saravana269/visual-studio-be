@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Screen } from "@/types/screen";
-import { useOptionConnections } from "./connection/useOptionConnections";
 
 interface UseScreenNavigationProps {
   screens: Screen[];
@@ -10,9 +9,6 @@ interface UseScreenNavigationProps {
 export function useScreenNavigation({ screens }: UseScreenNavigationProps) {
   const [activeScreenIndex, setActiveScreenIndex] = useState<number>(0);
   const [activeScreenId, setActiveScreenId] = useState<string | null>(null);
-  
-  // Get the clearSelectedValues function from useOptionConnections
-  const { clearSelectedValues } = useOptionConnections();
 
   // Initialize activeScreenId when screens are loaded
   useEffect(() => {
@@ -33,7 +29,6 @@ export function useScreenNavigation({ screens }: UseScreenNavigationProps) {
     if (index >= 0 && index < screens.length) {
       setActiveScreenIndex(index);
       setActiveScreenId(screens[index].id);
-      clearSelectedValues(); // Clear selected values when changing screens
     }
   };
 
@@ -43,7 +38,6 @@ export function useScreenNavigation({ screens }: UseScreenNavigationProps) {
     if (index !== -1) {
       setActiveScreenIndex(index);
       setActiveScreenId(screenId);
-      clearSelectedValues(); // Clear selected values when changing screens
     }
   };
 

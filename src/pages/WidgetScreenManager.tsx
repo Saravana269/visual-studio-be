@@ -7,18 +7,13 @@ import { useScreenManager } from "@/hooks/widgets/useScreenManager";
 import { Widget } from "@/types/widget";
 import { WidgetHeader } from "@/components/widgets/screens/WidgetHeader";
 import { EmptyScreensState } from "@/components/widgets/screens/EmptyScreensState";
-import { ScreenContent } from "@/components/widgets/screens/ScreenContent";
 import { DeleteScreenDialog } from "@/components/widgets/screens/DeleteScreenDialog";
 import { ScreenCardList } from "@/components/widgets/screens/ScreenCardList";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 export default function WidgetScreenManager() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isDetailView, setIsDetailView] = useState(false);
 
   // Get widget details
   const { data: widget, isLoading: isLoadingWidget } = useQuery({
@@ -53,34 +48,26 @@ export default function WidgetScreenManager() {
     screens,
     isLoading: isLoadingScreens,
     isActionLoading,
-    activeScreen,
-    activeScreenIndex,
-    goToScreen,
-    formData,
-    setFormData,
+    activeScreenId,
     handleCreateEmptyScreen,
     handleUpdateScreen,
-    handleStepSave,
-    handleInlineUpdate,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     handleDeleteScreen
-  } = useScreenManager(id, setIsDetailView); // Pass setIsDetailView to useScreenManager
+  } = useScreenManager(id);
 
   // Handle back navigation to widgets list
   const handleBackToWidgets = () => {
     navigate("/widgets");
   };
   
-  // Handle back navigation to screen list
-  const handleBackToScreens = () => {
-    setIsDetailView(false);
-  };
-  
-  // Handle selecting a screen to view details
-  const handleScreenSelect = (screenId: string) => {
-    goToScreen(screenId);
-    setIsDetailView(true);
+  // Handle screen edit/update
+  const handleScreenEdit = (screenId: string) => {
+    // In the future, we could implement a modal edit view here
+    toast({
+      title: "Edit Screen",
+      description: "Screen editing functionality will be implemented in a future update."
+    });
   };
 
   const isLoading = isLoadingWidget || isLoadingScreens;
@@ -88,65 +75,24 @@ export default function WidgetScreenManager() {
   return (
     <div className="flex flex-col h-[calc(100vh-80px)]">
       {/* Header */}
-      {isDetailView ? (
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={handleBackToScreens} className="p-2">
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back to Screens
-            </Button>
-            
-            {isLoadingWidget ? (
-              <div className="h-8 w-48 bg-gray-800 animate-pulse rounded"></div>
-            ) : (
-              <div>
-                <h1 className="text-2xl font-bold">{activeScreen?.name || "Screen Details"}</h1>
-              </div>
-            )}
-          </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="text-red-500 border-red-500 hover:bg-red-500/10"
-          >
-            Delete Screen
-          </Button>
-        </div>
-      ) : (
-        <WidgetHeader
-          widget={widget}
-          isLoading={isLoadingWidget}
-          onBack={handleBackToWidgets}
-          onDelete={() => {}}
-          onAddScreen={handleCreateEmptyScreen}
-          hasActiveScreen={false}
-        />
-      )}
+      <WidgetHeader
+        widget={widget}
+        isLoading={isLoadingWidget}
+        onBack={handleBackToWidgets}
+        onDelete={() => {}}
+        onAddScreen={handleCreateEmptyScreen}
+        hasActiveScreen={false}
+      />
 
       {/* Content */}
       {!isLoading && screens.length === 0 ? (
         <EmptyScreensState onAddScreen={handleCreateEmptyScreen} />
-      ) : !isDetailView ? (
+      ) : (
         <ScreenCardList 
           screens={screens} 
           isLoading={isLoading}
-          onScreenSelect={handleScreenSelect}
+          onScreenSelect={handleScreenEdit}
           onAddScreen={handleCreateEmptyScreen}
-        />
-      ) : (
-        <ScreenContent
-          screens={screens}
-          activeScreen={activeScreen}
-          activeScreenIndex={activeScreenIndex}
-          formData={formData}
-          setFormData={setFormData}
-          onScreenSelect={goToScreen}
-          onAddScreen={handleCreateEmptyScreen}
-          onUpdateScreen={handleUpdateScreen}
-          onStepSave={handleStepSave}
-          isActionLoading={isActionLoading}
         />
       )}
 

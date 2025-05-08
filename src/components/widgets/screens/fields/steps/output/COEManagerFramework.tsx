@@ -1,138 +1,188 @@
 
-import React, { useState, useEffect } from "react";
-import { useCOEData } from "@/hooks/useCOEData";
-import { useCOEElements } from "@/hooks/useCOEElements";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ElementCard } from "./ElementCard";
-import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
+import React, { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { ElementCard } from './ElementCard';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useOptionConnections } from '@/hooks/widgets/connection/useOptionConnections';
+import { useToast } from '@/hooks/use-toast';
 
 interface COEManagerFrameworkProps {
-  coeId: string | null | undefined;
-  onConnect: (value: any, context?: string) => void;
+  coeId?: string;
+  onConnect?: (value: any, context?: string) => void;
   widgetId?: string;
   screenId?: string;
+  isReviewMode?: boolean; 
+  isConnected?: boolean;
 }
 
-export const COEManagerFramework = ({ coeId, onConnect, widgetId, screenId }: COEManagerFrameworkProps) => {
-  const { data: coes } = useCOEData();
-  const [selectedCoe, setSelectedCoe] = useState<any>(null);
-  const { data: coeElements = [], isLoading: isLoadingElements } = useCOEElements(coeId);
+export function COEManagerFramework({
+  coeId,
+  onConnect,
+  widgetId,
+  screenId,
+  isReviewMode = false,
+  isConnected = false
+}: COEManagerFrameworkProps) {
+  const { toast } = useToast();
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   
-  // Use the hook to check for existing element connections
-  const { connections, isOptionConnected, getConnectionForOption } = 
-    useOptionConnections(screenId, "COE Manager");
-  
-  // Find the selected COE from the list
-  useEffect(() => {
-    if (coeId && coes) {
-      const coe = coes.find(c => c.id === coeId);
-      if (coe) {
-        setSelectedCoe(coe);
-      }
-    }
-  }, [coeId, coes]);
-
-  // Function to check if an element is connected
-  const isElementConnected = (elementId: string): boolean => {
-    // Need to check for connections with source_value containing the element ID
-    // This handles both direct element IDs and serialized JSON objects
-    return connections.some(conn => {
-      // Check for direct match
-      if (conn.source_value === elementId) return true;
-      
-      // Check for JSON objects containing the element ID
-      try {
-        if (typeof conn.source_value === 'string' && conn.source_value.includes(elementId)) {
-          const parsedValue = JSON.parse(conn.source_value);
-          return parsedValue.id === elementId;
-        }
-      } catch (e) {
-        // Ignore parsing errors
-      }
-      
-      return false;
-    });
-  };
-
-  // Function to get the connection ID for an element
-  const getElementConnectionId = (elementId: string): string | undefined => {
-    const matchingConn = connections.find(conn => {
-      // Check for direct match
-      if (conn.source_value === elementId) return true;
-      
-      // Check for JSON objects containing the element ID
-      try {
-        if (typeof conn.source_value === 'string' && conn.source_value.includes(elementId)) {
-          const parsedValue = JSON.parse(conn.source_value);
-          return parsedValue.id === elementId;
-        }
-      } catch (e) {
-        // Ignore parsing errors
-      }
-      
-      return false;
-    });
-    
-    return matchingConn?.id;
-  };
-  
-  console.log("🔄 COE Manager rendering:", { 
-    coeId, 
+  // Get connection data
+  const { 
+    selectedValue,
+    selectValue,
+    getConnectionDetails,
+    viewConnection,
+    connectionIds
+  } = useOptionConnections({
     widgetId,
     screenId,
-    elementsCount: coeElements.length,
-    connectionsCount: connections.length
+    contextType: "COE Manager"
   });
 
-  if (!coeId) {
-    return (
-      <div className="text-gray-500 text-center p-8">
-        No class of elements selected
-      </div>
-    );
-  }
+  // Query to get COE details
+  const { data: coe } = useQuery({
+    queryKey: ['coe-detail', coeId],
+    queryFn: async () => {
+      if (!coeId) return null;
+      const { data, error } = await supabase
+        .from('coes')
+        .select('*')
+        .eq('id', coeId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!coeId
+  });
+  
+  // Query to get COE elements
+  const { data: elements = [] } = useQuery({
+    queryKey: ['coe-elements', coeId],
+    queryFn: async () => {
+      if (!coeId) return [];
+      
+      const { data, error } = await supabase
+        .from('coe_elements')
+        .select(`
+          id,
+          name,
+          status,
+          element_id,
+          elements (*)
+        `)
+        .eq('coe_id', coeId);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!coeId
+  });
+
+  // Select element handler
+  const handleSelectElement = (elementId: string) => {
+    if (isReviewMode) return;
+    selectValue(elementId);
+    setSelectedElementId(elementId);
+  };
+  
+  // Connect element handler
+  const handleConnectElement = (elementId: string) => {
+    if (!onConnect) return;
+    
+    // Find the element
+    const element = elements.find(el => el.element_id === elementId);
+    if (!element) {
+      toast({
+        title: "Error",
+        description: "Element not found",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Connect with both element ID and element data
+    onConnect({
+      elementId,
+      elementData: element
+    }, "COE Manager");
+  };
+  
+  // See if an element is connected
+  const isElementConnected = (elementId: string) => {
+    return connectionIds[elementId] !== undefined;
+  };
+  
+  // Get connection ID for an element
+  const getElementConnectionId = (elementId: string) => {
+    return connectionIds[elementId];
+  };
+  
+  // Handle view connection
+  const handleViewElementConnection = (elementId: string) => {
+    const connectionId = getElementConnectionId(elementId);
+    if (connectionId) {
+      viewConnection(connectionId);
+    }
+  };
 
   return (
     <div className="space-y-4">
-      {selectedCoe && (
-        <div>
-          <h4 className="text-base font-medium mb-2">{selectedCoe.name}</h4>
-          {selectedCoe.description && (
-            <p className="text-sm text-gray-400 mb-4">{selectedCoe.description}</p>
-          )}
+      <h3 className="text-sm font-medium text-gray-300">COE Manager Framework</h3>
+      
+      {coe && (
+        <div className="mb-4">
+          <h3 className="font-medium">{coe.name}</h3>
+          {coe.description && <p className="text-gray-400 text-sm">{coe.description}</p>}
         </div>
       )}
-
-      {isLoadingElements ? (
-        <div className="flex justify-center py-8">
-          <div className="animate-pulse text-gray-400">Loading elements...</div>
+      
+      <ScrollArea className="h-64 rounded border border-gray-800 bg-black p-2">
+        <div className="space-y-1">
+          {elements.length > 0 ? (
+            elements.map((element) => {
+              const isConnected = isElementConnected(element.element_id);
+              const connectionId = getElementConnectionId(element.element_id);
+              
+              return (
+                <ElementCard
+                  key={element.element_id}
+                  elementName={element.elements?.name || "Unnamed Element"}
+                  elementId={element.element_id}
+                  isSelected={selectedElementId === element.element_id}
+                  isConnected={isConnected}
+                  connectionId={connectionId}
+                  onSelect={() => handleSelectElement(element.element_id)}
+                  onViewConnection={
+                    isConnected && connectionId 
+                      ? () => handleViewElementConnection(element.element_id)
+                      : undefined
+                  }
+                />
+              );
+            })
+          ) : (
+            <div className="text-center p-4 text-gray-500">
+              {coeId 
+                ? "No elements assigned to this COE" 
+                : "No COE selected"}
+            </div>
+          )}
         </div>
-      ) : (
-        <ScrollArea className="h-[300px]">
-          <div className="space-y-2 pr-4">
-            {coeElements.length > 0 ? (
-              coeElements.map((element) => {
-                const isConnected = isElementConnected(element.id);
-                const connectionId = isConnected ? getElementConnectionId(element.id) : undefined;
-                
-                return (
-                  <ElementCard 
-                    key={element.id}
-                    element={element}
-                    onConnect={onConnect}
-                    widgetId={widgetId}
-                    isConnected={isConnected}
-                    connectionId={connectionId}
-                    onViewConnection={() => console.log("View connection for element:", element.id)}
-                  />
-                );
-              })
-            ) : (
-              <p className="text-gray-500 text-center py-4">No elements found for this class</p>
-            )}
-          </div>
-        </ScrollArea>
+      </ScrollArea>
+      
+      {!isReviewMode && selectedElementId && !isElementConnected(selectedElementId) && onConnect && (
+        <div className="flex justify-end">
+          <Button 
+            onClick={() => handleConnectElement(selectedElementId)}
+            className="bg-[#00FF00] text-black hover:bg-[#00FF00]/80"
+          >
+            Connect Element
+          </Button>
+        </div>
       )}
     </div>
   );
-};
+}

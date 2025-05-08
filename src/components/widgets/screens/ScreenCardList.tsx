@@ -3,7 +3,7 @@ import { Screen } from "@/types/screen";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 
 interface ScreenCardListProps {
   screens: Screen[];
@@ -54,11 +54,22 @@ export function ScreenCardList({ screens, isLoading, onScreenSelect, onAddScreen
       {screens.map((screen) => (
         <Card 
           key={screen.id} 
-          className="bg-gray-900 border-gray-800 hover:border-[#00FF00]/40 cursor-pointer transition-all"
-          onClick={() => onScreenSelect(screen.id)}
+          className="bg-gray-900 border-gray-800 hover:border-[#00FF00]/40 transition-all"
         >
           <CardHeader className="bg-gray-800/50 p-3">
-            <h3 className="text-base font-medium text-white">{screen.name || "Untitled"}</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-base font-medium text-white">{screen.name || "Untitled"}</h3>
+              <div className="flex space-x-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 rounded-full hover:bg-gray-700"
+                  onClick={() => onScreenSelect(screen.id)}
+                >
+                  <Edit size={14} />
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           
           <CardContent className="pt-2 p-3">

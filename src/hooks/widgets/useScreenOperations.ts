@@ -11,7 +11,6 @@ interface UseScreenOperationsProps {
   activeScreenId: string | null;
   goToScreenByIndex: (index: number) => void;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
-  setIsDetailView?: (isOpen: boolean) => void; // Added for direct navigation to detail view
 }
 
 export function useScreenOperations({
@@ -20,8 +19,7 @@ export function useScreenOperations({
   formData,
   activeScreenId,
   goToScreenByIndex,
-  setIsDeleteDialogOpen,
-  setIsDetailView // New param for handling detail view toggle
+  setIsDeleteDialogOpen
 }: UseScreenOperationsProps) {
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -42,22 +40,15 @@ export function useScreenOperations({
       const newScreen = await createScreen({
         name: "Untitled Screen",
         description: "",
-        framework_type: null // Explicitly set to null instead of empty string
+        framework_type: null
       });
       
       if (newScreen) {
-        // Navigate to the new screen (it will be added at the end)
+        // Just refetch the screens list
         await refetch();
-        goToScreenByIndex(999); // Large number to ensure we go to the last screen
-        
-        // Switch to detail view to immediately edit the new screen
-        if (setIsDetailView) {
-          setIsDetailView(true);
-        }
-        
         toast({
           title: "Success",
-          description: "New screen created. You can now edit it."
+          description: "New screen created successfully."
         });
       }
     } catch (error) {
