@@ -23,9 +23,9 @@ export function ConnectionsPanel({ screenId }: ConnectionsPanelProps) {
       <div className="flex-1 p-4 overflow-auto">
         <Card className="border-gray-700 bg-black/20">
           <ActiveConnections
-            connections={connections}
-            isLoading={isLoading}
+            screenId={screenId}
             refetch={refetchConnections}
+            isLoading={isLoading}
           />
         </Card>
       </div>

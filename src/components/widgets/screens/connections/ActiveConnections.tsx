@@ -15,16 +15,28 @@ interface ActiveConnectionsProps {
   screenId?: string;
   elementId?: string;
   widgetId?: string;
+  refetch?: () => Promise<void>;
+  isLoading?: boolean;
 }
 
-export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConnectionsProps) {
+export function ActiveConnections({ screenId, elementId, widgetId, refetch, isLoading: externalIsLoading }: ActiveConnectionsProps) {
   const { toast } = useToast();
-  const { connections, isLoading, refetchConnections } = useScreenConnections({
+  const { 
+    connections, 
+    isLoading: internalIsLoading, 
+    refetchConnections 
+  } = useScreenConnections({
     screenId,
     elementId,
     widgetId,
     enabled: !!(screenId || elementId || widgetId)
   });
+  
+  // Use external loading state if provided, otherwise use internal loading state
+  const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading;
+  
+  // Use external refetch function if provided, otherwise use internal refetch function
+  const handleRefetch = refetch || refetchConnections;
 
   // Handle removing a connection
   const handleRemoveConnection = async (connectionId: string) => {
@@ -51,7 +63,7 @@ export function ActiveConnections({ screenId, elementId, widgetId }: ActiveConne
       });
       
       // Refresh the connections list
-      refetchConnections();
+      handleRefetch();
     } catch (error) {
       console.error("Error removing connection:", error);
       toast({
