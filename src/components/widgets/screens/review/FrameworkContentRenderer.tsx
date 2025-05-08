@@ -49,30 +49,39 @@ export function FrameworkContentRenderer({ screen, frameworkType }: FrameworkCon
     case 'Slider':
       return (
         <SliderContent 
-          min={screen.metadata?.min} 
-          max={screen.metadata?.max} 
-          step={screen.metadata?.step} 
+          value={screen.metadata?.value}
+          minimum={screen.metadata?.min} 
+          maximum={screen.metadata?.max} 
+          stepSize={screen.metadata?.step} 
         />
       );
       
     case 'Yes / No':
       return (
-        <YesNoContent value={screen.metadata?.value} />
+        <YesNoContent 
+          selectedValue={screen.metadata?.value} 
+        />
       );
       
     case 'Information':
       return (
-        <InformationContent text={screen.metadata?.text} />
+        <InformationContent 
+          content={screen.metadata?.text} 
+        />
       );
       
     case 'Image Upload':
       return (
-        <ImageUploadContent imageUrl={screen.metadata?.image_url} />
+        <ImageUploadContent 
+          uploadedImageUrl={screen.metadata?.image_url} 
+        />
       );
       
     case 'COE Manager':
       return (
-        <COEManagerContent coeId={screen.metadata?.coe_id} />
+        <COEManagerContent 
+          selectedCoeId={screen.metadata?.coe_id} 
+        />
       );
       
     default:

@@ -1,11 +1,7 @@
 
-import React, { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ConnectButton } from "./ConnectButton";
-import { ConnectionBadge } from "../../../connections/ConnectionBadge";
-import { ConnectionDetailsModal } from "../../../connections/ConnectionDetailsModal";
-import { useOptionConnections } from "@/hooks/widgets/connection/useOptionConnections";
+import React from "react";
+import { RadioOptions } from "./options/RadioOptions";
+import { MultipleOptions } from "./options/MultipleOptions";
 
 interface OptionsFrameworkProps {
   options: string[];
@@ -24,115 +20,11 @@ export function OptionsFramework({
   screenId,
   isReviewMode = false
 }: OptionsFrameworkProps) {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // Get current connections
-  const { 
-    connections,
-    isOptionConnected, 
-    getConnectionForOption,
-    clearSelectedValues
-  } = useOptionConnections(screenId, isRadio ? "Radio Button" : "Multiple Options");
-
-  // Load selected option from localStorage only in Define mode
-  useEffect(() => {
-    if (!isReviewMode) {
-      const storedOption = localStorage.getItem('selected_option_value');
-      if (storedOption && options.includes(storedOption)) {
-        setSelectedOption(storedOption);
-      } else {
-        setSelectedOption(null);
-      }
-    }
-  }, [options, isReviewMode]);
-
-  // Clean up selected values when component unmounts
-  useEffect(() => {
-    return () => {
-      clearSelectedValues();
-    };
-  }, []);
-
-  // Handle selecting an individual option - only in Define mode
-  const handleOptionSelect = (option: string) => {
-    if (!isReviewMode) {
-      setSelectedOption(option);
-      localStorage.setItem('selected_option_value', option);
-    }
-  };
-
-  // Generate all possible non-empty combinations of options for multiple select
-  const generateCombinations = (opts: string[]): string[][] => {
-    if (isRadio || opts.length === 0) return [];
-    
-    const result: string[][] = [];
-    
-    const backtrack = (start: number, current: string[]) => {
-      if (current.length > 0) {
-        result.push([...current]);
-      }
-      
-      for (let i = start; i < opts.length; i++) {
-        current.push(opts[i]);
-        backtrack(i + 1, current);
-        current.pop();
-      }
-    };
-    
-    backtrack(0, []);
-    return result;
-  };
-  
-  const combinations = generateCombinations(options);
-  
-  // Handle viewing a connection
-  const handleViewConnection = (connectionId: string) => {
-    setSelectedConnectionId(connectionId);
-    setIsModalOpen(true);
-  };
-  
-  // Handle clicking the connect button
-  const handleConnectClick = (value: any, context?: string) => {
-    if (typeof value === 'string') {
-      // For individual options
-      localStorage.setItem('selected_option_value', value);
-    } else if (Array.isArray(value)) {
-      // For combinations
-      localStorage.setItem('selected_combination_value', value.join(', '));
-    }
-    
-    // Call the provided connect handler
-    onConnect(value, context);
-  };
-  
-  // Listen for connection established events
-  useEffect(() => {
-    const handleConnectionEstablished = () => {
-      // Force refresh of connection state
-      setTimeout(() => {
-        // This timeout allows the connection to be saved first
-        // before we check for it again
-      }, 500);
-    };
-    
-    window.addEventListener('connectionEstablished', handleConnectionEstablished);
-    
-    return () => {
-      window.removeEventListener('connectionEstablished', handleConnectionEstablished);
-    };
-  }, []);
-  
   console.log("🔄 Options framework rendering:", {
     isRadio,
     isReviewMode,
     screenId,
     optionsCount: options.length,
-    combinationsCount: combinations.length,
-    connections: connections?.length || 0,
-    selectedOption
   });
 
   return (
@@ -144,165 +36,22 @@ export function OptionsFramework({
       </div>
 
       {isRadio ? (
-        <div className="space-y-2 mt-4">
-          {options.map((option, index) => {
-            // Check if this option is connected
-            const connected = isOptionConnected(option);
-            const connection = connected ? getConnectionForOption(option) : null;
-            
-            // Check if this option is selected (only show in Define mode)
-            const isSelected = !isReviewMode && selectedOption === option;
-            
-            // Build className based on selection state
-            let rowClassName = "flex items-center justify-between p-2 rounded";
-            
-            if (!isReviewMode) {
-              rowClassName += " cursor-pointer transition-colors";
-              
-              // Add selection styling only in Define mode
-              if (isSelected) {
-                rowClassName += " border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
-              } else {
-                rowClassName += " border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
-              }
-            } else {
-              // Review mode styling
-              rowClassName += " border border-[#00FF00]/20 bg-black/30";
-            }
-            
-            return (
-              <div 
-                key={index} 
-                className={rowClassName}
-                onClick={!isReviewMode ? () => handleOptionSelect(option) : undefined}
-              >
-                <div className="flex items-center">
-                  {isSelected && !isReviewMode && (
-                    <span className="text-[#F97316] mr-2">●</span>
-                  )}
-                  <span className={`text-sm ${isSelected && !isReviewMode ? 'text-white' : ''}`}>{option}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {connected && connection ? (
-                    <ConnectionBadge 
-                      connectionId={connection.id}
-                      onViewConnection={() => handleViewConnection(connection.id)}
-                    />
-                  ) : !isReviewMode && (
-                    <ConnectButton 
-                      value={option} 
-                      context={`element_id_${index}`}
-                      onConnect={(value) => {
-                        // Only store the selected option in propertyValues
-                        handleConnectClick({
-                          value,
-                          propertyValues: { selectedOption: option }
-                        }, `element_id_${index}`);
-                      }}
-                      widgetId={widgetId}
-                      screenId={screenId}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          {options.length === 0 && (
-            <p className="text-gray-500 text-sm">No options defined yet</p>
-          )}
-        </div>
+        <RadioOptions
+          options={options}
+          screenId={screenId}
+          widgetId={widgetId}
+          isReviewMode={isReviewMode}
+          onConnect={onConnect}
+        />
       ) : (
-        <div className="mt-2">
-          {options.length > 0 ? (
-            <ScrollArea className="h-[350px]">
-              <div className="space-y-2">
-                {combinations.map((combination, index) => {
-                  // For string arrays, we need to convert to string for connection checking
-                  const combinationStr = combination.join(', ');
-                  
-                  // Check if this combination is connected
-                  const connected = isOptionConnected(combinationStr);
-                  const connection = connected ? getConnectionForOption(combinationStr) : null;
-                  
-                  // Check if this combination matches the selected combination in localStorage (only in Define mode)
-                  const selectedCombination = !isReviewMode ? (localStorage.getItem('selected_combination_value')?.split(', ') || []) : [];
-                  const isSelected = !isReviewMode && JSON.stringify(selectedCombination.sort()) === JSON.stringify(combination.sort());
-                  
-                  // Build className based on selection state
-                  let rowClassName = "flex items-center justify-between p-2 rounded";
-                  
-                  if (!isReviewMode) {
-                    rowClassName += " cursor-pointer transition-colors";
-                    
-                    // Add selection styling (only in Define mode)
-                    if (isSelected) {
-                      rowClassName += " border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
-                    } else {
-                      rowClassName += " border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
-                    }
-                  } else {
-                    // Review mode styling
-                    rowClassName += " border border-[#00FF00]/20 bg-black/30";
-                  }
-                  
-                  return (
-                    <div 
-                      key={index} 
-                      className={rowClassName}
-                      onClick={!isReviewMode ? () => {
-                        localStorage.setItem('selected_combination_value', combination.join(', '));
-                      } : undefined}
-                    >
-                      <div className="flex items-center">
-                        {isSelected && !isReviewMode && (
-                          <span className="text-[#F97316] mr-2">●</span>
-                        )}
-                        <span className={`text-sm ${isSelected && !isReviewMode ? 'text-white' : ''}`}>
-                          {combination.join(", ")}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {connected && connection ? (
-                          <ConnectionBadge 
-                            connectionId={connection.id}
-                            onViewConnection={() => handleViewConnection(connection.id)}
-                          />
-                        ) : !isReviewMode && (
-                          <ConnectButton 
-                            value={combination} 
-                            context={`combination_${index}`}
-                            onConnect={(value) => {
-                              // Only store the selected combination in propertyValues
-                              handleConnectClick({
-                                value,
-                                propertyValues: { 
-                                  selectedOptions: combination,
-                                  combinationString: combination.join(', ')
-                                }
-                              }, `combination_${index}`);
-                            }}
-                            widgetId={widgetId}
-                            screenId={screenId}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          ) : (
-            <p className="text-gray-500 text-sm">No options defined yet</p>
-          )}
-        </div>
+        <MultipleOptions
+          options={options}
+          screenId={screenId}
+          widgetId={widgetId}
+          isReviewMode={isReviewMode}
+          onConnect={onConnect}
+        />
       )}
-      
-      {/* Connection details modal */}
-      <ConnectionDetailsModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        connectionId={selectedConnectionId}
-      />
     </div>
   );
 }

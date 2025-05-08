@@ -82,9 +82,11 @@ export function ScreenContent({
         </TabsContent>
 
         <TabsContent value="connections" className="flex-1 mt-0 border-none p-0 flex flex-col">
-          <ConnectionsPanel 
-            screen={activeScreen} 
-          />
+          {activeScreen && (
+            <ConnectionsPanel 
+              screenId={activeScreen.id} 
+            />
+          )}
         </TabsContent>
       </div>
     </Tabs>
