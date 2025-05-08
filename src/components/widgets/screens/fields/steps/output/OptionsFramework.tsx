@@ -13,6 +13,7 @@ interface OptionsFrameworkProps {
   onConnect: (value: any, context?: string) => void;
   widgetId?: string;
   screenId?: string;
+  isReviewMode?: boolean;
 }
 
 export function OptionsFramework({ 
@@ -20,7 +21,8 @@ export function OptionsFramework({
   isRadio = false,
   onConnect,
   widgetId,
-  screenId
+  screenId,
+  isReviewMode = false
 }: OptionsFrameworkProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -31,21 +33,35 @@ export function OptionsFramework({
   const { 
     connections,
     isOptionConnected, 
-    getConnectionForOption 
+    getConnectionForOption,
+    clearSelectedValues
   } = useOptionConnections(screenId, isRadio ? "Radio Button" : "Multiple Options");
 
-  // Load selected option from localStorage on component mount
+  // Load selected option from localStorage only in Define mode
   useEffect(() => {
-    const storedOption = localStorage.getItem('selected_option_value');
-    if (storedOption && options.includes(storedOption)) {
-      setSelectedOption(storedOption);
+    if (!isReviewMode) {
+      const storedOption = localStorage.getItem('selected_option_value');
+      if (storedOption && options.includes(storedOption)) {
+        setSelectedOption(storedOption);
+      } else {
+        setSelectedOption(null);
+      }
     }
-  }, [options]);
+  }, [options, isReviewMode]);
 
-  // Handle selecting an individual option
+  // Clean up selected values when component unmounts
+  useEffect(() => {
+    return () => {
+      clearSelectedValues();
+    };
+  }, []);
+
+  // Handle selecting an individual option - only in Define mode
   const handleOptionSelect = (option: string) => {
-    setSelectedOption(option);
-    localStorage.setItem('selected_option_value', option);
+    if (!isReviewMode) {
+      setSelectedOption(option);
+      localStorage.setItem('selected_option_value', option);
+    }
   };
 
   // Generate all possible non-empty combinations of options for multiple select
@@ -111,10 +127,12 @@ export function OptionsFramework({
   
   console.log("🔄 Options framework rendering:", {
     isRadio,
+    isReviewMode,
     screenId,
     optionsCount: options.length,
     combinationsCount: combinations.length,
-    connections: connections?.length || 0
+    connections: connections?.length || 0,
+    selectedOption
   });
 
   return (
@@ -132,30 +150,37 @@ export function OptionsFramework({
             const connected = isOptionConnected(option);
             const connection = connected ? getConnectionForOption(option) : null;
             
-            // Check if this option is selected
-            const isSelected = selectedOption === option;
+            // Check if this option is selected (only show in Define mode)
+            const isSelected = !isReviewMode && selectedOption === option;
             
             // Build className based on selection state
-            let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer transition-colors ";
+            let rowClassName = "flex items-center justify-between p-2 rounded";
             
-            // Add selection styling
-            if (isSelected) {
-              rowClassName += "border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
+            if (!isReviewMode) {
+              rowClassName += " cursor-pointer transition-colors";
+              
+              // Add selection styling only in Define mode
+              if (isSelected) {
+                rowClassName += " border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
+              } else {
+                rowClassName += " border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
+              }
             } else {
-              rowClassName += "border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
+              // Review mode styling
+              rowClassName += " border border-[#00FF00]/20 bg-black/30";
             }
             
             return (
               <div 
                 key={index} 
                 className={rowClassName}
-                onClick={() => handleOptionSelect(option)}
+                onClick={!isReviewMode ? () => handleOptionSelect(option) : undefined}
               >
                 <div className="flex items-center">
-                  {isSelected && (
+                  {isSelected && !isReviewMode && (
                     <span className="text-[#F97316] mr-2">●</span>
                   )}
-                  <span className={`text-sm ${isSelected ? 'text-white' : ''}`}>{option}</span>
+                  <span className={`text-sm ${isSelected && !isReviewMode ? 'text-white' : ''}`}>{option}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   {connected && connection ? (
@@ -163,7 +188,7 @@ export function OptionsFramework({
                       connectionId={connection.id}
                       onViewConnection={() => handleViewConnection(connection.id)}
                     />
-                  ) : (
+                  ) : !isReviewMode && (
                     <ConnectButton 
                       value={option} 
                       context={`element_id_${index}`}
@@ -199,33 +224,40 @@ export function OptionsFramework({
                   const connected = isOptionConnected(combinationStr);
                   const connection = connected ? getConnectionForOption(combinationStr) : null;
                   
-                  // Check if this combination matches the selected combination in localStorage
-                  const selectedCombination = localStorage.getItem('selected_combination_value')?.split(', ') || [];
-                  const isSelected = JSON.stringify(selectedCombination.sort()) === JSON.stringify(combination.sort());
+                  // Check if this combination matches the selected combination in localStorage (only in Define mode)
+                  const selectedCombination = !isReviewMode ? (localStorage.getItem('selected_combination_value')?.split(', ') || []) : [];
+                  const isSelected = !isReviewMode && JSON.stringify(selectedCombination.sort()) === JSON.stringify(combination.sort());
                   
                   // Build className based on selection state
-                  let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer transition-colors ";
+                  let rowClassName = "flex items-center justify-between p-2 rounded";
                   
-                  // Add selection styling
-                  if (isSelected) {
-                    rowClassName += "border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
+                  if (!isReviewMode) {
+                    rowClassName += " cursor-pointer transition-colors";
+                    
+                    // Add selection styling (only in Define mode)
+                    if (isSelected) {
+                      rowClassName += " border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
+                    } else {
+                      rowClassName += " border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
+                    }
                   } else {
-                    rowClassName += "border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
+                    // Review mode styling
+                    rowClassName += " border border-[#00FF00]/20 bg-black/30";
                   }
                   
                   return (
                     <div 
                       key={index} 
                       className={rowClassName}
-                      onClick={() => {
+                      onClick={!isReviewMode ? () => {
                         localStorage.setItem('selected_combination_value', combination.join(', '));
-                      }}
+                      } : undefined}
                     >
                       <div className="flex items-center">
-                        {isSelected && (
+                        {isSelected && !isReviewMode && (
                           <span className="text-[#F97316] mr-2">●</span>
                         )}
-                        <span className={`text-sm ${isSelected ? 'text-white' : ''}`}>
+                        <span className={`text-sm ${isSelected && !isReviewMode ? 'text-white' : ''}`}>
                           {combination.join(", ")}
                         </span>
                       </div>
@@ -235,7 +267,7 @@ export function OptionsFramework({
                             connectionId={connection.id}
                             onViewConnection={() => handleViewConnection(connection.id)}
                           />
-                        ) : (
+                        ) : !isReviewMode && (
                           <ConnectButton 
                             value={combination} 
                             context={`combination_${index}`}

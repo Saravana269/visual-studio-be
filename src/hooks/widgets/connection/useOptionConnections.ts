@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScreenConnection } from "@/types/connection";
+import { useEffect } from "react";
 
 /**
  * Hook to fetch and manage connections for options (radio buttons, multiple options, etc.)
@@ -50,6 +51,15 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     staleTime: 30000 // Cache results for 30 seconds
   });
   
+  // Clear any selected options when the component unmounts or when screenId changes
+  useEffect(() => {
+    return () => {
+      // Clear selections on component unmount or screenId change
+      localStorage.removeItem('selected_option_value');
+      localStorage.removeItem('selected_combination_value');
+    };
+  }, [screenId]);
+  
   // Process connections to create a map of option -> connection
   const getConnectionMap = () => {
     const connectionMap = new Map<string, ScreenConnection>();
@@ -83,11 +93,18 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     return connectionMap.get(option) || null;
   };
 
+  // Clear selected values
+  const clearSelectedValues = () => {
+    localStorage.removeItem('selected_option_value');
+    localStorage.removeItem('selected_combination_value');
+  };
+
   return {
     connections,
     isLoading,
     isOptionConnected,
     isFrameworkConnected,
-    getConnectionForOption
+    getConnectionForOption,
+    clearSelectedValues
   };
 }

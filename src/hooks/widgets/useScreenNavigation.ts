@@ -1,64 +1,57 @@
 
-import { useState, useCallback } from 'react';
-import { Screen } from '@/types/screen';
+import { useState, useEffect } from "react";
+import { Screen } from "@/types/screen";
+import { useOptionConnections } from "./connection/useOptionConnections";
 
 interface UseScreenNavigationProps {
   screens: Screen[];
 }
 
 export function useScreenNavigation({ screens }: UseScreenNavigationProps) {
-  const [activeScreenId, setActiveScreenId] = useState<string | null>(screens[0]?.id || null);
+  const [activeScreenIndex, setActiveScreenIndex] = useState<number>(0);
+  const [activeScreenId, setActiveScreenId] = useState<string | null>(null);
   
-  // Get the current screen object
-  const activeScreen = screens.find(screen => screen.id === activeScreenId) || null;
-  
-  // Get the current screen index for stepper
-  const activeScreenIndex = screens.findIndex(screen => screen.id === activeScreenId);
-  
-  // Navigate to next screen
-  const goToNextScreen = useCallback(() => {
-    if (activeScreenIndex < screens.length - 1) {
-      setActiveScreenId(screens[activeScreenIndex + 1].id);
+  // Get the clearSelectedValues function from useOptionConnections
+  const { clearSelectedValues } = useOptionConnections();
+
+  // Initialize activeScreenId when screens are loaded
+  useEffect(() => {
+    if (screens.length > 0 && activeScreenIndex < screens.length) {
+      setActiveScreenId(screens[activeScreenIndex].id);
+    } else {
+      setActiveScreenId(null);
     }
-  }, [activeScreenIndex, screens]);
-  
-  // Navigate to previous screen
-  const goToPreviousScreen = useCallback(() => {
-    if (activeScreenIndex > 0) {
-      setActiveScreenId(screens[activeScreenIndex - 1].id);
-    }
-  }, [activeScreenIndex, screens]);
-  
-  // Navigate to specific screen by ID
-  const goToScreen = useCallback((screenId: string) => {
-    const screenExists = screens.some(screen => screen.id === screenId);
-    if (screenExists) {
-      setActiveScreenId(screenId);
-    }
-  }, [screens]);
-  
-  // Navigate to specific screen by index
-  const goToScreenByIndex = useCallback((index: number) => {
+  }, [screens, activeScreenIndex]);
+
+  // Get the currently active screen
+  const activeScreen = activeScreenId
+    ? screens.find(screen => screen.id === activeScreenId) || null
+    : screens[activeScreenIndex] || null;
+
+  // Navigate to a specific screen by index
+  const goToScreenByIndex = (index: number) => {
     if (index >= 0 && index < screens.length) {
+      setActiveScreenIndex(index);
       setActiveScreenId(screens[index].id);
+      clearSelectedValues(); // Clear selected values when changing screens
     }
-  }, [screens]);
-  
-  // Check if it's the first screen
-  const isFirstScreen = activeScreenIndex === 0;
-  
-  // Check if it's the last screen
-  const isLastScreen = activeScreenIndex === screens.length - 1;
-  
+  };
+
+  // Navigate to a specific screen by ID
+  const goToScreen = (screenId: string) => {
+    const index = screens.findIndex(screen => screen.id === screenId);
+    if (index !== -1) {
+      setActiveScreenIndex(index);
+      setActiveScreenId(screenId);
+      clearSelectedValues(); // Clear selected values when changing screens
+    }
+  };
+
   return {
+    activeScreenIndex,
     activeScreenId,
     activeScreen,
-    activeScreenIndex,
-    goToNextScreen,
-    goToPreviousScreen,
-    goToScreen,
     goToScreenByIndex,
-    isFirstScreen,
-    isLastScreen
+    goToScreen
   };
 }

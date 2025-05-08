@@ -1,60 +1,85 @@
 
-import { Screen } from "@/types/screen";
-import { MultipleOptionsContent } from "./MultipleOptionsContent";
-import { RadioButtonContent } from "./RadioButtonContent";
-import { YesNoContent } from "./YesNoContent";
-import { SliderContent } from "./SliderContent";
-import { InformationContent } from "./InformationContent";
-import { ImageUploadContent } from "./ImageUploadContent";
-import { COEManagerContent } from "./COEManagerContent";
-import { memo } from "react";
+import React from 'react';
+import { Screen } from '@/types/screen';
+import { RadioButtonContent } from './RadioButtonContent';
+import { MultipleOptionsContent } from './MultipleOptionsContent';
+import { SliderContent } from './SliderContent';
+import { YesNoContent } from './YesNoContent';
+import { InformationContent } from './InformationContent';
+import { ImageUploadContent } from './ImageUploadContent';
+import { COEManagerContent } from './COEManagerContent';
+import { MultipleOptionsCombinationsContent } from './MultipleOptionsCombinationsContent';
+import { OptionsFramework } from '../fields/steps/output/OptionsFramework';
 
 interface FrameworkContentRendererProps {
   screen: Screen;
+  frameworkType?: string | null;
 }
 
-// Using memo to prevent unnecessary re-renders when other parts of the UI change
-export const FrameworkContentRenderer = memo(function FrameworkContentRenderer({ screen }: FrameworkContentRendererProps) {
-  const metadata = screen.metadata || {};
-  
-  // If no framework type is specified, show empty state
-  if (!screen.framework_type) {
-    return (
-      <div className="text-gray-500 text-center py-8">
-        <p>No framework type selected for this screen.</p>
-        <p className="mt-2">Choose a framework type in the define area to add content.</p>
-      </div>
-    );
+export function FrameworkContentRenderer({ screen, frameworkType }: FrameworkContentRendererProps) {
+  if (!frameworkType || !screen.metadata) {
+    return <div className="text-gray-400">No framework type selected.</div>;
   }
 
-  // Render framework-specific content based on the type
-  switch (screen.framework_type) {
-    case "Multiple Options":
-      return <MultipleOptionsContent metadata={metadata} screenId={screen.id} />;
+  switch (frameworkType) {
+    case 'Radio Button':
+      return (
+        <OptionsFramework 
+          options={screen.metadata?.options || []} 
+          isRadio={true}
+          onConnect={() => {}}
+          screenId={screen.id}
+          widgetId={screen.widget_id}
+          isReviewMode={true}
+        />
+      );
+    
+    case 'Multiple Options':
+      return (
+        <OptionsFramework 
+          options={screen.metadata?.options || []} 
+          isRadio={false}
+          onConnect={() => {}}
+          screenId={screen.id}
+          widgetId={screen.widget_id}
+          isReviewMode={true}
+        />
+      );
       
-    case "Radio Button":
-      return <RadioButtonContent metadata={metadata} screenId={screen.id} />;
+    case 'Slider':
+      return (
+        <SliderContent 
+          min={screen.metadata?.min} 
+          max={screen.metadata?.max} 
+          step={screen.metadata?.step} 
+        />
+      );
       
-    case "Yes / No":
-      return <YesNoContent metadata={metadata} />;
+    case 'Yes / No':
+      return (
+        <YesNoContent value={screen.metadata?.value} />
+      );
       
-    case "Slider":
-      return <SliderContent metadata={metadata} />;
+    case 'Information':
+      return (
+        <InformationContent text={screen.metadata?.text} />
+      );
       
-    case "Information":
-      return <InformationContent metadata={metadata} />;
+    case 'Image Upload':
+      return (
+        <ImageUploadContent imageUrl={screen.metadata?.image_url} />
+      );
       
-    case "Image Upload":
-      return <ImageUploadContent metadata={metadata} />;
-      
-    case "COE Manager":
-      return <COEManagerContent metadata={metadata} />;
+    case 'COE Manager':
+      return (
+        <COEManagerContent coeId={screen.metadata?.coe_id} />
+      );
       
     default:
       return (
-        <div className="p-4 mt-4 border border-dashed border-gray-600 rounded bg-black/20">
-          <p className="text-gray-500 text-center">Preview for {screen.framework_type}</p>
+        <div className="text-gray-400">
+          Unsupported framework type: {frameworkType}
         </div>
       );
   }
-});
+}
