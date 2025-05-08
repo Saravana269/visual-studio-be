@@ -110,23 +110,11 @@ export function MultipleOptionsCombinationsContent({
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {isConnected ? (
+                  {isConnected && onViewConnection && (
                     <ConnectionBadge 
                       connectionId={`combination_${index}`} 
-                      onViewConnection={() => onViewConnection && onViewConnection(combination)} 
+                      onViewConnection={() => onViewConnection(combination)} 
                     />
-                  ) : (
-                    onConnect && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent row selection when clicking the connect button
-                          onConnect(combination, "Multiple Options");
-                        }}
-                        className="text-xs bg-[#00FF00]/20 text-[#00FF00] hover:bg-[#00FF00]/30 px-2 py-1 rounded-md flex items-center gap-1"
-                      >
-                        Connect
-                      </button>
-                    )
                   )}
                 </div>
               </div>

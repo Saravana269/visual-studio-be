@@ -116,28 +116,11 @@ export function MultipleOptionsContent({
                       <span className={`text-sm ${isSelected ? 'text-white' : ''}`}>{option}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      {isConnected ? (
+                      {isConnected && connection?.id && (
                         <ConnectionBadge 
-                          connectionId={connection?.id || `option_${index}`}
-                          onViewConnection={() => {
-                            // Modified this to remove the event parameter
-                            if (connection?.id) {
-                              handleViewConnection(connection.id);
-                            }
-                          }} 
+                          connectionId={connection.id}
+                          onViewConnection={() => handleViewConnection(connection.id as string)} 
                         />
-                      ) : (
-                        onConnect && (
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent row selection when clicking connect
-                              handleConnect(option, "Multiple Options - Individual");
-                            }}
-                            className="text-xs bg-[#00FF00]/20 text-[#00FF00] hover:bg-[#00FF00]/30 px-2 py-1 rounded-md flex items-center gap-1"
-                          >
-                            Connect
-                          </button>
-                        )
                       )}
                     </div>
                   </div>
