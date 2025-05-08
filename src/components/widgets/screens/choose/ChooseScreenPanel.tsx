@@ -69,6 +69,9 @@ export function ChooseScreenPanel({
           propertyValues.combinationString = selectedCombination;
         }
         
+        // Ensure we have a source_value
+        const sourceValue = selectedOption || selectedCombination || "connection";
+        
         // Prepare connection data
         const connectionData = {
           nextScreen_Ref: selectedScreenId,
@@ -79,8 +82,10 @@ export function ChooseScreenPanel({
           screen_description: currentScreen.description,
           property_values: propertyValues,
           framework_type_ref: currentScreen.framework_id,
-          source_value: selectedOption || selectedCombination || null
+          source_value: sourceValue
         };
+        
+        console.log("Inserting connection data:", connectionData);
         
         // Insert the connection data into connect_screens table
         const { error } = await supabase

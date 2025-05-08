@@ -125,6 +125,11 @@ export function useConnectionOperations(widgetId?: string) {
         contextType = "Multiple Options - Individual";
       }
       
+      // Ensure sourceValue is always a string
+      const finalSourceValue = sourceValue !== null && sourceValue !== undefined 
+        ? String(sourceValue) 
+        : "connection";
+      
       if (connectionCtx.context?.startsWith('element_id_')) {
         const elementId = connectionCtx.context.replace('element_id_', '');
         
@@ -139,9 +144,11 @@ export function useConnectionOperations(widgetId?: string) {
           property_values: propertyValues, // Store only the selected value
           framework_type_ref: currentScreen.framework_id,
           element_ref: elementId,
-          source_value: "element_connection",
+          source_value: finalSourceValue,
           connection_context: connectionCtx.context
         };
+        
+        console.log("Inserting connection data:", connectionData);
         
         const { error } = await supabase
           .from('connect_screens')
@@ -162,9 +169,11 @@ export function useConnectionOperations(widgetId?: string) {
           screen_description: currentScreen.description,
           property_values: propertyValues, // Store only the selected value
           framework_type_ref: currentScreen.framework_id,
-          source_value: sourceValue ? String(sourceValue) : null,
+          source_value: finalSourceValue,
           connection_context: connectionCtx.context || null,
         };
+        
+        console.log("Inserting connection data:", connectionData);
         
         const { error } = await supabase
           .from('connect_screens')
@@ -189,6 +198,12 @@ export function useConnectionOperations(widgetId?: string) {
         title: "Screen Connected",
         description: "Successfully connected to the selected screen",
       });
+      
+      // Dispatch event to notify that connection was established
+      const connectionEvent = new CustomEvent('connectionEstablished', { 
+        detail: { screenId: selectedScreenId } 
+      });
+      window.dispatchEvent(connectionEvent);
     } catch (error) {
       console.error("Error connecting to screen:", error);
       toast({

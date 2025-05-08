@@ -159,6 +159,11 @@ export const useScreenConnectionOperations = () => {
         };
       }
       
+      // Ensure sourceValue is always a string
+      const finalSourceValue = sourceValue !== null && sourceValue !== undefined 
+        ? String(sourceValue) 
+        : "connection";
+      
       console.log("📦 Connection property values to insert:", propertyValues);
       
       // Prepare connection data - ONLY include the propertyValues, not merging with framework data
@@ -173,7 +178,7 @@ export const useScreenConnectionOperations = () => {
         screen_description: currentScreen.description,
         property_values: propertyValues, // Only include the selected values
         framework_type_ref: currentScreen.framework_id,
-        source_value: sourceValue ? String(sourceValue) : null,
+        source_value: finalSourceValue,
         connection_context: connectionCtx?.context || null,
         element_ref: connectionCtx?.context?.startsWith('element_') ? 
           connectionCtx.context.replace('element_', '') : null
@@ -203,6 +208,12 @@ export const useScreenConnectionOperations = () => {
         title: "Connection created",
         description: "Screen connection has been successfully created",
       });
+      
+      // Dispatch event to notify that connection was established
+      const connectionEvent = new CustomEvent('connectionEstablished', { 
+        detail: { screenId: selectedScreenId } 
+      });
+      window.dispatchEvent(connectionEvent);
       
       // Close the dialog after success
       onCloseDialog();
