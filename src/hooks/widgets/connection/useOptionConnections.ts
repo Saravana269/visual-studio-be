@@ -1,70 +1,38 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ScreenConnection } from "@/types/connection";
 import { useEffect } from "react";
+import { useScreenConnections } from "./useScreenConnections";
+import { doesValueMatchConnection } from "./utils/connectionUtils";
 
 /**
  * Hook to fetch and manage connections for options (radio buttons, multiple options, etc.)
  */
 export function useOptionConnections(screenId?: string, frameworkType?: string) {
-  // Fetch all connections for this screen
-  const { data: connections = [], isLoading } = useQuery({
-    queryKey: ["screen-connections", screenId, frameworkType],
-    queryFn: async () => {
-      if (!screenId) return [];
-      
-      try {
-        console.log(`🔍 Fetching connections for screen: ${screenId} and framework: ${frameworkType}`);
-        
-        const query = supabase
-          .from('connect_screens')
-          .select('*')
-          .eq('screen_ref', screenId)
-          .eq('is_screen_terminated', false);
-          
-        // Add framework type filter if provided
-        if (frameworkType) {
-          // Use a like query to match both "Multiple Options" and "Multiple Options - Individual"
-          if (frameworkType === "Multiple Options") {
-            query.like('framework_type', `${frameworkType}%`);
-          } else {
-            query.eq('framework_type', frameworkType);
-          }
-        }
-        
-        const { data, error } = await query;
-          
-        if (error) {
-          console.error("Error fetching connections:", error);
-          throw error;
-        }
-        
-        console.log(`🔍 Found ${data?.length || 0} connections for screen: ${screenId}`);
-        return data as ScreenConnection[];
-      } catch (error) {
-        console.error("Error in useOptionConnections:", error);
-        return [];
-      }
-    },
-    enabled: !!screenId,
-    staleTime: 30000 // Cache results for 30 seconds
+  // Use the refactored screen connections hook to fetch connections
+  const { 
+    connections, 
+    isLoading 
+  } = useScreenConnections({ 
+    screenId, 
+    enabled: !!screenId 
   });
-  
-  // Clear any selected options when the component unmounts or when screenId changes
-  useEffect(() => {
-    return () => {
-      // Clear selections on component unmount or screenId change
-      localStorage.removeItem('selected_option_value');
-      localStorage.removeItem('selected_combination_value');
-    };
-  }, [screenId]);
-  
+
+  // Filter connections based on the framework type if provided
+  const filteredConnections = frameworkType 
+    ? connections.filter(conn => {
+        // Use a like query to match both "Multiple Options" and "Multiple Options - Individual"
+        if (frameworkType === "Multiple Options") {
+          return conn.framework_type?.startsWith(frameworkType);
+        }
+        return conn.framework_type === frameworkType;
+      })
+    : connections;
+
   // Process connections to create a map of option -> connection
   const getConnectionMap = () => {
-    const connectionMap = new Map<string, ScreenConnection>();
+    const connectionMap = new Map();
     
-    connections.forEach(connection => {
+    filteredConnections.forEach(connection => {
       if (connection.source_value) {
         connectionMap.set(connection.source_value, connection);
       }
@@ -75,22 +43,30 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
   
   // Check if an option is connected
   const isOptionConnected = (option: string): boolean => {
-    const connectionMap = getConnectionMap();
-    return connectionMap.has(option);
-  };
-  
-  // Check if a framework is connected
-  const isFrameworkConnected = (frameworkType: string): boolean => {
-    return connections.some(conn => 
-      conn.framework_type === frameworkType && 
+    if (!option) return false;
+    
+    return filteredConnections.some(conn => 
+      doesValueMatchConnection(option, conn) && 
       !conn.is_screen_terminated
     );
   };
   
   // Get connection for an option
-  const getConnectionForOption = (option: string): ScreenConnection | null => {
-    const connectionMap = getConnectionMap();
-    return connectionMap.get(option) || null;
+  const getConnectionForOption = (option: string) => {
+    if (!option) return null;
+    
+    return filteredConnections.find(conn => 
+      doesValueMatchConnection(option, conn) && 
+      !conn.is_screen_terminated
+    ) || null;
+  };
+  
+  // Check if a framework is connected
+  const isFrameworkConnected = (type: string): boolean => {
+    return filteredConnections.some(conn => 
+      conn.framework_type === type && 
+      !conn.is_screen_terminated
+    );
   };
 
   // Clear selected values
@@ -99,12 +75,21 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     localStorage.removeItem('selected_combination_value');
   };
 
+  // Clear selected values when the component unmounts or when screenId changes
+  useEffect(() => {
+    return () => {
+      // Clear selections on component unmount or screenId change
+      clearSelectedValues();
+    };
+  }, [screenId]);
+
   return {
-    connections,
+    connections: filteredConnections,
     isLoading,
     isOptionConnected,
     isFrameworkConnected,
     getConnectionForOption,
+    getConnectionMap,
     clearSelectedValues
   };
 }

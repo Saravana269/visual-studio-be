@@ -20,6 +20,8 @@ export function FrameworkContentRenderer({ screen, frameworkType }: FrameworkCon
   if (!frameworkType || !screen.metadata) {
     return <div className="text-gray-400">No framework type selected.</div>;
   }
+  
+  const metadata = screen.metadata || {};
 
   switch (frameworkType) {
     case 'Radio Button':
@@ -49,38 +51,40 @@ export function FrameworkContentRenderer({ screen, frameworkType }: FrameworkCon
     case 'Slider':
       return (
         <SliderContent 
-          value={screen.metadata?.value}
-          minimum={screen.metadata?.min} 
-          maximum={screen.metadata?.max} 
-          stepSize={screen.metadata?.step} 
+          metadata={metadata}
+          screenId={screen.id}
         />
       );
       
     case 'Yes / No':
       return (
         <YesNoContent 
-          selectedValue={screen.metadata?.value} 
+          metadata={metadata}
+          screenId={screen.id}
         />
       );
       
     case 'Information':
       return (
         <InformationContent 
-          content={screen.metadata?.text} 
+          metadata={metadata}
+          screenId={screen.id}
         />
       );
       
     case 'Image Upload':
       return (
         <ImageUploadContent 
-          uploadedImageUrl={screen.metadata?.image_url} 
+          metadata={metadata}
+          screenId={screen.id}
         />
       );
       
     case 'COE Manager':
       return (
         <COEManagerContent 
-          selectedCoeId={screen.metadata?.coe_id} 
+          metadata={metadata}
+          screenId={screen.id}
         />
       );
       

@@ -1,32 +1,30 @@
 
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 interface ImageUploadContentProps {
   metadata: Record<string, any>;
+  screenId?: string;
   onConnect?: (imageUrl: string) => void;
 }
 
-export function ImageUploadContent({ metadata, onConnect }: ImageUploadContentProps) {
+export function ImageUploadContent({ metadata, screenId, onConnect }: ImageUploadContentProps) {
+  const imageUrl = metadata.image_url || "";
+  
   return (
     <div className="mt-4">
-      <h4 className="text-xs font-medium text-gray-400 mb-2">Image Upload:</h4>
-      <div className="max-h-[200px] overflow-y-auto">
-        {metadata.image_url ? (
-          <div className="p-1 border border-[#00FF00] rounded bg-black/30">
-            <img 
-              src={metadata.image_url} 
-              alt="Uploaded preview" 
-              className="max-h-40 rounded object-contain mx-auto"
-              onError={(e) => {
-                // Handle error by showing a placeholder
-                e.currentTarget.src = '/placeholder.svg';
-              }}
-            />
-          </div>
-        ) : (
-          <div className="p-3 border border-dashed border-[#00FF00]/20 rounded bg-black/30 text-center">
-            <p className="text-gray-500 text-sm">No image uploaded</p>
-          </div>
-        )}
-      </div>
+      {imageUrl ? (
+        <div className="relative border border-[#00FF00]/20 rounded-md overflow-hidden">
+          <img 
+            src={imageUrl} 
+            alt="Uploaded" 
+            className="w-full h-auto max-h-[300px] object-contain"
+          />
+        </div>
+      ) : (
+        <div className="flex justify-center items-center h-[200px] border border-[#00FF00]/20 rounded-md bg-black/30">
+          <p className="text-gray-400">No image uploaded</p>
+        </div>
+      )}
     </div>
   );
 }

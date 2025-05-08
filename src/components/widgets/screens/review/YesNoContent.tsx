@@ -1,40 +1,48 @@
 
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Check, X } from "lucide-react";
+import { useState } from "react";
 
 interface YesNoContentProps {
-  onConnect?: (option: string) => void;
-  metadata?: Record<string, any>;
+  metadata: Record<string, any>;
+  screenId?: string;
+  onConnect?: (value: boolean) => void;
 }
 
-export function YesNoContent({ onConnect, metadata = {} }: YesNoContentProps) {
-  // Convert value to boolean, handling various formats
-  const [isEnabled, setIsEnabled] = useState<boolean>(
-    metadata?.value === true || 
-    metadata?.value === "yes" || 
-    metadata?.value === "true"
-  );
+export function YesNoContent({ metadata, screenId, onConnect }: YesNoContentProps) {
+  const defaultValue = metadata?.value || null;
   
-  // Update state when metadata changes (for real-time updates)
-  useEffect(() => {
-    setIsEnabled(
-      metadata?.value === true || 
-      metadata?.value === "yes" || 
-      metadata?.value === "true"
-    );
-  }, [metadata]);
+  // Local state for tracking selection
+  const [selected, setSelected] = useState<boolean | null>(defaultValue);
+  
+  const handleSelect = (value: boolean) => {
+    setSelected(value);
+    if (onConnect) {
+      onConnect(value);
+    }
+  };
 
   return (
-    <div className="space-y-4 mt-4">
-      {/* Toggle switch display */}
-      <div className="p-3 border border-[#00FF00]/20 bg-black/30 rounded-md mb-4">
-        <div className="flex items-center">
-          <Switch id="review-toggle" checked={isEnabled} disabled />
-          <Label htmlFor="review-toggle" className="text-sm text-gray-300 ml-3">
-            {isEnabled ? 'Yes' : 'No'}
-          </Label>
-        </div>
+    <div className="mt-4">
+      <div className="flex items-center justify-center gap-4">
+        <Button
+          onClick={() => handleSelect(true)}
+          className={`w-24 ${selected === true ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+          disabled={!onConnect}
+        >
+          <Check className="mr-2 h-4 w-4" />
+          Yes
+        </Button>
+        
+        <Button
+          onClick={() => handleSelect(false)}
+          className={`w-24 ${selected === false ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+          disabled={!onConnect}
+        >
+          <X className="mr-2 h-4 w-4" />
+          No
+        </Button>
       </div>
     </div>
   );
