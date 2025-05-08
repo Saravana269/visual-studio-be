@@ -92,11 +92,29 @@ export function OptionsFramework({
     onConnect(value, context);
   };
   
+  // Listen for connection established events
+  useEffect(() => {
+    const handleConnectionEstablished = () => {
+      // Force refresh of connection state
+      setTimeout(() => {
+        // This timeout allows the connection to be saved first
+        // before we check for it again
+      }, 500);
+    };
+    
+    window.addEventListener('connectionEstablished', handleConnectionEstablished);
+    
+    return () => {
+      window.removeEventListener('connectionEstablished', handleConnectionEstablished);
+    };
+  }, []);
+  
   console.log("🔄 Options framework rendering:", {
     isRadio,
     screenId,
     optionsCount: options.length,
-    combinationsCount: combinations.length
+    combinationsCount: combinations.length,
+    connections: connections?.length || 0
   });
 
   return (
@@ -175,14 +193,15 @@ export function OptionsFramework({
               <div className="space-y-2">
                 {combinations.map((combination, index) => {
                   // For string arrays, we need to convert to string for connection checking
-                  const combinationStr = JSON.stringify(combination);
+                  const combinationStr = combination.join(', ');
+                  
                   // Check if this combination is connected
                   const connected = isOptionConnected(combinationStr);
                   const connection = connected ? getConnectionForOption(combinationStr) : null;
                   
                   // Check if this combination matches the selected combination in localStorage
                   const selectedCombination = localStorage.getItem('selected_combination_value')?.split(', ') || [];
-                  const isSelected = JSON.stringify(selectedCombination) === JSON.stringify(combination);
+                  const isSelected = JSON.stringify(selectedCombination.sort()) === JSON.stringify(combination.sort());
                   
                   // Build className based on selection state
                   let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer transition-colors ";
@@ -224,7 +243,10 @@ export function OptionsFramework({
                               // Only store the selected combination in propertyValues
                               handleConnectClick({
                                 value,
-                                propertyValues: { selectedOptions: combination }
+                                propertyValues: { 
+                                  selectedOptions: combination,
+                                  combinationString: combination.join(', ')
+                                }
                               }, `combination_${index}`);
                             }}
                             widgetId={widgetId}

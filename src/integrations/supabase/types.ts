@@ -331,7 +331,9 @@ export type Database = {
       }
       connect_screens: {
         Row: {
+          connection_context: string | null
           created_at: string | null
+          element_ref: string | null
           framework_type: string | null
           framework_type_ref: string | null
           id: string
@@ -341,11 +343,14 @@ export type Database = {
           screen_description: string | null
           screen_name: string | null
           screen_ref: string | null
+          source_value: string | null
           updated_at: string | null
           widget_ref: string | null
         }
         Insert: {
+          connection_context?: string | null
           created_at?: string | null
+          element_ref?: string | null
           framework_type?: string | null
           framework_type_ref?: string | null
           id?: string
@@ -355,11 +360,14 @@ export type Database = {
           screen_description?: string | null
           screen_name?: string | null
           screen_ref?: string | null
+          source_value?: string | null
           updated_at?: string | null
           widget_ref?: string | null
         }
         Update: {
+          connection_context?: string | null
           created_at?: string | null
+          element_ref?: string | null
           framework_type?: string | null
           framework_type_ref?: string | null
           id?: string
@@ -369,6 +377,7 @@ export type Database = {
           screen_description?: string | null
           screen_name?: string | null
           screen_ref?: string | null
+          source_value?: string | null
           updated_at?: string | null
           widget_ref?: string | null
         }
