@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { 
   Popover,
@@ -15,19 +15,20 @@ interface ConnectOptionsMenuProps {
   trigger: React.ReactNode;
   onOptionSelect: (option: string) => void;
   widgetId?: string;
-  screenId?: string; // Add screenId prop
+  screenId?: string;
 }
 
 export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId, screenId }: ConnectOptionsMenuProps) => {
   const location = useLocation();
   const { openExistingScreenDialog } = useConnectionDialogs();
+  const [isChoosePanelVisible, setIsChoosePanelVisible] = useState(false);
   
-  // Determine if we're on the elements page
-  const isOnElementsPage = location.pathname.includes('/elements');
+  // Determine if we're on the screens page
+  const isOnScreensPage = location.pathname.includes('/screens');
   
   console.log("🔄 ConnectOptionsMenu rendered with widgetId:", widgetId, "screenId:", screenId, "on path:", location.pathname);
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const menuOptions = [
     {
@@ -56,22 +57,22 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId, screenId
     }
   ];
 
-  // Handle menu option selection with special handling for elements page
+  // Handle menu option selection with special handling for choosing an existing screen
   const handleMenuItemClick = (option: string, event: React.MouseEvent<HTMLDivElement>) => {
-    console.log("🔘 Menu option clicked:", option, "widgetId:", widgetId, "screenId:", screenId, "path:", location.pathname);
+    console.log("🔘 Menu option clicked:", option, "widgetId:", widgetId, "screenId:", screenId);
     
     // Close the menu immediately
     setOpen(false);
     
-    // Special handling for "existing_screen" when we're on elements page
-    if (option === "existing_screen" && isOnElementsPage) {
+    // Special handling for "existing_screen" option
+    if (option === "existing_screen") {
       event.preventDefault();
       event.stopPropagation();
       
-      console.log("🌍 Using global dialog for existing screen on elements page with screenId:", screenId);
-      // Use screenId directly from props if available (helps ensure we have the current screen context)
+      console.log("🌍 Opening connection panel for existing screen with screenId:", screenId);
+      
+      // Store current screen ID in localStorage for the connection dialogs
       if (screenId) {
-        // Store current screen ID in localStorage for the connection dialogs
         try {
           localStorage.setItem('current_screen_id', screenId);
           console.log("📌 Stored current_screen_id in localStorage:", screenId);
@@ -80,45 +81,42 @@ export const ConnectOptionsMenu = ({ trigger, onOptionSelect, widgetId, screenId
         }
       }
       
-      // Create connection context object for the openExistingScreenDialog
+      // Create connection context object
       const connectionContext: ConnectionValueContext = {
         value: null,
-        context: "imageUpload",
+        context: "Multiple Options",
         widgetId,
         screenId
       };
       
-      // Pass the connection context to openExistingScreenDialog
+      // Open the existing screen dialog using the global context
       openExistingScreenDialog(connectionContext);
-    } 
-    // Special handling for "existing_screen" on the screens page - use the panel layout
-    else if (option === "existing_screen" && !isOnElementsPage) {
-      event.preventDefault();
-      event.stopPropagation();
       
-      console.log("🌍 Using panel layout for existing screen on screens page with screenId:", screenId);
-      
-      // Store current screen ID in localStorage if available
-      if (screenId) {
-        try {
-          localStorage.setItem('current_screen_id', screenId);
-          console.log("📌 Stored current_screen_id in localStorage:", screenId);
-        } catch (e) {
-          console.error("Error storing current screen ID:", e);
-        }
-      }
-      
-      // Dispatch a custom event with connection mode detail
+      // Dispatch custom event to open the choose screen panel
       const customEvent = new CustomEvent('openConnectionPanel', { 
         detail: { connectionMode: "existingScreen", screenId: screenId } 
       });
       window.dispatchEvent(customEvent);
-    }
+    } 
     else {
-      // Normal handling - call the provided onOptionSelect function
+      // Normal handling for other options - call the onOptionSelect function
       onOptionSelect(option);
     }
   };
+
+  useEffect(() => {
+    // Listen for the event that indicates the connection was made
+    const handleConnectionEstablished = () => {
+      console.log("✅ Connection established, hiding connect button");
+      // You would implement logic here to hide the connect button if needed
+    };
+    
+    window.addEventListener('connectionEstablished', handleConnectionEstablished);
+    
+    return () => {
+      window.removeEventListener('connectionEstablished', handleConnectionEstablished);
+    };
+  }, []);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

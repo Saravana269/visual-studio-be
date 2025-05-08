@@ -52,6 +52,23 @@ export function ChooseScreenPanel({
           .eq('screen_id', currentScreen.id)
           .single();
         
+        // Get the selected option or combination from localStorage
+        const selectedOption = localStorage.getItem('selected_option_value');
+        const selectedCombination = localStorage.getItem('selected_combination_value');
+        
+        // Initialize property values
+        let propertyValues: Record<string, any> = frameworkData?.property_values || {};
+        
+        // Add the selected option or combination if it exists
+        if (selectedOption) {
+          propertyValues.selectedOption = selectedOption;
+        }
+        
+        if (selectedCombination) {
+          propertyValues.selectedOptions = selectedCombination.split(', ');
+          propertyValues.combinationString = selectedCombination;
+        }
+        
         // Prepare connection data
         const connectionData = {
           nextScreen_Ref: selectedScreenId,
@@ -60,8 +77,9 @@ export function ChooseScreenPanel({
           screen_ref: currentScreen.id,
           screen_name: currentScreen.name,
           screen_description: currentScreen.description,
-          property_values: frameworkData?.property_values || {},
-          framework_type_ref: currentScreen.framework_id
+          property_values: propertyValues,
+          framework_type_ref: currentScreen.framework_id,
+          source_value: selectedOption || selectedCombination || null
         };
         
         // Insert the connection data into connect_screens table
@@ -78,8 +96,21 @@ export function ChooseScreenPanel({
           description: "Screen connection has been successfully created",
         });
         
+        // Dispatch event to notify that connection was established
+        const connectionEvent = new CustomEvent('connectionEstablished', { 
+          detail: { screenId: selectedScreenId } 
+        });
+        window.dispatchEvent(connectionEvent);
+        
+        // Clear localStorage
+        localStorage.removeItem('selected_option_value');
+        localStorage.removeItem('selected_combination_value');
+        
         // Call the onScreenSelect callback
         onScreenSelect(selectedScreenId);
+        
+        // Close the panel
+        onClose();
       } catch (error) {
         console.error("Error creating connection:", error);
         toast({

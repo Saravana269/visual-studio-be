@@ -34,6 +34,20 @@ export function OptionsFramework({
     getConnectionForOption 
   } = useOptionConnections(screenId, isRadio ? "Radio Button" : "Multiple Options");
 
+  // Load selected option from localStorage on component mount
+  useEffect(() => {
+    const storedOption = localStorage.getItem('selected_option_value');
+    if (storedOption && options.includes(storedOption)) {
+      setSelectedOption(storedOption);
+    }
+  }, [options]);
+
+  // Handle selecting an individual option
+  const handleOptionSelect = (option: string) => {
+    setSelectedOption(option);
+    localStorage.setItem('selected_option_value', option);
+  };
+
   // Generate all possible non-empty combinations of options for multiple select
   const generateCombinations = (opts: string[]): string[][] => {
     if (isRadio || opts.length === 0) return [];
@@ -64,6 +78,20 @@ export function OptionsFramework({
     setIsModalOpen(true);
   };
   
+  // Handle clicking the connect button
+  const handleConnectClick = (value: any, context?: string) => {
+    if (typeof value === 'string') {
+      // For individual options
+      localStorage.setItem('selected_option_value', value);
+    } else if (Array.isArray(value)) {
+      // For combinations
+      localStorage.setItem('selected_combination_value', value.join(', '));
+    }
+    
+    // Call the provided connect handler
+    onConnect(value, context);
+  };
+  
   console.log("🔄 Options framework rendering:", {
     isRadio,
     screenId,
@@ -86,31 +114,53 @@ export function OptionsFramework({
             const connected = isOptionConnected(option);
             const connection = connected ? getConnectionForOption(option) : null;
             
+            // Check if this option is selected
+            const isSelected = selectedOption === option;
+            
+            // Build className based on selection state
+            let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer transition-colors ";
+            
+            // Add selection styling
+            if (isSelected) {
+              rowClassName += "border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
+            } else {
+              rowClassName += "border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
+            }
+            
             return (
               <div 
                 key={index} 
-                className="flex items-center justify-between p-2 rounded hover:bg-gray-800/30 border border-gray-700"
+                className={rowClassName}
+                onClick={() => handleOptionSelect(option)}
               >
-                <span className="text-sm">{option}</span>
-                {connected && connection ? (
-                  <ConnectionBadge 
-                    connectionId={connection.id}
-                    onViewConnection={() => handleViewConnection(connection.id)}
-                  />
-                ) : (
-                  <ConnectButton 
-                    value={option} 
-                    context={`element_id_${index}`}
-                    onConnect={(value) => {
-                      // Only store the selected option in propertyValues
-                      onConnect({
-                        value,
-                        propertyValues: { selectedOption: option }
-                      }, `element_id_${index}`);
-                    }}
-                    widgetId={widgetId}
-                  />
-                )}
+                <div className="flex items-center">
+                  {isSelected && (
+                    <span className="text-[#F97316] mr-2">●</span>
+                  )}
+                  <span className={`text-sm ${isSelected ? 'text-white' : ''}`}>{option}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {connected && connection ? (
+                    <ConnectionBadge 
+                      connectionId={connection.id}
+                      onViewConnection={() => handleViewConnection(connection.id)}
+                    />
+                  ) : (
+                    <ConnectButton 
+                      value={option} 
+                      context={`element_id_${index}`}
+                      onConnect={(value) => {
+                        // Only store the selected option in propertyValues
+                        handleConnectClick({
+                          value,
+                          propertyValues: { selectedOption: option }
+                        }, `element_id_${index}`);
+                      }}
+                      widgetId={widgetId}
+                      screenId={screenId}
+                    />
+                  )}
+                </div>
               </div>
             );
           })}
@@ -130,31 +180,58 @@ export function OptionsFramework({
                   const connected = isOptionConnected(combinationStr);
                   const connection = connected ? getConnectionForOption(combinationStr) : null;
                   
+                  // Check if this combination matches the selected combination in localStorage
+                  const selectedCombination = localStorage.getItem('selected_combination_value')?.split(', ') || [];
+                  const isSelected = JSON.stringify(selectedCombination) === JSON.stringify(combination);
+                  
+                  // Build className based on selection state
+                  let rowClassName = "flex items-center justify-between p-2 rounded cursor-pointer transition-colors ";
+                  
+                  // Add selection styling
+                  if (isSelected) {
+                    rowClassName += "border-2 border-[#F97316] bg-[#F97316]/30 shadow-[0_0_12px_rgba(249,115,22,0.5)] font-medium";
+                  } else {
+                    rowClassName += "border border-[#00FF00]/20 bg-black/30 hover:bg-[#00FF00]/10";
+                  }
+                  
                   return (
                     <div 
                       key={index} 
-                      className="flex items-center justify-between p-2 rounded hover:bg-[#00FF00]/10 border border-[#00FF00]/20 bg-black/30"
+                      className={rowClassName}
+                      onClick={() => {
+                        localStorage.setItem('selected_combination_value', combination.join(', '));
+                      }}
                     >
-                      <span className="text-sm">{combination.join(", ")}</span>
-                      {connected && connection ? (
-                        <ConnectionBadge 
-                          connectionId={connection.id}
-                          onViewConnection={() => handleViewConnection(connection.id)}
-                        />
-                      ) : (
-                        <ConnectButton 
-                          value={combination} 
-                          context={`combination_${index}`}
-                          onConnect={(value) => {
-                            // Only store the selected combination in propertyValues
-                            onConnect({
-                              value,
-                              propertyValues: { selectedOptions: combination }
-                            }, `combination_${index}`);
-                          }}
-                          widgetId={widgetId}
-                        />
-                      )}
+                      <div className="flex items-center">
+                        {isSelected && (
+                          <span className="text-[#F97316] mr-2">●</span>
+                        )}
+                        <span className={`text-sm ${isSelected ? 'text-white' : ''}`}>
+                          {combination.join(", ")}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {connected && connection ? (
+                          <ConnectionBadge 
+                            connectionId={connection.id}
+                            onViewConnection={() => handleViewConnection(connection.id)}
+                          />
+                        ) : (
+                          <ConnectButton 
+                            value={combination} 
+                            context={`combination_${index}`}
+                            onConnect={(value) => {
+                              // Only store the selected combination in propertyValues
+                              handleConnectClick({
+                                value,
+                                propertyValues: { selectedOptions: combination }
+                              }, `combination_${index}`);
+                            }}
+                            widgetId={widgetId}
+                            screenId={screenId}
+                          />
+                        )}
+                      </div>
                     </div>
                   );
                 })}
