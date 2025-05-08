@@ -144,25 +144,17 @@ export function ActiveConnections({ screenId, elementId, widgetId, refetch, isLo
               <div className="mt-2 space-x-2">
                 {/* Source Screen Framework Type Badge */}
                 {connection.framework_type && (
-                  <Badge variant="outline" className="bg-[#00FF00]/10 text-[#00FF00] border-[#00FF00]/30">
-                    {connection.framework_type}
-                  </Badge>
+                  <ConnectionBadge type="framework" label={connection.framework_type} />
                 )}
                 
                 {/* Destination Screen Framework Type */}
                 {connection.nextScreen_FrameworkType && (
-                  <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/30">
-                    {connection.nextScreen_FrameworkType}
-                  </Badge>
+                  <ConnectionBadge type="screen" label={connection.nextScreen_FrameworkType} />
                 )}
 
                 {/* Display the selected value prominently if available */}
                 {displayValue && (
-                  <Badge variant="outline" className="bg-green-500/30 text-green-300 border-green-500/40 font-medium">
-                    {typeof displayValue === 'string' && displayValue.length > 20 
-                      ? `${displayValue.substring(0, 20)}...` 
-                      : displayValue}
-                  </Badge>
+                  <ConnectionBadge type="value" label={displayValue} />
                 )}
               </div>
             </div>

@@ -1,43 +1,33 @@
 
+import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Link2 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip";
 
 interface ConnectionBadgeProps {
-  connectionId: string;
-  onViewConnection?: () => void;
-  className?: string;
+  type: "framework" | "screen" | "value" | "option";
+  label: string;
 }
 
-export function ConnectionBadge({ 
-  connectionId, 
-  onViewConnection,
-  className = ""
-}: ConnectionBadgeProps) {
+export function ConnectionBadge({ type, label }: ConnectionBadgeProps) {
+  const getBadgeStyles = () => {
+    switch (type) {
+      case "framework":
+        return "bg-[#00FF00]/10 text-[#00FF00] border-[#00FF00]/30";
+      case "screen":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
+      case "value":
+        return "bg-green-500/30 text-green-300 border-green-500/40 font-medium";
+      case "option":
+        return "bg-blue-500/30 text-blue-300 border-blue-500/40";
+      default:
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
+    }
+  };
+
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge 
-            className={`bg-[#00FF00]/20 text-[#00FF00] hover:bg-[#00FF00]/30 cursor-pointer flex items-center gap-1 ${className}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onViewConnection) onViewConnection();
-            }}
-          >
-            <Link2 className="h-3 w-3" />
-            <span>Connected</span>
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          <p className="text-xs">View Connection</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Badge variant="outline" className={getBadgeStyles()}>
+      {typeof label === 'string' && label.length > 20 
+        ? `${label.substring(0, 20)}...` 
+        : label}
+    </Badge>
   );
 }
