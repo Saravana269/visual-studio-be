@@ -1,13 +1,27 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useScreenConnections } from "./useScreenConnections";
 import { doesValueMatchConnection } from "./utils/connectionUtils";
+
+interface UseOptionConnectionsProps {
+  widgetId?: string;
+  screenId?: string;
+  contextType?: string;
+}
 
 /**
  * Hook to fetch and manage connections for options (radio buttons, multiple options, etc.)
  */
-export function useOptionConnections(screenId?: string, frameworkType?: string) {
+export function useOptionConnections(props?: UseOptionConnectionsProps | string) {
+  // Handle both old string parameter and new object parameter for backward compatibility
+  const screenId = typeof props === 'string' ? props : props?.screenId;
+  const frameworkType = typeof props === 'object' ? props?.contextType : undefined;
+  const widgetId = typeof props === 'object' ? props?.widgetId : undefined;
+
+  // Local state for selected values
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
+
   // Use the refactored screen connections hook to fetch connections
   const { 
     connections, 
@@ -69,10 +83,41 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     );
   };
 
+  // Create connection IDs map
+  const connectionIds = filteredConnections.reduce((acc, conn) => {
+    if (conn.source_value) {
+      acc[conn.source_value] = conn.id;
+    }
+    return acc;
+  }, {} as Record<string, string>);
+
+  // Select value function
+  const selectValue = (value: string) => {
+    setSelectedValue(value);
+    // Store in localStorage for persistence
+    localStorage.setItem('selected_option_value', value);
+  };
+
+  // Get connection details
+  const getConnectionDetails = (connectionId: string) => {
+    return filteredConnections.find(conn => conn.id === connectionId);
+  };
+
+  // View connection function
+  const viewConnection = (connectionId: string) => {
+    const connection = getConnectionDetails(connectionId);
+    if (connection) {
+      // Navigate to the connected screen or show connection details
+      console.log('Viewing connection:', connection);
+      // You can implement navigation logic here
+    }
+  };
+
   // Clear selected values
   const clearSelectedValues = () => {
     localStorage.removeItem('selected_option_value');
     localStorage.removeItem('selected_combination_value');
+    setSelectedValue(null);
   };
 
   // Clear selected values when the component unmounts or when screenId changes
@@ -83,6 +128,14 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     };
   }, [screenId]);
 
+  // Load selected value from localStorage on mount
+  useEffect(() => {
+    const storedValue = localStorage.getItem('selected_option_value');
+    if (storedValue) {
+      setSelectedValue(storedValue);
+    }
+  }, []);
+
   return {
     connections: filteredConnections,
     isLoading,
@@ -90,6 +143,11 @@ export function useOptionConnections(screenId?: string, frameworkType?: string) 
     isFrameworkConnected,
     getConnectionForOption,
     getConnectionMap,
-    clearSelectedValues
+    clearSelectedValues,
+    selectedValue,
+    selectValue,
+    connectionIds,
+    getConnectionDetails,
+    viewConnection
   };
 }

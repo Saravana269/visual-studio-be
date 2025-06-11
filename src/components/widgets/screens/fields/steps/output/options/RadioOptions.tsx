@@ -22,12 +22,13 @@ export function RadioOptions({
 }: RadioOptionsProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   
-  // Get connections management
+  // Get connections management - using object parameter format
   const { 
     selectedValue, 
     selectValue,
     connectionIds,
-    viewConnection
+    viewConnection,
+    isOptionConnected
   } = useOptionConnections({
     widgetId,
     screenId,
@@ -55,11 +56,6 @@ export function RadioOptions({
   const handleConnect = () => {
     if (!selectedOption || !onConnect) return;
     onConnect(selectedOption, "Radio Button");
-  };
-  
-  // Check if an option is connected
-  const isOptionConnected = (option: string): boolean => {
-    return connectionIds[option] !== undefined;
   };
   
   // Get connection ID for an option

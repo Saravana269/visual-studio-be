@@ -28,13 +28,14 @@ export function COEManagerFramework({
   const { toast } = useToast();
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   
-  // Get connection data
+  // Get connection data - using object parameter format
   const { 
     selectedValue,
     selectValue,
     getConnectionDetails,
     viewConnection,
-    connectionIds
+    connectionIds,
+    isOptionConnected
   } = useOptionConnections({
     widgetId,
     screenId,
@@ -112,7 +113,7 @@ export function COEManagerFramework({
   
   // See if an element is connected
   const isElementConnected = (elementId: string) => {
-    return connectionIds[elementId] !== undefined;
+    return isOptionConnected(elementId);
   };
   
   // Get connection ID for an element
@@ -149,7 +150,7 @@ export function COEManagerFramework({
               return (
                 <ElementCard
                   key={element.element_id}
-                  elementName={element.elements?.name || "Unnamed Element"}
+                  elementName={element.elements?.name || element.name || "Unnamed Element"}
                   elementId={element.element_id}
                   isSelected={selectedElementId === element.element_id}
                   isConnected={isConnected}

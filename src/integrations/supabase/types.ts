@@ -163,6 +163,68 @@ export type Database = {
         }
         Relationships: []
       }
+      component_filter_results: {
+        Row: {
+          component_id: string | null
+          created_at: string | null
+          created_by: string | null
+          filter_metadata: Json | null
+          filter_result: boolean
+          filter_score: number | null
+          id: string
+          rule_id: string | null
+        }
+        Insert: {
+          component_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          filter_metadata?: Json | null
+          filter_result: boolean
+          filter_score?: number | null
+          id?: string
+          rule_id?: string | null
+        }
+        Update: {
+          component_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          filter_metadata?: Json | null
+          filter_result?: boolean
+          filter_score?: number | null
+          id?: string
+          rule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "component_filter_results_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "component_id_debug_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_filter_results_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_filter_results_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_filter_results_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "logic_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       component_serial_counter: {
         Row: {
           serial_number: number | null
@@ -331,9 +393,7 @@ export type Database = {
       }
       connect_screens: {
         Row: {
-          connection_context: string | null
           created_at: string | null
-          element_ref: string | null
           framework_type: string | null
           framework_type_ref: string | null
           id: string
@@ -343,14 +403,11 @@ export type Database = {
           screen_description: string | null
           screen_name: string | null
           screen_ref: string | null
-          source_value: string | null
           updated_at: string | null
           widget_ref: string | null
         }
         Insert: {
-          connection_context?: string | null
           created_at?: string | null
-          element_ref?: string | null
           framework_type?: string | null
           framework_type_ref?: string | null
           id?: string
@@ -360,14 +417,11 @@ export type Database = {
           screen_description?: string | null
           screen_name?: string | null
           screen_ref?: string | null
-          source_value?: string | null
           updated_at?: string | null
           widget_ref?: string | null
         }
         Update: {
-          connection_context?: string | null
           created_at?: string | null
-          element_ref?: string | null
           framework_type?: string | null
           framework_type_ref?: string | null
           id?: string
@@ -377,7 +431,6 @@ export type Database = {
           screen_description?: string | null
           screen_name?: string | null
           screen_ref?: string | null
-          source_value?: string | null
           updated_at?: string | null
           widget_ref?: string | null
         }
@@ -421,6 +474,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          primary_tag_id: string | null
           source_coe_id: string | null
           source_element_id: string | null
           tags: string[] | null
@@ -434,6 +488,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          primary_tag_id?: string | null
           source_coe_id?: string | null
           source_element_id?: string | null
           tags?: string[] | null
@@ -447,6 +502,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          primary_tag_id?: string | null
           source_coe_id?: string | null
           source_element_id?: string | null
           tags?: string[] | null
@@ -556,6 +612,50 @@ export type Database = {
           },
         ]
       }
+      formula_execution_history: {
+        Row: {
+          calculated_result: number | null
+          error_message: string | null
+          executed_at: string | null
+          executed_by: string | null
+          execution_status: Database["public"]["Enums"]["execution_status"]
+          execution_time_ms: number | null
+          formula_id: string | null
+          id: string
+          input_variables: Json | null
+        }
+        Insert: {
+          calculated_result?: number | null
+          error_message?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_status: Database["public"]["Enums"]["execution_status"]
+          execution_time_ms?: number | null
+          formula_id?: string | null
+          id?: string
+          input_variables?: Json | null
+        }
+        Update: {
+          calculated_result?: number | null
+          error_message?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_status?: Database["public"]["Enums"]["execution_status"]
+          execution_time_ms?: number | null
+          formula_id?: string | null
+          id?: string
+          input_variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formula_execution_history_formula_id_fkey"
+            columns: ["formula_id"]
+            isOneToOne: false
+            referencedRelation: "math_formulas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       framework_types: {
         Row: {
           created_at: string | null
@@ -591,6 +691,108 @@ export type Database = {
           },
         ]
       }
+      logic_rules: {
+        Row: {
+          category: string
+          complexity: Database["public"]["Enums"]["rule_complexity"] | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          last_executed_at: string | null
+          name: string
+          parameter_mapping: Json | null
+          rule_definition: Json
+          status: Database["public"]["Enums"]["rule_status"] | null
+          updated_at: string | null
+          validation_schema: Json | null
+          version: number | null
+        }
+        Insert: {
+          category: string
+          complexity?: Database["public"]["Enums"]["rule_complexity"] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          last_executed_at?: string | null
+          name: string
+          parameter_mapping?: Json | null
+          rule_definition: Json
+          status?: Database["public"]["Enums"]["rule_status"] | null
+          updated_at?: string | null
+          validation_schema?: Json | null
+          version?: number | null
+        }
+        Update: {
+          category?: string
+          complexity?: Database["public"]["Enums"]["rule_complexity"] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          last_executed_at?: string | null
+          name?: string
+          parameter_mapping?: Json | null
+          rule_definition?: Json
+          status?: Database["public"]["Enums"]["rule_status"] | null
+          updated_at?: string | null
+          validation_schema?: Json | null
+          version?: number | null
+        }
+        Relationships: []
+      }
+      logic_templates: {
+        Row: {
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          preview_image_url: string | null
+          tags: string[] | null
+          template_data: Json
+          template_type: Database["public"]["Enums"]["template_type"]
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          preview_image_url?: string | null
+          tags?: string[] | null
+          template_data: Json
+          template_type: Database["public"]["Enums"]["template_type"]
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          preview_image_url?: string | null
+          tags?: string[] | null
+          template_data?: Json
+          template_type?: Database["public"]["Enums"]["template_type"]
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       manufacturer_details: {
         Row: {
           brand_name: string | null
@@ -624,6 +826,62 @@ export type Database = {
         }
         Relationships: []
       }
+      math_formulas: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          formula_expression: string
+          id: string
+          is_verified: boolean | null
+          name: string
+          si_unit_definition_id: string | null
+          test_cases: Json | null
+          unit_type: string | null
+          updated_at: string | null
+          validation_rules: Json | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          formula_expression: string
+          id?: string
+          is_verified?: boolean | null
+          name: string
+          si_unit_definition_id?: string | null
+          test_cases?: Json | null
+          unit_type?: string | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          formula_expression?: string
+          id?: string
+          is_verified?: boolean | null
+          name?: string
+          si_unit_definition_id?: string | null
+          test_cases?: Json | null
+          unit_type?: string | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "math_formulas_si_unit_definition_id_fkey"
+            columns: ["si_unit_definition_id"]
+            isOneToOne: false
+            referencedRelation: "si_unit_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu: {
         Row: {
           code: string
@@ -645,6 +903,217 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      responses: {
+        Row: {
+          connect_screen_ref: string | null
+          framework_type: string
+          project_id: string
+          screen_id: string
+          selected_value: Json | null
+          submitted_at: string | null
+          uuid: string
+        }
+        Insert: {
+          connect_screen_ref?: string | null
+          framework_type: string
+          project_id: string
+          screen_id: string
+          selected_value?: Json | null
+          submitted_at?: string | null
+          uuid?: string
+        }
+        Update: {
+          connect_screen_ref?: string | null
+          framework_type?: string
+          project_id?: string
+          screen_id?: string
+          selected_value?: Json | null
+          submitted_at?: string | null
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_responses_connect_screen_ref"
+            columns: ["connect_screen_ref"]
+            isOneToOne: false
+            referencedRelation: "connect_screens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_responses_project_id"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_responses_screen_id"
+            columns: ["screen_id"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rule_execution_history: {
+        Row: {
+          error_message: string | null
+          executed_at: string | null
+          executed_by: string | null
+          execution_status: Database["public"]["Enums"]["execution_status"]
+          execution_time_ms: number | null
+          id: string
+          input_parameters: Json | null
+          output_result: Json | null
+          rule_id: string | null
+          stack_trace: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_status: Database["public"]["Enums"]["execution_status"]
+          execution_time_ms?: number | null
+          id?: string
+          input_parameters?: Json | null
+          output_result?: Json | null
+          rule_id?: string | null
+          stack_trace?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_status?: Database["public"]["Enums"]["execution_status"]
+          execution_time_ms?: number | null
+          id?: string
+          input_parameters?: Json | null
+          output_result?: Json | null
+          rule_id?: string | null
+          stack_trace?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_execution_history_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "logic_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rule_nodes: {
+        Row: {
+          connections: Json | null
+          created_at: string | null
+          id: string
+          label: string
+          node_type: Database["public"]["Enums"]["node_type"]
+          position_x: number
+          position_y: number
+          properties: Json | null
+          rule_id: string | null
+        }
+        Insert: {
+          connections?: Json | null
+          created_at?: string | null
+          id?: string
+          label: string
+          node_type: Database["public"]["Enums"]["node_type"]
+          position_x: number
+          position_y: number
+          properties?: Json | null
+          rule_id?: string | null
+        }
+        Update: {
+          connections?: Json | null
+          created_at?: string | null
+          id?: string
+          label?: string
+          node_type?: Database["public"]["Enums"]["node_type"]
+          position_x?: number
+          position_y?: number
+          properties?: Json | null
+          rule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_nodes_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "logic_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rule_versions: {
+        Row: {
+          change_notes: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          rule_definition: Json
+          rule_id: string | null
+          version_number: number
+        }
+        Insert: {
+          change_notes?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          rule_definition: Json
+          rule_id?: string | null
+          version_number: number
+        }
+        Update: {
+          change_notes?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          rule_definition?: Json
+          rule_id?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_versions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "logic_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       screens: {
         Row: {
           created_at: string | null
@@ -652,6 +1121,7 @@ export type Database = {
           framework_id: string | null
           framework_type: string | null
           id: string
+          initial_screen: boolean | null
           metadata: Json | null
           name: string
           updated_at: string | null
@@ -663,6 +1133,7 @@ export type Database = {
           framework_id?: string | null
           framework_type?: string | null
           id?: string
+          initial_screen?: boolean | null
           metadata?: Json | null
           name: string
           updated_at?: string | null
@@ -674,6 +1145,7 @@ export type Database = {
           framework_id?: string | null
           framework_type?: string | null
           id?: string
+          initial_screen?: boolean | null
           metadata?: Json | null
           name?: string
           updated_at?: string | null
@@ -878,6 +1350,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          preferences: Json | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          preferences?: Json | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       vendor_details: {
         Row: {
           created_at: string | null
@@ -914,6 +1416,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          initial_widget: boolean | null
           name: string
           tags: string[] | null
           updated_at: string | null
@@ -923,6 +1426,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          initial_widget?: boolean | null
           name: string
           tags?: string[] | null
           updated_at?: string | null
@@ -932,6 +1436,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          initial_widget?: boolean | null
           name?: string
           tags?: string[] | null
           updated_at?: string | null
@@ -982,7 +1487,7 @@ export type Database = {
         Returns: string
       }
       generate_short_code: {
-        Args: { component_name: string }
+        Args: Record<PropertyKey, never> | { component_name: string }
         Returns: string
       }
       get_and_increment_component_serial: {
@@ -1014,6 +1519,11 @@ export type Database = {
     }
     Enums: {
       entity_type: "element" | "coe" | "screen" | "core_set" | "widget"
+      execution_status: "success" | "failure" | "timeout"
+      node_type: "input" | "processing" | "decision" | "output"
+      rule_complexity: "simple" | "medium" | "complex"
+      rule_status: "draft" | "active" | "inactive" | "error"
+      template_type: "rule" | "formula" | "workflow"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1130,6 +1640,11 @@ export const Constants = {
   public: {
     Enums: {
       entity_type: ["element", "coe", "screen", "core_set", "widget"],
+      execution_status: ["success", "failure", "timeout"],
+      node_type: ["input", "processing", "decision", "output"],
+      rule_complexity: ["simple", "medium", "complex"],
+      rule_status: ["draft", "active", "inactive", "error"],
+      template_type: ["rule", "formula", "workflow"],
     },
   },
 } as const
