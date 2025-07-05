@@ -22,7 +22,10 @@ export function MultipleOptionsContent({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   
   // Get connection data for options
-  const { isOptionConnected, getConnectionForOption } = useOptionConnections(screenId, "Multiple Options");
+  const { isOptionConnected, getConnectionForOption } = useOptionConnections({
+    screenId,
+    contextType: "Multiple Options"
+  });
   
   // Handle viewing a connection
   const handleViewConnection = (connectionId: string) => {

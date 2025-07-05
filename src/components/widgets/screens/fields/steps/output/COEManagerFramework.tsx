@@ -150,7 +150,7 @@ export function COEManagerFramework({
               return (
                 <ElementCard
                   key={element.element_id}
-                  elementName={element.elements?.name || element.name || "Unnamed Element"}
+                  elementName={element.elements?.[0]?.name || element.name || "Unnamed Element"}
                   elementId={element.element_id}
                   isSelected={selectedElementId === element.element_id}
                   isConnected={isConnected}

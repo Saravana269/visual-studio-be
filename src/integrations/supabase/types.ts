@@ -46,6 +46,13 @@ export type Database = {
             referencedRelation: "components"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bom_components_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: true
+            referencedRelation: "components_with_specs"
+            referencedColumns: ["id"]
+          },
         ]
       }
       class_of_elements: {
@@ -163,64 +170,88 @@ export type Database = {
         }
         Relationships: []
       }
-      component_filter_results: {
+      component_match_rules: {
         Row: {
-          component_id: string | null
-          created_at: string | null
-          created_by: string | null
-          filter_metadata: Json | null
-          filter_result: boolean
-          filter_score: number | null
+          active: boolean | null
+          auto_generated_at: string | null
+          component_attribute: string
+          context_metadata: Json | null
+          created_at: string
+          effectiveness_score: number | null
+          formula_output_mapping: Json | null
+          formula_signature: string | null
+          generation_metadata: Json | null
           id: string
-          rule_id: string | null
+          last_used_at: string | null
+          match_operator: string
+          match_value: string
+          min_threshold: number | null
+          output_variable_name: string
+          parameter_type: string | null
+          rule_source: string | null
+          source_condition_id: string | null
+          tolerance_percent: number | null
+          unit: string | null
+          updated_at: string
+          usage_count: number | null
+          weight: number | null
         }
         Insert: {
-          component_id?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          filter_metadata?: Json | null
-          filter_result: boolean
-          filter_score?: number | null
+          active?: boolean | null
+          auto_generated_at?: string | null
+          component_attribute: string
+          context_metadata?: Json | null
+          created_at?: string
+          effectiveness_score?: number | null
+          formula_output_mapping?: Json | null
+          formula_signature?: string | null
+          generation_metadata?: Json | null
           id?: string
-          rule_id?: string | null
+          last_used_at?: string | null
+          match_operator: string
+          match_value: string
+          min_threshold?: number | null
+          output_variable_name: string
+          parameter_type?: string | null
+          rule_source?: string | null
+          source_condition_id?: string | null
+          tolerance_percent?: number | null
+          unit?: string | null
+          updated_at?: string
+          usage_count?: number | null
+          weight?: number | null
         }
         Update: {
-          component_id?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          filter_metadata?: Json | null
-          filter_result?: boolean
-          filter_score?: number | null
+          active?: boolean | null
+          auto_generated_at?: string | null
+          component_attribute?: string
+          context_metadata?: Json | null
+          created_at?: string
+          effectiveness_score?: number | null
+          formula_output_mapping?: Json | null
+          formula_signature?: string | null
+          generation_metadata?: Json | null
           id?: string
-          rule_id?: string | null
+          last_used_at?: string | null
+          match_operator?: string
+          match_value?: string
+          min_threshold?: number | null
+          output_variable_name?: string
+          parameter_type?: string | null
+          rule_source?: string | null
+          source_condition_id?: string | null
+          tolerance_percent?: number | null
+          unit?: string | null
+          updated_at?: string
+          usage_count?: number | null
+          weight?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "component_filter_results_component_id_fkey"
-            columns: ["component_id"]
+            foreignKeyName: "component_match_rules_source_condition_id_fkey"
+            columns: ["source_condition_id"]
             isOneToOne: false
-            referencedRelation: "component_id_debug_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "component_filter_results_component_id_fkey"
-            columns: ["component_id"]
-            isOneToOne: false
-            referencedRelation: "components"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "component_filter_results_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "component_filter_results_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "logic_rules"
+            referencedRelation: "formula_conditions"
             referencedColumns: ["id"]
           },
         ]
@@ -610,48 +641,173 @@ export type Database = {
             referencedRelation: "components"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "files_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components_with_specs"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      formula_execution_history: {
+      formula_conditions: {
         Row: {
-          calculated_result: number | null
-          error_message: string | null
-          executed_at: string | null
-          executed_by: string | null
-          execution_status: Database["public"]["Enums"]["execution_status"]
-          execution_time_ms: number | null
-          formula_id: string | null
+          condition_expression: string
+          created_at: string
+          execution_order: number | null
           id: string
-          input_variables: Json | null
+          nextscreen_ref: string | null
+          screen_ref: string | null
+          updated_at: string
+          variables_used: Json | null
         }
         Insert: {
-          calculated_result?: number | null
-          error_message?: string | null
-          executed_at?: string | null
-          executed_by?: string | null
-          execution_status: Database["public"]["Enums"]["execution_status"]
-          execution_time_ms?: number | null
-          formula_id?: string | null
+          condition_expression: string
+          created_at?: string
+          execution_order?: number | null
           id?: string
-          input_variables?: Json | null
+          nextscreen_ref?: string | null
+          screen_ref?: string | null
+          updated_at?: string
+          variables_used?: Json | null
         }
         Update: {
-          calculated_result?: number | null
-          error_message?: string | null
-          executed_at?: string | null
-          executed_by?: string | null
-          execution_status?: Database["public"]["Enums"]["execution_status"]
-          execution_time_ms?: number | null
-          formula_id?: string | null
+          condition_expression?: string
+          created_at?: string
+          execution_order?: number | null
           id?: string
-          input_variables?: Json | null
+          nextscreen_ref?: string | null
+          screen_ref?: string | null
+          updated_at?: string
+          variables_used?: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "formula_execution_history_formula_id_fkey"
-            columns: ["formula_id"]
+            foreignKeyName: "formula_conditions_nextscreen_ref_fkey"
+            columns: ["nextscreen_ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formula_conditions_screen_ref_fkey"
+            columns: ["screen_ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formula_execution_inputs: {
+        Row: {
+          constant_value: string | null
+          created_at: string
+          execution_mapping_ref: string | null
+          id: string
+          input_source_ref: string | null
+          input_source_type: string
+          input_variable_name: string
+          updated_at: string
+        }
+        Insert: {
+          constant_value?: string | null
+          created_at?: string
+          execution_mapping_ref?: string | null
+          id?: string
+          input_source_ref?: string | null
+          input_source_type: string
+          input_variable_name: string
+          updated_at?: string
+        }
+        Update: {
+          constant_value?: string | null
+          created_at?: string
+          execution_mapping_ref?: string | null
+          id?: string
+          input_source_ref?: string | null
+          input_source_type?: string
+          input_variable_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formula_execution_inputs_execution_mapping_ref_fkey"
+            columns: ["execution_mapping_ref"]
+            isOneToOne: false
+            referencedRelation: "formula_execution_mapping"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formula_execution_mapping: {
+        Row: {
+          created_at: string
+          executed_by: string | null
+          execution_order: number
+          execution_session_id: string | null
+          failure_reason: string | null
+          formula_ref: string | null
+          id: string
+          nextscreen_ref: string | null
+          output_unit: string | null
+          output_value: string | null
+          output_variable_name: string | null
+          screen_ref: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          executed_by?: string | null
+          execution_order?: number
+          execution_session_id?: string | null
+          failure_reason?: string | null
+          formula_ref?: string | null
+          id?: string
+          nextscreen_ref?: string | null
+          output_unit?: string | null
+          output_value?: string | null
+          output_variable_name?: string | null
+          screen_ref?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          executed_by?: string | null
+          execution_order?: number
+          execution_session_id?: string | null
+          failure_reason?: string | null
+          formula_ref?: string | null
+          id?: string
+          nextscreen_ref?: string | null
+          output_unit?: string | null
+          output_value?: string | null
+          output_variable_name?: string | null
+          screen_ref?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formula_execution_mapping_formula_ref_fkey"
+            columns: ["formula_ref"]
             isOneToOne: false
             referencedRelation: "math_formulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formula_execution_mapping_nextscreen_ref_fkey"
+            columns: ["nextscreen_ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formula_execution_mapping_screen_ref_fkey"
+            columns: ["screen_ref"]
+            isOneToOne: false
+            referencedRelation: "screens"
             referencedColumns: ["id"]
           },
         ]
@@ -687,6 +843,47 @@ export type Database = {
             columns: ["screen_id"]
             isOneToOne: false
             referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logic_builder_version: {
+        Row: {
+          canvas_meta: Json
+          canvas_state: Json
+          created_at: string
+          id: string
+          is_compressed: boolean | null
+          logic_assignments: Json
+          snapshot_size: number | null
+          version_control_id: string
+        }
+        Insert: {
+          canvas_meta?: Json
+          canvas_state?: Json
+          created_at?: string
+          id?: string
+          is_compressed?: boolean | null
+          logic_assignments?: Json
+          snapshot_size?: number | null
+          version_control_id: string
+        }
+        Update: {
+          canvas_meta?: Json
+          canvas_state?: Json
+          created_at?: string
+          id?: string
+          is_compressed?: boolean | null
+          logic_assignments?: Json
+          snapshot_size?: number | null
+          version_control_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logic_builder_version_version_control_id_fkey"
+            columns: ["version_control_id"]
+            isOneToOne: false
+            referencedRelation: "version_control"
             referencedColumns: ["id"]
           },
         ]
@@ -831,45 +1028,57 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           description: string | null
+          expression: string | null
           formula_expression: string
           id: string
+          is_deleted: boolean | null
           is_verified: boolean | null
           name: string
           si_unit_definition_id: string | null
+          si_unit_value: Json | null
           test_cases: Json | null
           unit_type: string | null
           updated_at: string | null
           validation_rules: Json | null
+          variable_types: string | null
           variables: Json | null
         }
         Insert: {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          expression?: string | null
           formula_expression: string
           id?: string
+          is_deleted?: boolean | null
           is_verified?: boolean | null
           name: string
           si_unit_definition_id?: string | null
+          si_unit_value?: Json | null
           test_cases?: Json | null
           unit_type?: string | null
           updated_at?: string | null
           validation_rules?: Json | null
+          variable_types?: string | null
           variables?: Json | null
         }
         Update: {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          expression?: string | null
           formula_expression?: string
           id?: string
+          is_deleted?: boolean | null
           is_verified?: boolean | null
           name?: string
           si_unit_definition_id?: string | null
+          si_unit_value?: Json | null
           test_cases?: Json | null
           unit_type?: string | null
           updated_at?: string | null
           validation_rules?: Json | null
+          variable_types?: string | null
           variables?: Json | null
         }
         Relationships: [
@@ -985,53 +1194,6 @@ export type Database = {
           },
         ]
       }
-      rule_execution_history: {
-        Row: {
-          error_message: string | null
-          executed_at: string | null
-          executed_by: string | null
-          execution_status: Database["public"]["Enums"]["execution_status"]
-          execution_time_ms: number | null
-          id: string
-          input_parameters: Json | null
-          output_result: Json | null
-          rule_id: string | null
-          stack_trace: string | null
-        }
-        Insert: {
-          error_message?: string | null
-          executed_at?: string | null
-          executed_by?: string | null
-          execution_status: Database["public"]["Enums"]["execution_status"]
-          execution_time_ms?: number | null
-          id?: string
-          input_parameters?: Json | null
-          output_result?: Json | null
-          rule_id?: string | null
-          stack_trace?: string | null
-        }
-        Update: {
-          error_message?: string | null
-          executed_at?: string | null
-          executed_by?: string | null
-          execution_status?: Database["public"]["Enums"]["execution_status"]
-          execution_time_ms?: number | null
-          id?: string
-          input_parameters?: Json | null
-          output_result?: Json | null
-          rule_id?: string | null
-          stack_trace?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rule_execution_history_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "logic_rules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       rule_nodes: {
         Row: {
           connections: Json | null
@@ -1076,44 +1238,6 @@ export type Database = {
           },
         ]
       }
-      rule_versions: {
-        Row: {
-          change_notes: string | null
-          created_at: string | null
-          created_by: string | null
-          id: string
-          rule_definition: Json
-          rule_id: string | null
-          version_number: number
-        }
-        Insert: {
-          change_notes?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          rule_definition: Json
-          rule_id?: string | null
-          version_number: number
-        }
-        Update: {
-          change_notes?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          rule_definition?: Json
-          rule_id?: string | null
-          version_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rule_versions_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "logic_rules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       screens: {
         Row: {
           created_at: string | null
@@ -1124,6 +1248,7 @@ export type Database = {
           initial_screen: boolean | null
           metadata: Json | null
           name: string
+          project_id: string | null
           updated_at: string | null
           widget_id: string | null
         }
@@ -1136,6 +1261,7 @@ export type Database = {
           initial_screen?: boolean | null
           metadata?: Json | null
           name: string
+          project_id?: string | null
           updated_at?: string | null
           widget_id?: string | null
         }
@@ -1148,6 +1274,7 @@ export type Database = {
           initial_screen?: boolean | null
           metadata?: Json | null
           name?: string
+          project_id?: string | null
           updated_at?: string | null
           widget_id?: string | null
         }
@@ -1157,6 +1284,13 @@ export type Database = {
             columns: ["framework_id"]
             isOneToOne: false
             referencedRelation: "framework_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "screens_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
@@ -1242,6 +1376,13 @@ export type Database = {
             columns: ["component_id"]
             isOneToOne: false
             referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specific_details_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components_with_specs"
             referencedColumns: ["id"]
           },
           {
@@ -1410,6 +1551,51 @@ export type Database = {
         }
         Relationships: []
       }
+      version_control: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          logic_flow_id: string
+          tags: string[] | null
+          updated_at: string
+          version_name: string | null
+          version_number: number
+          version_status: Database["public"]["Enums"]["version_status"]
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          logic_flow_id: string
+          tags?: string[] | null
+          updated_at?: string
+          version_name?: string | null
+          version_number: number
+          version_status?: Database["public"]["Enums"]["version_status"]
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          logic_flow_id?: string
+          tags?: string[] | null
+          updated_at?: string
+          version_name?: string | null
+          version_number?: number
+          version_status?: Database["public"]["Enums"]["version_status"]
+        }
+        Relationships: []
+      }
       widgets: {
         Row: {
           created_at: string | null
@@ -1463,8 +1649,58 @@ export type Database = {
           },
         ]
       }
+      components_with_specs: {
+        Row: {
+          component_id_code: string | null
+          component_type_head_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          manufacturer_id: string | null
+          name: string | null
+          specifications: Json | null
+          sub_classification_id: string | null
+          vendor_id: string | null
+          website_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "components_manufacturer_id_fkey"
+            columns: ["manufacturer_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturer_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "components_sub_classification_id_fkey"
+            columns: ["sub_classification_id"]
+            isOneToOne: false
+            referencedRelation: "sub_classification"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "components_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_component_type_head"
+            columns: ["component_type_head_id"]
+            isOneToOne: false
+            referencedRelation: "component_type_head"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      activate_version: {
+        Args: { p_version_id: string }
+        Returns: boolean
+      }
       add_component_to_bom: {
         Args: { p_component_id: string; p_user_id: string }
         Returns: {
@@ -1473,6 +1709,15 @@ export type Database = {
           user_id: string
           quantity: number
         }[]
+      }
+      create_new_version: {
+        Args: {
+          p_logic_flow_id: string
+          p_version_name?: string
+          p_description?: string
+          p_created_by?: string
+        }
+        Returns: string
       }
       generate_component_id_code: {
         Args: {
@@ -1489,6 +1734,15 @@ export type Database = {
       generate_short_code: {
         Args: Record<PropertyKey, never> | { component_name: string }
         Returns: string
+      }
+      get_active_version: {
+        Args: { p_logic_flow_id: string }
+        Returns: {
+          version_id: string
+          version_number: number
+          version_name: string
+          created_at: string
+        }[]
       }
       get_and_increment_component_serial: {
         Args: { p_prefix: string }
@@ -1524,6 +1778,7 @@ export type Database = {
       rule_complexity: "simple" | "medium" | "complex"
       rule_status: "draft" | "active" | "inactive" | "error"
       template_type: "rule" | "formula" | "workflow"
+      version_status: "draft" | "active" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1645,6 +1900,7 @@ export const Constants = {
       rule_complexity: ["simple", "medium", "complex"],
       rule_status: ["draft", "active", "inactive", "error"],
       template_type: ["rule", "formula", "workflow"],
+      version_status: ["draft", "active", "archived"],
     },
   },
 } as const

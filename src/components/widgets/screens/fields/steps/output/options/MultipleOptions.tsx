@@ -30,7 +30,10 @@ export const MultipleOptions: React.FC<MultipleOptionsProps> = ({
     isOptionConnected, 
     getConnectionForOption,
     clearSelectedValues
-  } = useOptionConnections(screenId, "Multiple Options");
+  } = useOptionConnections({
+    screenId,
+    contextType: "Multiple Options"
+  });
 
   // Generate all possible combinations of options
   const combinations = generateCombinations(options);
